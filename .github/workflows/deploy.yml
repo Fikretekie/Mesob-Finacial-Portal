@@ -67,10 +67,41 @@ jobs:
       - name: Build React App
         run: npm install --legacy-peer-deps && npm run build
 
+      # NOTE: index.html and asset-manifest.json are the SPA entry files. They must
+      # be re-published every deploy and never cached, or the browser keeps loading
+      # the previous hashed bundle. Plain `s3 sync` was leaving a stale index.html
+      # at the origin, so we `cp` them explicitly with no-cache and invalidate CloudFront.
+
       - name: Deploy to Production S3
         if: github.ref == 'refs/heads/main'
-        run: aws s3 sync ./build/ s3://app.meksova.com
+        run: |
+          aws s3 sync ./build/ s3://app.meksova.com --exclude index.html --exclude asset-manifest.json
+          aws s3 cp ./build/index.html s3://app.meksova.com/index.html \
+            --cache-control "no-cache, no-store, must-revalidate" --content-type "text/html"
+          aws s3 cp ./build/asset-manifest.json s3://app.meksova.com/asset-manifest.json \
+            --cache-control "no-cache, no-store, must-revalidate" --content-type "application/json"
+
+      - name: Invalidate Production CloudFront
+        if: github.ref == 'refs/heads/main'
+        env:
+          DIST: ${{ secrets.PRODUCTION_CF_DISTRIBUTION_ID }}
+        run: |
+          if [ -z "$DIST" ]; then echo "::warning::PRODUCTION_CF_DISTRIBUTION_ID secret not set — skipping invalidation (index.html is no-cache, but set the secret to purge instantly)"; exit 0; fi
+          aws cloudfront create-invalidation --distribution-id "$DIST" --paths "/*"
 
       - name: Deploy to Staging S3
         if: github.ref == 'refs/heads/staging'
-        run: aws s3 sync ./build/ s3://staging.meksova.com
+        run: |
+          aws s3 sync ./build/ s3://staging.meksova.com --exclude index.html --exclude asset-manifest.json
+          aws s3 cp ./build/index.html s3://staging.meksova.com/index.html \
+            --cache-control "no-cache, no-store, must-revalidate" --content-type "text/html"
+          aws s3 cp ./build/asset-manifest.json s3://staging.meksova.com/asset-manifest.json \
+            --cache-control "no-cache, no-store, must-revalidate" --content-type "application/json"
+
+      - name: Invalidate Staging CloudFront
+        if: github.ref == 'refs/heads/staging'
+        env:
+          DIST: ${{ secrets.STAGING_CF_DISTRIBUTION_ID }}
+        run: |
+          if [ -z "$DIST" ]; then echo "::warning::STAGING_CF_DISTRIBUTION_ID secret not set — skipping invalidation (index.html is no-cache, but set the secret to purge instantly)"; exit 0; fi
+          aws cloudfront create-invalidation --distribution-id "$DIST" --paths "/*"
