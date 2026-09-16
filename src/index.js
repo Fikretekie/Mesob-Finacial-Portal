@@ -172,7 +172,9 @@ axios.interceptors.request.use(async (config) => {
       const idToken = tokens?.idToken?.toString();
       if (idToken) {
         config.headers = config.headers || {};
-        config.headers.Authorization = `Bearer ${idToken}`;
+        // API Gateway REST Cognito authorizers reject the "Bearer " prefix —
+        // they parse the header value as the raw JWT. Send the raw ID token.
+        config.headers.Authorization = idToken;
       }
     }
   } catch (e) {
