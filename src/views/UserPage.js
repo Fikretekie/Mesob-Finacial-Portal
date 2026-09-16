@@ -115,6 +115,7 @@ function UserPage() {
           const fullUser = { ...user, id: userId, businessType: legacyBusinessType };
           setUserData(fullUser);
           setOriginalData(fullUser);
+                    localStorage.setItem("businessType", legacyBusinessType || "");
           // setUserData({ ...user, id: userId });
           setIsCustomer(user.role === 2 || user.role === 1);
         } else {
@@ -204,6 +205,7 @@ function UserPage() {
         );
 
         console.log("Update response:", response.data);
+                localStorage.setItem("businessType", userData.businessType || "");
         setIsEditing(false);
         setHasChanges(false);
         setSuccess("Profile updated successfully!");

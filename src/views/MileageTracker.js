@@ -7,11 +7,13 @@ import { Capacitor, registerPlugin } from "@capacitor/core";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import { haversineMiles } from "utils/geo";
 import { saveTrip } from "utils/tripStorage";
+import { getStateAtPoint } from "utils/geoState";
 
 const BackgroundGeolocation = registerPlugin("BackgroundGeolocation");
 
 const MAX_ACCEPTABLE_ACCURACY_METERS = 50;
 const MIN_MOVEMENT_MILES = 0.005; // ~8 meters
+const STATE_CHECK_INTERVAL_MILES = 1; // how often to re-check which state we're in
 
 const PURPOSE_OPTIONS = ["Client Visit", "Delivery", "Commute", "Other"];
 
@@ -47,6 +49,10 @@ function MileageTracker() {
   const lastPointRef = useRef(null);
   const startTimeRef = useRef(null);
   const timerIdRef = useRef(null);
+  const stateMilesRef = useRef({}); // { OH: 12.3, PA: 5.1, ... }
+  const currentStateRef = useRef(null);
+  const milesSinceStateCheckRef = useRef(0);
+  const stateCheckInFlightRef = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -61,6 +67,42 @@ function MileageTracker() {
     };
   }, []);
 
+  /** Adds the miles accumulated since the last state check to whichever
+   * state we were in during that stretch (a no-op the very first time,
+   * since there's no prior state yet to attribute distance to). */
+  const flushMilesToCurrentState = () => {
+    if (currentStateRef.current && milesSinceStateCheckRef.current > 0) {
+      const state = currentStateRef.current;
+      stateMilesRef.current[state] = (stateMilesRef.current[state] || 0) + milesSinceStateCheckRef.current;
+    }
+    milesSinceStateCheckRef.current = 0;
+  };
+
+  /** Re-checks which state the given point is in, attributing miles driven
+   * since the last check to the previous state first. Throttled to roughly
+   * once per STATE_CHECK_INTERVAL_MILES so we're not doing a polygon lookup
+   * on every single GPS update. Fire-and-forget: doesn't block the distance/
+   * UI updates in handlePosition. */
+  const maybeCheckState = (lat, lng) => {
+    const isFirstCheck = currentStateRef.current === null && !stateCheckInFlightRef.current;
+    if (!isFirstCheck && milesSinceStateCheckRef.current < STATE_CHECK_INTERVAL_MILES) return;
+    if (stateCheckInFlightRef.current) return;
+
+    stateCheckInFlightRef.current = true;
+    getStateAtPoint(lat, lng)
+      .then((state) => {
+        flushMilesToCurrentState();
+        currentStateRef.current = state;
+      })
+      .catch(() => {
+        // Boundary lookup failed (e.g. offline on first load) -- keep
+        // attributing to whatever state we last knew, try again next check.
+      })
+      .finally(() => {
+        stateCheckInFlightRef.current = false;
+      });
+  };
+
   const handlePosition = (position) => {
     setError("");
     const { latitude, longitude, accuracy } = position.coords;
@@ -73,11 +115,14 @@ function MileageTracker() {
       const delta = haversineMiles(prev.lat, prev.lng, latitude, longitude);
       if (delta >= MIN_MOVEMENT_MILES) {
         setDistanceMiles((d) => d + delta);
+        milesSinceStateCheckRef.current += delta;
         lastPointRef.current = { lat: latitude, lng: longitude };
       }
     } else {
       lastPointRef.current = { lat: latitude, lng: longitude };
     }
+
+    maybeCheckState(latitude, longitude);
   };
 
   const handlePositionError = (err) => {
@@ -96,6 +141,9 @@ function MileageTracker() {
     setElapsedSeconds(0);
     lastPointRef.current = null;
     startTimeRef.current = Date.now();
+    stateMilesRef.current = {};
+    currentStateRef.current = null;
+    milesSinceStateCheckRef.current = 0;
 
     if (Capacitor.isNativePlatform()) {
       try {
@@ -145,6 +193,12 @@ function MileageTracker() {
       clearInterval(timerIdRef.current);
       timerIdRef.current = null;
     }
+    flushMilesToCurrentState();
+    const stateBreakdown = Object.entries(stateMilesRef.current).map(([state, miles]) => ({
+      state,
+      miles: Number(miles.toFixed(2)),
+    }));
+
     setIsTracking(false);
     setTripType("business");
     setShowNoteField(false);
@@ -154,6 +208,7 @@ function MileageTracker() {
       miles: distanceMiles,
       durationSeconds: elapsedSeconds,
       endedAt: new Date(),
+      stateBreakdown,
     });
   };
 
@@ -175,6 +230,7 @@ function MileageTracker() {
         type: tripType,
         purpose: PURPOSE_OPTIONS[purposeIndex],
         note: note.trim(),
+        stateBreakdown: pendingTrip.stateBreakdown,
       });
       setPendingTrip(null);
       navigate("/customer/trip-history");

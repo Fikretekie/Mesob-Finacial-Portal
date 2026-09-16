@@ -113,6 +113,7 @@ const Confirm = () => {
         localStorage.setItem("user_email", result.user?.email || "");
         localStorage.setItem("user_name", result.user?.name || "");
         localStorage.setItem("role", result.user?.role?.toString() || "2");
+        localStorage.setItem("businessType", result.user?.businessType || "");
         localStorage.setItem(
           "outstandingDebt",
           result.user?.outstandingDebt || "0"

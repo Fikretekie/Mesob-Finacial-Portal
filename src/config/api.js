@@ -148,6 +148,9 @@ export function normalizeReceiptUrl(rawUrl) {
 export const ROUTES = {
   USERS: "Users",
    MILEAGE_TRIP: "MileageTrip",
+     /** IFTA fuel-purchase log (state, gallons). Not yet implemented on the
+   * backend -- see CLAUDE.md IFTA notes. */
+  FUEL_PURCHASE: "FuelPurchase",
   USERS: "Users",
   TRANSACTION: "Transaction",
   RECEIPT: "Receipt",
