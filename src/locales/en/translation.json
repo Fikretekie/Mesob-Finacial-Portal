@@ -612,6 +612,39 @@
     "miTotal": "mi total",
     "min": "min"
   },
+    "fuelPurchase": {
+    "title": "Log Fuel Purchase",
+    "subtitle": "Track fuel bought in each state for IFTA reporting.",
+    "date": "Date",
+    "state": "State",
+    "selectState": "Select a state…",
+    "gallons": "Gallons",
+    "pricePerGallon": "Price per gallon (optional)",
+    "totalCost": "Total cost (optional)",
+    "save": "Save Purchase",
+    "saving": "Saving…",
+    "saveError": "Could not save fuel purchase. Check your connection and try again.",
+    "loadError": "Could not load fuel purchases. Check your connection and try again.",
+    "loading": "Loading fuel purchases…",
+    "recent": "Recent Purchases",
+    "noPurchases": "No fuel purchases logged yet",
+    "gallonsShort": "gal",
+    "validationRequired": "Date, state, and gallons are required."
+  },
+  "iftaReport": {
+    "title": "IFTA Quarterly Report",
+    "subtitle": "Miles driven and fuel purchased per jurisdiction, by quarter.",
+    "quarter": "Quarter",
+    "year": "Year",
+    "jurisdiction": "Jurisdiction",
+    "miles": "Miles",
+    "gallonsPurchased": "Gallons Purchased",
+    "totalMiles": "Total Miles",
+    "totalGallons": "Total Gallons",
+    "noData": "No trips or fuel purchases recorded for this quarter.",
+    "exportCsv": "Export CSV",
+    "note": "This report shows totals only -- it does not calculate tax owed. Use it alongside your IFTA return or hand it to your preparer."
+  },
   "auth": {
     "login": {
       "pageTitle": "Login - Meksova",

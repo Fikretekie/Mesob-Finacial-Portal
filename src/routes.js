@@ -10,8 +10,11 @@ import MesobFinancial2 from "views/mesobfinancial2";
 import Documents from "views/Documents";
 import MileageTracker from "views/MileageTracker";
 import TripHistory from "views/TripHistory";
+import FuelPurchase from "views/FuelPurchase";
+import IftaReport from "views/IftaReport";
 
 const userRole = parseInt(localStorage.getItem("role"), 10);
+const userBusinessType = localStorage.getItem("businessType");
 
 const adminRoutes = [
   {
@@ -111,6 +114,24 @@ const customerRoutes = [
     component: <TripHistory />,
     layout: "/customer",
   },
+  ...(userBusinessType === "Trucking"
+    ? [
+        {
+          path: "/fuel-purchase",
+          name: "Fuel Purchase",
+          icon: "shopping_cart-simple",
+          component: <FuelPurchase />,
+          layout: "/customer",
+        },
+        {
+          path: "/ifta-report",
+          name: "IFTA Report",
+          icon: "business_chart-bar-32",
+          component: <IftaReport />,
+          layout: "/customer",
+        },
+      ]
+    : []),
   {
     path: "/profile",
     name: "Account",

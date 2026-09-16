@@ -41,3 +41,28 @@ export function getYearBusinessMiles(trips, year) {
     .filter((t) => t.dateKey.startsWith(String(year)) && t.type === "business")
     .reduce((sum, t) => sum + t.miles, 0);
 }
+
+/** Trips within a given quarter (year + quarter 1-4), from an
+ * already-fetched list. dateKey format: YYYY-MM-DD. */
+export function getTripsForQuarter(trips, year, quarter) {
+  const startMonth = (quarter - 1) * 3 + 1;
+  const endMonth = startMonth + 2;
+  return trips.filter((t) => {
+    const [y, m] = t.dateKey.split("-").map(Number);
+    return y === year && m >= startMonth && m <= endMonth;
+  });
+}
+
+/** Total miles per state across a set of trips, from each trip's
+ * stateBreakdown (trips without one -- e.g. saved before this feature
+ * existed, or web fallback with no GPS state detection -- are skipped). */
+export function getMilesByState(trips) {
+  const totals = {};
+  for (const trip of trips) {
+    if (!Array.isArray(trip.stateBreakdown)) continue;
+    for (const { state, miles } of trip.stateBreakdown) {
+      totals[state] = (totals[state] || 0) + miles;
+    }
+  }
+  return totals;
+}

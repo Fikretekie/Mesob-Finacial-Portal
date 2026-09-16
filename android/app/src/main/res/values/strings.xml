@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Meksova</string>
+    <string name="title_activity_main">Meksova</string>
+    <string name="package_name">com.meksova.app</string>
+    <string name="custom_url_scheme">com.meksova.app</string>
+</resources>
