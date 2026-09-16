@@ -341,6 +341,7 @@ import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { faApple } from "@fortawesome/free-brands-svg-icons";
 import { Link } from "react-router-dom";
 import { signIn, signInWithRedirect, signOut } from "aws-amplify/auth";
+import { clearAppStorageKeepingSession } from "utils/authStorage";
 import getUserInfo from "utils/Getuser";
 import NotificationAlert from "react-notification-alert";
 import { apiUrl, ROUTES, CURRENT_ENV } from "../config/api";
@@ -440,7 +441,8 @@ const Login = () => {
           setLoading(false);
           return;
         }
-        localStorage.clear();
+        // Keep the Cognito session Amplify just stored (was localStorage.clear()).
+        clearAppStorageKeepingSession();
         localStorage.setItem("provider", "Email");
         localStorage.setItem("userId", user.userId);
         localStorage.setItem("user_email", result.user?.email || "");

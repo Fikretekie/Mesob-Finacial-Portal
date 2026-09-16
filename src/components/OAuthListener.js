@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiUrl, ROUTES, COGNITO_USERINFO_URL, CURRENT_ENV } from "../config/api";
 import { getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
 import { Hub } from "aws-amplify/utils";
+import { clearAppStorageKeepingSession } from "../utils/authStorage";
 
 const OAuthListener = () => {
   const navigate = useNavigate();
@@ -160,7 +161,8 @@ const OAuthListener = () => {
                   console.log(`✅ User exists, OAuth sign-in complete [env: ${CURRENT_ENV}]`);
                   const userData = checkResult.user;
                   console.log("🔎 API Result:", checkResult);
-                  localStorage.clear();
+                  // Keep the Cognito session Amplify just stored (was localStorage.clear()).
+                  clearAppStorageKeepingSession();
                   localStorage.setItem("userId", userData.id);
                   localStorage.setItem("user_email", userData.email || email);
                   localStorage.setItem("user_name", userData.name || "");

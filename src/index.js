@@ -10,6 +10,8 @@ import {
 import { Provider, useDispatch } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { Amplify } from "aws-amplify";
+import { fetchAuthSession } from "aws-amplify/auth";
+import axios from "axios";
 import userReducer from "./store/userSlice";
 import currencyReducer, { setCurrency } from "./store/currencySlice";
 import { getUserCurrencyFromIP } from "./utils/currencyUtils";
@@ -153,6 +155,30 @@ Amplify.configure({
       },
     },
   },
+});
+
+// ── Attach the Cognito ID token to every backend API request ────────────────
+// Prepares the frontend for a Cognito authorizer on API Gateway (see security
+// brief). Scoped to our own execute-api hosts so the token is never sent to S3
+// or third parties. Safe to ship before the authorizer exists: the API ignores
+// the header today; the day the authorizer is enabled, requests already carry a
+// valid token. NOTE: fetch()-based API calls (a few in Documents/OAuthListener)
+// are not covered by this axios interceptor and must attach the token manually.
+axios.interceptors.request.use(async (config) => {
+  try {
+    const url = config.url || "";
+    if (url.includes("execute-api.us-east-1.amazonaws.com")) {
+      const { tokens } = await fetchAuthSession();
+      const idToken = tokens?.idToken?.toString();
+      if (idToken) {
+        config.headers = config.headers || {};
+        config.headers.Authorization = `Bearer ${idToken}`;
+      }
+    }
+  } catch (e) {
+    // Not signed in yet (or session refresh failed) — leave the request as-is.
+  }
+  return config;
 });
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
