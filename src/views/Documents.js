@@ -25,6 +25,7 @@ import Select from "react-select";
 import { FaUpload, FaDownload, FaEye, FaTrash, FaCompressArrowsAlt } from "react-icons/fa";
 import NotificationAlert from "react-notification-alert";
 import { apiUrl, ROUTES, S3_BUCKET_NAME } from "../config/api";
+import { authHeader } from "../utils/apiFetch";
 
 const DOCUMENT_DELETE_ACTION = ROUTES.DOCUMENT_DELETE_ACTION;
 
@@ -279,7 +280,8 @@ const Documents = () => {
     setLoading(true);
     try {
       const res = await fetch(
-        apiUrl(`${ROUTES.DOCUMENT}?userId=${encodeURIComponent(uid)}`)
+        apiUrl(`${ROUTES.DOCUMENT}?userId=${encodeURIComponent(uid)}`),
+        { headers: { ...(await authHeader()) } }
       );
       const data = await res.json();
       if (res.ok && Array.isArray(data)) {
@@ -303,7 +305,8 @@ const Documents = () => {
   const getDocumentUrl = async (key) => {
     try {
       const res = await fetch(
-        apiUrl(`${ROUTES.DOCUMENT}/url?key=${encodeURIComponent(key)}`)
+        apiUrl(`${ROUTES.DOCUMENT}/url?key=${encodeURIComponent(key)}`),
+        { headers: { ...(await authHeader()) } }
       );
       const data = await res.json();
       return data?.url || data?.previewUrl || null;
@@ -453,7 +456,8 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
     const presignRes = await fetch(
       apiUrl(
         `${ROUTES.DOCUMENT}/presign?userId=${encodeURIComponent(effectiveUserId)}&fileName=${encodeURIComponent(fileNameForApi)}&contentType=${encodeURIComponent(file.type || "application/octet-stream")}`
-      )
+      ),
+      { headers: { ...(await authHeader()) } }
     );
 
     if (!presignRes.ok) {
@@ -524,7 +528,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
     try {
       const res = await fetch(apiUrl(ROUTES.DOCUMENT), {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await authHeader()) },
         body: JSON.stringify({
           action: DOCUMENT_DELETE_ACTION,
           userId: effectiveUserId,

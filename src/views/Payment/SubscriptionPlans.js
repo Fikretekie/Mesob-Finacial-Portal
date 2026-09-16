@@ -22,6 +22,7 @@ import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { FaPaypal, FaCreditCard, FaCheck } from "react-icons/fa";
 import LanguageSelector from "components/Languageselector/LanguageSelector";
 import { useTranslation } from "react-i18next";
+import { authHeader } from "../../utils/apiFetch";
 
 /* ─── inline styles ─────────────────────────────────────────── */
 const styles = {
@@ -376,7 +377,7 @@ const SubscriptionPlans = () => {
       if (!email || !userId) { setError("Email or User ID missing"); return; }
       const response = await fetch(`${backendBaseUrl}/Subscription/Session`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await authHeader()) },
         body: JSON.stringify({
           planType: billingCycle,
           redirectUrl: window.location.origin + "/customer/dashboard",
@@ -693,7 +694,7 @@ const SubscriptionPlans = () => {
                                 `${backendBaseUrl}/createPaypalSubscription`,
                                 {
                                   method: "POST",
-                                  headers: { "Content-Type": "application/json" },
+                                  headers: { "Content-Type": "application/json", ...(await authHeader()) },
                                   body: JSON.stringify({
                                     planId, userId, email,
                                     redirectUrl: window.location.origin + "/customer/subscription",

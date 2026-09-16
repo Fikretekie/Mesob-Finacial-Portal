@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { apiUrl, ROUTES, normalizeReceiptUrl } from "../config/api";
+import { authHeader } from "../utils/apiFetch";
 import {
   Card,
   CardHeader,
@@ -179,7 +180,8 @@ const Receipts = ({ selectedUser }) => {
 
     // Get a fresh presigned URL
     const res = await fetch(
-      apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`)
+      apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`),
+      { headers: { ...(await authHeader()) } }
     );
     const data = await res.json();
 
@@ -210,7 +212,8 @@ const Receipts = ({ selectedUser }) => {
     if (!s3Key) throw new Error("Could not extract S3 key from URL");
 
     const res = await fetch(
-      apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`)
+      apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`),
+      { headers: { ...(await authHeader()) } }
     );
     const data = await res.json();
     if (!res.ok || !data.url) throw new Error(data.error || "Failed to get download URL");
