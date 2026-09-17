@@ -28,6 +28,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faDownload, faCircleInfo, faTimes } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { apiUrl, ROUTES, S3_BUCKET_NAME, normalizeReceiptUrl } from "../config/api";
+import { authHeader } from "../utils/apiFetch";
 import { Helmet } from "react-helmet";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
@@ -318,7 +319,7 @@ const MesobFinancial2 = () => {
         apiUrl(`${ROUTES.TRANSACTION}/${selectedUnpaidTransaction.id}`),
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...(await authHeader()) },
           body: JSON.stringify({
             userId: localStorage.getItem("userId"),
             installmentAmount: parseFloat(installmentAmount),
@@ -347,7 +348,7 @@ const MesobFinancial2 = () => {
         apiUrl(ROUTES.TRANSACTION),
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...(await authHeader()) },
           body: JSON.stringify({
             userId: localStorage.getItem("userId"),
             transactionType: "Pay",
@@ -424,7 +425,8 @@ const MesobFinancial2 = () => {
       }
 
       const res = await fetch(
-        apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`)
+        apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`),
+        { headers: { ...(await authHeader()) } }
       );
       const data = await res.json();
 
@@ -937,7 +939,7 @@ const MesobFinancial2 = () => {
         apiUrl(ROUTES.RECEIPT),
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...(await authHeader()) },
           body: JSON.stringify(payload),
         }
       );
@@ -1004,7 +1006,7 @@ const MesobFinancial2 = () => {
           apiUrl(`${ROUTES.TRANSACTION}/${transaction.id}`),
           {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...(await authHeader()) },
             body: JSON.stringify(updatedTransaction),
           }
         );

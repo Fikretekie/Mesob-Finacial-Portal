@@ -451,65 +451,28 @@ const SignupPage = () => {
       });
       console.log(`✅ Cognito sign-up successful [env: ${CURRENT_ENV}]`, res);
 
-      try {
-        // Database Update for email/password users
-        const response = await axios.put(
-          apiUrl(`${ROUTES.USERS}/${res.userId}`),
-          data
-        );
+      // Do NOT write the user record here. A just-signed-up Cognito user is
+      // unconfirmed and has no session/token yet, and the API now requires a
+      // Cognito token (authorizer). Creating the record happens in Confirm.js
+      // after confirmSignUp + signIn, when a real token exists. Carry the
+      // payload and the Cognito sub (res.userId) forward.
+      setLoading(false);
+      showNotification("success", "Signup successful! Check your email for the code.");
 
-        console.log("Email signup response:", response);
-
-        if (response.status === 200) {
-          // Local storage setup for email users
-          localStorage.setItem("userId", response.data.id);
-          localStorage.setItem("user_email", email);
-          localStorage.setItem("user_name", name);
-          localStorage.setItem("role", "2");
-          localStorage.setItem("businessType", businessTypeValue);
-          setLoading(false);
-
-          showNotification("success", "Signup successful!");
-
-          // Redirect to confirmation page for email users (2FA)
-          setTimeout(() => {
-            setLoading(false);
-
-            navigate("/confirm", {
-              state: {
-                email,
-                id: response.data.id,
-                phone_number: phone,
-                name: name, // <-- add name here
-                password,
-              },
-            });
-          }, 1000);
-        }
-      } catch (dbError) {
+      setTimeout(() => {
         setLoading(false);
-
-        console.error("Email signup database error:", dbError);
-
-        // Handle existing user in database
-        if (dbError.response?.status === 409) {
-          setLoading(false);
-
-          showNotification(
-            "danger",
-            "User already exists in our system. Please login."
-          );
-        } else {
-          setLoading(false);
-
-          showNotification(
-            "danger",
-            "Error saving user data. Please try again."
-          );
-        }
-
-        return;
-      }
+        navigate("/confirm", {
+          state: {
+            email,
+            id: res.userId,
+            userId: res.userId,
+            phone_number: phone,
+            name: name,
+            password,
+            data,
+          },
+        });
+      }, 1000);
     } catch (cognitoError) {
       setLoading(false);
 
