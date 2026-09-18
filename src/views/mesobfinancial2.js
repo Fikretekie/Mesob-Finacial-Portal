@@ -155,6 +155,11 @@ const MesobFinancial2 = () => {
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editType, setEditType] = useState("");
+  const [editPurpose, setEditPurpose] = useState("");
+  const [editAmount, setEditAmount] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
   const [transactionType, setTransactionType] = useState("");
   const [transactionPurpose, setTransactionPurpose] = useState("");
   const [transactionAmount, setTransactionAmount] = useState("");
@@ -2218,6 +2223,56 @@ const MesobFinancial2 = () => {
     }
   };
 
+  const handleEdit = (transaction) => {
+    setEditingTransaction(transaction);
+    setEditType(transaction.transactionType || "Receive");
+    setEditPurpose(transaction.transactionPurpose || "");
+    setEditAmount(String(transaction.transactionAmount ?? ""));
+    setEditModalOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingTransaction) return;
+    const amt = parseFloat(editAmount);
+    if (!editPurpose.trim() || isNaN(amt)) {
+      notify("tr", "Please enter a purpose and a valid amount", "warning");
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      const updated = {
+        ...editingTransaction,
+        transactionType: editType,
+        transactionPurpose: editPurpose.trim(),
+        transactionAmount: amt,
+        updatedAt: new Date().toISOString(),
+      };
+      const res = await axios.put(
+        apiUrl(`${ROUTES.TRANSACTION}/${Number(editingTransaction.id)}`),
+        updated,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      if (res.status === 200) {
+        notify("tr", "Transaction updated successfully", "success");
+        setEditModalOpen(false);
+        setEditingTransaction(null);
+        await fetchTransactions();
+        await fetchUserInitialBalance();
+      } else {
+        throw new Error("Failed to update transaction");
+      }
+    } catch (error) {
+      console.error("Edit error:", error);
+      notify(
+        "tr",
+        error.response?.data?.message || "Failed to update transaction",
+        "danger"
+      );
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const handleOutstandingDebtDeletion = async (transaction) => {
     // When deleting an outstanding debt payment, we DON'T need to update the user table
     // because we're calculating it dynamically from transactions
@@ -3266,6 +3321,7 @@ const MesobFinancial2 = () => {
                         }
                         selectedTimeRange={selectedTimeRange}
                         handleDelete={handleDelete}
+                        handleEdit={handleEdit}
                         handleAddExpense={handleAddExpense}
                         handleReceiptClick={handleReceiptClick}
                         scheduleCount={scheduleCount}
@@ -4010,6 +4066,7 @@ const MesobFinancial2 = () => {
                         }
                         selectedTimeRange={selectedTimeRange}
                         handleDelete={handleDelete}
+                        handleEdit={handleEdit}
                         handleAddExpense={handleAddExpense}
                         handleReceiptClick={handleReceiptClick}
                         scheduleCount={scheduleCount}
@@ -4302,6 +4359,60 @@ const MesobFinancial2 = () => {
             </Col>
           </Row>
         </Container>
+        <Modal isOpen={editModalOpen} toggle={() => setEditModalOpen(false)}>
+          <ModalHeader toggle={() => setEditModalOpen(false)}>
+            {t('financialReport.editTransaction')}
+          </ModalHeader>
+          <ModalBody>
+            <FormGroup>
+              <Label>Type</Label>
+              <Input
+                type="select"
+                value={editType}
+                onChange={(e) => setEditType(e.target.value)}
+              >
+                {!["Receive", "Pay"].includes(editType) && (
+                  <option value={editType}>{editType}</option>
+                )}
+                <option value="Receive">Receive</option>
+                <option value="Pay">Pay</option>
+              </Input>
+            </FormGroup>
+            <FormGroup>
+              <Label>Purpose</Label>
+              <Input
+                type="text"
+                value={editPurpose}
+                onChange={(e) => setEditPurpose(e.target.value)}
+                placeholder="Transaction purpose"
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>Amount</Label>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                value={editAmount}
+                onChange={(e) => setEditAmount(e.target.value)}
+                placeholder="0.00"
+              />
+            </FormGroup>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="secondary"
+              onClick={() => setEditModalOpen(false)}
+              disabled={savingEdit}
+            >
+              Cancel
+            </Button>
+            <Button color="primary" onClick={handleSaveEdit} disabled={savingEdit}>
+              {savingEdit ? <Spinner size="sm" /> : "Save"}
+            </Button>
+          </ModalFooter>
+        </Modal>
+
         {/* <Modal
           isOpen={showDeleteConfirmation}
           toggle={() => setShowDeleteConfirmation(false)}
