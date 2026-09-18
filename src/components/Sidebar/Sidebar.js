@@ -35,8 +35,8 @@ function Sidebar(props) {
           className="logo"
           style={{
             background:
-              "radial-gradient(140% 96% at 50% 54%, rgba(9,13,22,0.96) 0%, rgba(9,13,22,0.9) 48%, rgba(9,13,22,0.4) 72%, rgba(9,13,22,0) 90%)",
-            padding: "20px 12px 18px",
+              "linear-gradient(180deg, rgba(9,13,22,0.97) 0%, rgba(9,13,22,0.88) 34%, rgba(9,13,22,0.45) 68%, rgba(9,13,22,0) 100%)",
+            padding: "22px 12px 30px",
             borderRadius: "0",
             margin: "0",
             border: "none",

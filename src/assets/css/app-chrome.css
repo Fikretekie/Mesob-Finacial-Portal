@@ -915,3 +915,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   background-color: transparent !important;
   background-image: none !important;
 }
+
+/* ---- Mobile navbar: the absolutely-centered company name overlapped the
+   account chip on narrow screens. Hide it under 768px (brand/logo already
+   identify the app); keep the controls on one clean row. ---- */
+@media (max-width: 767px) {
+  .navbar h3 { display: none !important; }
+}
