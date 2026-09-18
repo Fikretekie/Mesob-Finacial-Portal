@@ -357,7 +357,7 @@ function DemoNavbar(props) {
             >
               <h3
                 style={{
-                  color: "#ffffff",
+                  color: "var(--text-1)",
                   margin: 0,
                   fontSize: "clamp(12px, 3vw, 18px)",
                   whiteSpace: "nowrap",

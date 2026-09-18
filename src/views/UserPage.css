@@ -11,13 +11,13 @@
 .profile-page-nav.nav-tabs .nav-link {
   min-width: 0;
   background-color: #000000 !important;
-  color: #94a3b8 !important;
+  color: var(--text-3) !important;
   border-color: #2d3a4f !important;
 }
 
 .profile-page-nav.nav-tabs .nav-link:hover {
   background-color: #0d0d0d !important;
-  color: #cbd5e1 !important;
+  color: var(--text-2) !important;
 }
 
 .profile-page-nav.nav-tabs .nav-link.active {

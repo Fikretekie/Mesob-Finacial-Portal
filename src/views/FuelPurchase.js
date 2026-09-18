@@ -111,7 +111,7 @@ function FuelPurchase() {
                     className="form-control"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #3a4555", color: "#fff" }}
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-1)" }}
                   />
                 </div>
                 <div>
@@ -122,7 +122,7 @@ function FuelPurchase() {
                     className="form-control"
                     value={state}
                     onChange={(e) => setState(e.target.value)}
-                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #3a4555", color: "#fff" }}
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-1)" }}
                   >
                     <option value="">{t("fuelPurchase.selectState")}</option>
                     {US_STATES.map((s) => (
@@ -146,7 +146,7 @@ function FuelPurchase() {
                     className="form-control"
                     value={gallons}
                     onChange={(e) => setGallons(e.target.value)}
-                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #3a4555", color: "#fff" }}
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-1)" }}
                   />
                 </div>
                 <div>
@@ -160,7 +160,7 @@ function FuelPurchase() {
                     className="form-control"
                     value={pricePerGallon}
                     onChange={(e) => setPricePerGallon(e.target.value)}
-                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #3a4555", color: "#fff" }}
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-1)" }}
                   />
                 </div>
                 <div>
@@ -174,7 +174,7 @@ function FuelPurchase() {
                     className="form-control"
                     value={totalCost}
                     onChange={(e) => setTotalCost(e.target.value)}
-                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #3a4555", color: "#fff" }}
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-1)" }}
                   />
                 </div>
               </div>
@@ -187,7 +187,7 @@ function FuelPurchase() {
                   background: "#096afa",
                   border: "none",
                   borderRadius: "3px",
-                  color: "#fff",
+                  color: "var(--text-1)",
                   fontWeight: 600,
                   fontSize: "15px",
                   padding: "12px",

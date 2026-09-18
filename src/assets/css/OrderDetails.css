@@ -48,7 +48,7 @@
 }
 
 .order-table tbody tr:nth-child(odd) {
-  background-color: #fff;
+  background-color: var(--text-1);
 }
 
 .order-table img {

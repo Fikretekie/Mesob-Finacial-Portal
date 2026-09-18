@@ -235,9 +235,9 @@ function Users() {
                       className="w-100"
                       style={{ 
                         minWidth: "200px",
-                        backgroundColor: "#101926",
-                        color: "#ffffff",
-                        borderColor: "#ffffff",
+                        backgroundColor: "var(--surface-2)",
+                        color: "var(--text-1)",
+                        borderColor: "var(--text-1)",
                       }}
                     />
                   </div>
@@ -283,8 +283,8 @@ function Users() {
                       customStyles={{
                         headCells: {
                           style: {
-                            backgroundColor: "#101926",
-                            color: "#ffffff",
+                            backgroundColor: "var(--surface-2)",
+                            color: "var(--text-1)",
                             fontWeight: "bold",
                             fontSize: "14px",
                             borderBottom: "1px solid #817646",
@@ -294,14 +294,14 @@ function Users() {
                           style: {
                             fontSize: "14px",
                             padding: "8px",
-                            color: "#ffffff",
-                            backgroundColor: "#101926",
+                            color: "var(--text-1)",
+                            backgroundColor: "var(--surface-2)",
                             borderBottom: "1px solid rgba(129, 118, 70, 0.2)",
                           },
                         },
                         rows: {
                           style: {
-                            backgroundColor: "#101926",
+                            backgroundColor: "var(--surface-2)",
                             border: "none",
                             "&:hover": {
                               backgroundColor: "#1a2332 !important",
@@ -312,8 +312,8 @@ function Users() {
                         },
                         pagination: {
                           style: {
-                            backgroundColor: "#101926",
-                            color: "#ffffff",
+                            backgroundColor: "var(--surface-2)",
+                            color: "var(--text-1)",
                             borderTop: "1px solid #817646",
                           },
                         },

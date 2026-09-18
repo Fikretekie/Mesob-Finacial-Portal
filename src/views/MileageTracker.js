@@ -281,10 +281,10 @@ function MileageTracker() {
                   boxShadow: "0 8px 24px rgba(9,106,250,0.35)",
                 }}
               >
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="var(--text-1)" stroke="none">
                   <path d="M7 5l12 7-12 7V5z" />
                 </svg>
-                <span style={{ fontWeight: 700, fontSize: "15px", color: "#fff", letterSpacing: "0.3px", textTransform: "uppercase" }}>
+                <span style={{ fontWeight: 700, fontSize: "15px", color: "var(--text-1)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
                   {t("mileageTracker.startTrip")}
                 </span>
               </Button>
@@ -305,10 +305,10 @@ function MileageTracker() {
                   boxShadow: "0 0 0 10px rgba(229,62,62,0.15), 0 8px 24px rgba(229,62,62,0.35)",
                 }}
               >
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="var(--text-1)" stroke="none">
                   <rect x="5" y="5" width="14" height="14" rx="1.5" />
                 </svg>
-                <span style={{ fontWeight: 700, fontSize: "15px", color: "#fff", letterSpacing: "0.3px", textTransform: "uppercase" }}>
+                <span style={{ fontWeight: 700, fontSize: "15px", color: "var(--text-1)", letterSpacing: "0.3px", textTransform: "uppercase" }}>
                   {t("mileageTracker.stopTrip")}
                 </span>
               </Button>
@@ -321,7 +321,7 @@ function MileageTracker() {
                   {t("mileageTracker.miles")}
                 </span>
               </div>
-              <div style={{ width: "1px", height: "32px", background: "#3a4555" }} />
+              <div style={{ width: "1px", height: "32px", background: "var(--border)" }} />
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
                 <span style={{ fontSize: "20px", fontWeight: 700 }}>{formatElapsed(elapsedSeconds)}</span>
                 <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.6px", color: "#9A9A9A", textTransform: "uppercase" }}>
@@ -360,7 +360,7 @@ function MileageTracker() {
             style={{
               width: "100%",
               maxWidth: "480px",
-              background: "#101926",
+              background: "var(--surface-2)",
               borderRadius: "14px 14px 0 0",
               boxShadow: "0 -8px 30px rgba(0,0,0,0.45)",
               padding: "20px 20px 28px",
@@ -369,10 +369,10 @@ function MileageTracker() {
               gap: "16px",
             }}
           >
-            <div style={{ width: "36px", height: "4px", borderRadius: "2px", background: "#3a4555", alignSelf: "center" }} />
+            <div style={{ width: "36px", height: "4px", borderRadius: "2px", background: "var(--border)", alignSelf: "center" }} />
 
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: "8px" }}>
-              <span style={{ fontSize: "26px", fontWeight: 700, color: "#00D97E" }}>
+              <span style={{ fontSize: "26px", fontWeight: 700, color: "var(--green)" }}>
                 {pendingTrip.miles.toFixed(2)} mi
               </span>
               <span style={{ fontSize: "13px", color: "#9A9A9A" }}>
@@ -386,7 +386,7 @@ function MileageTracker() {
                 style={{
                   cursor: "pointer",
                   background: tripType === "business" ? "rgba(9,106,250,0.14)" : "rgba(255,255,255,0.04)",
-                  border: `1.5px solid ${tripType === "business" ? "#096afa" : "#3a4555"}`,
+                  border: `1.5px solid ${tripType === "business" ? "#096afa" : "var(--border)"}`,
                   borderRadius: "3px",
                   padding: "16px 10px",
                   display: "flex",
@@ -399,14 +399,14 @@ function MileageTracker() {
                   <rect x="3" y="7" width="18" height="12" rx="2" />
                   <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                 </svg>
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff" }}>{t("mileageTracker.business")}</span>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-1)" }}>{t("mileageTracker.business")}</span>
               </div>
               <div
                 onClick={() => setTripType("personal")}
                 style={{
                   cursor: "pointer",
                   background: tripType === "personal" ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
-                  border: `1.5px solid ${tripType === "personal" ? "#9A9A9A" : "#3a4555"}`,
+                  border: `1.5px solid ${tripType === "personal" ? "#9A9A9A" : "var(--border)"}`,
                   borderRadius: "3px",
                   padding: "16px 10px",
                   display: "flex",
@@ -439,7 +439,7 @@ function MileageTracker() {
                   className="form-control"
                   value={purposeIndex}
                   onChange={(e) => setPurposeIndex(Number(e.target.value))}
-                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #3a4555", color: "#fff" }}
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-1)" }}
                 >
                   {PURPOSE_OPTIONS.map((p, i) => (
                     <option key={p} value={i}>{p}</option>
@@ -451,7 +451,7 @@ function MileageTracker() {
                   placeholder={t("mileageTracker.notePlaceholder")}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #3a4555", color: "#fff" }}
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-1)" }}
                 />
               </div>
             )}
@@ -464,7 +464,7 @@ function MileageTracker() {
                 background: "#096afa",
                 border: "none",
                 borderRadius: "3px",
-                color: "#fff",
+                color: "var(--text-1)",
                 fontWeight: 600,
                 fontSize: "15px",
                 padding: "15px",

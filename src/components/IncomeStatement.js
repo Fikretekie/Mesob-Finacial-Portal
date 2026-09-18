@@ -74,7 +74,7 @@ const IncomeStatement = ({ items = [] }) => {
             {Object.entries(revenues).map(([purpose, amount]) => (
               <tr key={`revenue-${purpose}`}>
                 <td>{purpose}</td>
-                <td style={{ backgroundColor: "#fff" }}>
+                <td style={{ backgroundColor: "var(--text-1)" }}>
                   ${amount.toFixed(2)}
                 </td>
               </tr>
@@ -97,7 +97,7 @@ const IncomeStatement = ({ items = [] }) => {
             {Object.entries(expenses).map(([purpose, amount]) => (
               <tr key={`expense-${purpose}`}>
                 <td>{purpose}</td>
-                <td style={{ backgroundColor: "#fff" }}>
+                <td style={{ backgroundColor: "var(--text-1)" }}>
                   ${amount.toFixed(2)}
                 </td>
               </tr>

@@ -34,11 +34,11 @@ function Sidebar(props) {
         <div
           className="logo"
           style={{
-            background: "linear-gradient(180deg, #0e1626, #0a111e)",
-            padding: "12px",
+            background: "#0b1220",
+            padding: "14px 12px",
             borderRadius: "12px",
-            margin: "8px 10px 6px",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
+            margin: "6px 10px 10px",
+            border: "1px solid rgba(255,255,255,0.06)",
           }}
         >
           <a
