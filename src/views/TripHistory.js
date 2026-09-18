@@ -28,9 +28,9 @@ function StatTile({ icon, iconBg, label, value, sub }) {
         <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: iconBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
           {icon}
         </div>
-        <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.6px", color: "#9A9A9A", textTransform: "uppercase" }}>{label}</span>
-        <span style={{ fontSize: "20px", fontWeight: 700 }}>{value}</span>
-        {sub && <span style={{ fontSize: "10px", color: "#9A9A9A" }}>{sub}</span>}
+        <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.6px", color: "var(--text-3)", textTransform: "uppercase" }}>{label}</span>
+        <span style={{ fontSize: "20px", fontWeight: 700, color: "var(--text-1)" }}>{value}</span>
+        {sub && <span style={{ fontSize: "10px", color: "var(--text-3)" }}>{sub}</span>}
       </CardBody>
     </Card>
   );
@@ -76,7 +76,7 @@ function TripHistory() {
     return (
       <div className="content">
         <PanelHeader size="sm" />
-        <div style={{ textAlign: "center", padding: "40px", color: "#9A9A9A" }}>{t("tripHistory.loading")}</div>
+        <div style={{ textAlign: "center", padding: "40px", color: "var(--text-3)" }}>{t("tripHistory.loading")}</div>
       </div>
     );
   }
@@ -146,13 +146,13 @@ function TripHistory() {
                       background: isSelected ? "#096afa" : "transparent",
                     }}
                   >
-                    <span style={{ fontSize: "10px", color: isSelected ? "var(--text-1)" : "#9A9A9A" }}>
+                    <span style={{ fontSize: "10px", color: isSelected ? "var(--text-1)" : "var(--text-3)" }}>
                       {d.toLocaleDateString("en-US", { weekday: "short" })}
                     </span>
                     <span style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-1)" }}>
                       {d.getDate()}
                     </span>
-                    <span style={{ fontSize: "10px", color: isSelected ? "rgba(255,255,255,0.85)" : "#9A9A9A" }}>
+                    <span style={{ fontSize: "10px", color: isSelected ? "var(--text-1)" : "var(--text-3)" }}>
                       {total.toFixed(1)} mi
                     </span>
                   </div>
@@ -166,12 +166,12 @@ function TripHistory() {
           <span style={{ fontSize: "15px", fontWeight: 600 }}>
             {new Date(selectedDateKey + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
           </span>
-          <span style={{ fontSize: "12px", color: "#9A9A9A" }}>{dayTotal.toFixed(1)} {t("tripHistory.miTotal")}</span>
+          <span style={{ fontSize: "12px", color: "var(--text-3)" }}>{dayTotal.toFixed(1)} {t("tripHistory.miTotal")}</span>
         </div>
 
         {dayTrips.length === 0 ? (
           <Card>
-            <CardBody style={{ textAlign: "center", padding: "24px", color: "#9A9A9A", fontSize: "13px" }}>
+            <CardBody style={{ textAlign: "center", padding: "24px", color: "var(--text-3)", fontSize: "13px" }}>
               {t("tripHistory.noTrips")}
             </CardBody>
           </Card>
@@ -194,12 +194,12 @@ function TripHistory() {
                     {trip.type === "business" ? (
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#096afa" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="7" width="18" height="12" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
                     ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9A9A9A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 11l8-7 8 7" /><path d="M6 10v9h12v-9" /></svg>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 11l8-7 8 7" /><path d="M6 10v9h12v-9" /></svg>
                     )}
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                     <span style={{ fontSize: "13px", fontWeight: 600 }}>{trip.purpose || "Trip"}</span>
-                    <span style={{ fontSize: "11px", color: "#9A9A9A" }}>
+                    <span style={{ fontSize: "11px", color: "var(--text-3)" }}>
                       {trip.time} · {Math.round((trip.durationSeconds || 0) / 60)} {t("tripHistory.min")}
                     </span>
                     {trip.note && <span style={{ fontSize: "11px", color: "#096afa" }}>{trip.note}</span>}
@@ -213,7 +213,7 @@ function TripHistory() {
                       fontWeight: 700,
                       letterSpacing: "0.4px",
                       textTransform: "uppercase",
-                      color: trip.type === "business" ? "#096afa" : "#9A9A9A",
+                      color: trip.type === "business" ? "#096afa" : "var(--text-3)",
                     }}
                   >
                     {trip.type === "business" ? t("mileageTracker.business") : t("mileageTracker.personal")}

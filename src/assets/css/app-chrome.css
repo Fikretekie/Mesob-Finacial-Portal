@@ -927,3 +927,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
    (#101926) and showed through the transparent navbar as a dark strip in
    light mode (most visible on mobile), and at any uncovered edge. ---- */
 html, body { background-color: var(--bg) !important; }
+
+/* ---- Base content text follows the theme. Newer pages (Mileage/Fuel/IFTA/
+   Trip) have text (e.g. stat-tile values) with no explicit color that used to
+   inherit white — invisible in light mode. Default content + cards to
+   var(--text-1); elements with their own color still win. ---- */
+.main-panel { color: var(--text-1); }
+.main-panel .card,
+.main-panel .card-body { color: var(--text-1); }
