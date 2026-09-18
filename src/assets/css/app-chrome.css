@@ -935,3 +935,19 @@ html, body { background-color: var(--bg) !important; }
 .main-panel { color: var(--text-1); }
 .main-panel .card,
 .main-panel .card-body { color: var(--text-1); }
+
+/* ---- Native <select> dropdowns (State/Quarter/Year on Mileage/Fuel/IFTA and
+   modal selects). Some set a near-transparent inline bg, and their option
+   popups didn't follow the theme (unreadable in dark). Force a solid field +
+   themed options in both modes. ---- */
+.main-panel select,
+.modal-content select {
+  background-color: var(--surface-3) !important;
+  color: var(--text-1) !important;
+  border: 1px solid var(--border-strong) !important;
+  color-scheme: light dark;
+}
+select option {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
