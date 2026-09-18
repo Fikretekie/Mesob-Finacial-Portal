@@ -907,3 +907,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 .modal-content .form-control::placeholder { color: var(--text-3) !important; }
 .modal-content select.form-control { color-scheme: light dark; }
+
+/* ---- Kill the template's dark page-header banner (#101926 black rectangle
+   that showed below the navbar on Mileage/Fuel/IFTA/Trip/etc.). Content sits
+   on the app background instead, in both themes. ---- */
+.panel-header {
+  background-color: transparent !important;
+  background-image: none !important;
+}
