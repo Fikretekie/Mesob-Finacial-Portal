@@ -45,18 +45,18 @@ const userSelectStyles = {
     height: "38px",
     backgroundColor: "var(--surface-3) !important",
     borderColor: "var(--border) !important",
-    color: "#ffffff !important",
+    color: "var(--text-1) !important",
   }),
   valueContainer: (provided) => ({
     ...provided,
     height: "38px",
     padding: "0 6px",
-    color: "#ffffff !important",
+    color: "var(--text-1) !important",
   }),
   input: (provided) => ({
     ...provided,
     margin: "0px",
-    color: "#ffffff !important",
+    color: "var(--text-1) !important",
   }),
   indicatorsContainer: (provided) => ({
     ...provided,
@@ -64,7 +64,7 @@ const userSelectStyles = {
   }),
   singleValue: (provided) => ({
     ...provided,
-    color: "#ffffff !important",
+    color: "var(--text-1) !important",
   }),
   placeholder: (provided) => ({
     ...provided,
@@ -77,7 +77,7 @@ const userSelectStyles = {
   option: (provided, state) => ({
     ...provided,
     backgroundColor: state.isFocused ? "var(--border)" : "var(--surface-3)",
-    color: "#ffffff",
+    color: "var(--text-1)",
   }),
 };
 
@@ -608,7 +608,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
       )}
       <Button
         size="sm"
-        style={{ backgroundColor: "var(--accent)", borderColor: "var(--accent)", color: "#fff" }}
+        style={{ backgroundColor: "var(--accent)", borderColor: "var(--accent)", color: "var(--accent-ink)" }}
         onClick={() => handleDownload(doc)}
         aria-label={t("documents.download")}
         title={t("documents.download")}
@@ -619,7 +619,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
         <Button
           size="sm"
           disabled={deletingKey === (doc.key || doc.s3Key)}
-          style={{ backgroundColor: "#dc2626", borderColor: "#b91c1c", color: "#fff" }}
+          style={{ backgroundColor: "#dc2626", borderColor: "#b91c1c", color: "var(--accent-ink)" }}
           onClick={() => handleDelete(doc)}
           aria-label={t("documents.delete")}
           title={t("documents.delete")}
@@ -655,7 +655,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
                 <CardHeader style={{ backgroundColor: "var(--surface-2)" }} />
                 <CardBody style={{ paddingBottom: "15px", backgroundColor: "var(--surface-2)" }}>
                   <FormGroup style={{ marginBottom: 0 }}>
-                    <Label style={{ color: "#ffffff" }}>
+                    <Label style={{ color: "var(--text-1)" }}>
                       {t("documents.selectUserToView")}
                     </Label>
                     <Select

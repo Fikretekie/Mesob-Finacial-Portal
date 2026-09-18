@@ -63,7 +63,7 @@ const styles = {
     marginBottom: "0.875rem",
     lineHeight: 1.2,
   },
-  accent: { color: "white" },
+  accent: { color: "var(--text-1)" },
   subtitle: {
     color: "var(--text-3)",
     fontSize: "clamp(0.9rem, 4vw, 1rem)", // ← more readable
