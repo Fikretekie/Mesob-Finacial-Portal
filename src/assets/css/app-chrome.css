@@ -100,8 +100,10 @@ h1, h2, h3, h4, h5, h6,
 /* Active row — blue "you are here" edge + tint (blue is our brand accent). */
 .sidebar .nav li.active > .nav-link {
   position: relative;
-  background: var(--accent-soft) !important;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.30), rgba(59, 130, 246, 0.12)) !important;
   color: var(--text-1) !important;
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.40),
+    0 8px 18px -10px rgba(59, 130, 246, 0.55);
 }
 .sidebar .nav li.active > .nav-link i { color: var(--accent); }
 .sidebar .nav li.active > .nav-link::before {
@@ -857,3 +859,32 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
 }
+
+/* ---- Modal buttons + title: token-based so popups read in both themes ---- */
+/* Type-chooser / secondary buttons were Bootstrap navy → blended in dark. */
+.modal-content .btn-secondary,
+.transaction-type-btn.btn-secondary {
+  background: var(--surface-3) !important;
+  border: 1px solid var(--border-strong) !important;
+  color: var(--text-1) !important;
+}
+.modal-content .btn-secondary:hover,
+.transaction-type-btn.btn-secondary:hover {
+  background: var(--surface-hover) !important;
+  border-color: var(--accent) !important;
+  color: var(--text-1) !important;
+}
+.transaction-type-btn.btn-primary,
+.modal-content .btn-primary {
+  background: var(--accent-solid) !important;
+  border-color: var(--accent-solid) !important;
+  color: #fff !important;
+}
+/* Header title must be visible on both light and dark modal surfaces. */
+.modal-content .modal-header,
+.modal-content .modal-title,
+.modal-content .modal-header h5,
+.modal-content .modal-header h4 {
+  color: var(--text-1) !important;
+}
+.modal-content .modal-title { font-weight: 700 !important; }
