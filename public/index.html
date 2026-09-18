@@ -22,6 +22,17 @@
 
 <head>
   <meta charset="utf-8" />
+  <script>
+    /* Apply saved theme before paint to avoid a flash. Default: dark. */
+    (function () {
+      try {
+        var t = localStorage.getItem('mksv-theme');
+        document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
   <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.png" />
   <link rel="apple-touch-icon" sizes="76x76" href="%PUBLIC_URL%/favicon.png" />
 

@@ -1533,12 +1533,12 @@ const MesobFinancial2 = () => {
         onClick={() => setIsRevenueExpanded(!isRevenueExpanded)}
         style={{ cursor: "pointer" }}
       >
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
           <strong>
             {t("financialReport.revenue")} {isRevenueExpanded ? "▼" : "▶"}
           </strong>
         </td>
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
       </tr>
 
       {isRevenueExpanded &&
@@ -1570,12 +1570,12 @@ const MesobFinancial2 = () => {
 
             return (
               <tr key={`revenue-${purpose}`}>
-                <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+                <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
                   {translatePurpose(purpose)}
                 </td>
                 <td
                   style={{
-                    color: "#ffffff",
+                    color: "var(--text-1)",
                     padding: "8px",
                     border: "1px solid var(--border)",
                     textAlign: "right",
@@ -1623,13 +1623,13 @@ const MesobFinancial2 = () => {
         onClick={() => setIsOtherIncomeExpanded(!isOtherIncomeExpanded)}
         style={{ cursor: "pointer" }}
       >
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
           <strong>
             {t("businessTypes.income.otherIncome")}{" "}
             {isOtherIncomeExpanded ? "▼" : "▶"}
           </strong>
         </td>
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
       </tr>
 
       {isOtherIncomeExpanded &&
@@ -1637,7 +1637,7 @@ const MesobFinancial2 = () => {
           .filter(([purpose]) => isGainOnSalePurpose(purpose))
           .map(([purpose, amount]) => (
             <tr key={`other-income-${purpose}`}>
-              <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+              <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
                 {translatePurpose(purpose)}
               </td>
               <td
@@ -1689,12 +1689,12 @@ const MesobFinancial2 = () => {
         onClick={() => setIsExpenseExpanded(!isExpenseExpanded)}
         style={{ cursor: "pointer" }}
       >
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
           <strong>
             {t("financialReport.expenses")} {isExpenseExpanded ? "▼" : "▶"}
           </strong>
         </td>
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
       </tr>
 
       {isExpenseExpanded &&
@@ -1724,7 +1724,7 @@ const MesobFinancial2 = () => {
 
             return (
               <tr key={`expense-${purpose}`}>
-                <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+                <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
                   {translatePurpose(purpose)}
                 </td>
                 <td
@@ -1777,13 +1777,13 @@ const MesobFinancial2 = () => {
         onClick={() => setIsOtherExpenseExpanded(!isOtherExpenseExpanded)}
         style={{ cursor: "pointer" }}
       >
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
           <strong>
             {t("financialReport.otherExpense")}{" "}
             {isOtherExpenseExpanded ? "▼" : "▶"}
           </strong>
         </td>
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
       </tr>
 
       {isOtherExpenseExpanded &&
@@ -1791,7 +1791,7 @@ const MesobFinancial2 = () => {
           .filter(([purpose]) => isLossOnSalePurpose(purpose))
           .map(([purpose, amount]) => (
             <tr key={`other-expense-${purpose}`}>
-              <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+              <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
                 {translatePurpose(purpose)}
               </td>
               <td
@@ -1840,7 +1840,7 @@ const MesobFinancial2 = () => {
       </tr>
 
       <tr>
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
           <strong>
             {parseFloat(calculateTotalRevenue()) - parseFloat(calculateTotalExpenses()) < 0
               ? t("financialReport.netLoss")
@@ -2751,11 +2751,11 @@ const MesobFinancial2 = () => {
                           minHeight: "38px",
                           height: "38px",
                           backgroundColor: "transparent",
-                          color: "#ffffff",
-                          borderColor: state.isFocused ? "#ffffff" : "#ffffff",
-                          boxShadow: state.isFocused ? "0 0 0 1px #ffffff" : "none",
+                          color: "var(--text-1)",
+                          borderColor: state.isFocused ? "var(--border-strong)" : "var(--border-strong)",
+                          boxShadow: state.isFocused ? "0 0 0 1px var(--border-strong)" : "none",
                           "&:hover": {
-                            borderColor: "#ffffff",
+                            borderColor: "var(--border-strong)",
                           },
                         }),
                         valueContainer: (provided) => ({
@@ -2766,15 +2766,15 @@ const MesobFinancial2 = () => {
                         input: (provided) => ({
                           ...provided,
                           margin: "0px",
-                          color: "#ffffff",
+                          color: "var(--text-1)",
                         }),
                         singleValue: (provided) => ({
                           ...provided,
-                          color: "#ffffff",
+                          color: "var(--text-1)",
                         }),
                         placeholder: (provided) => ({
                           ...provided,
-                          color: "#ffffff",
+                          color: "var(--text-1)",
                           opacity: 0.7,
                         }),
                         indicatorsContainer: (provided) => ({
@@ -2784,7 +2784,7 @@ const MesobFinancial2 = () => {
                         menu: (provided) => ({
                           ...provided,
                           backgroundColor: "transparent",
-                          border: "1px solid #ffffff",
+                          border: "1px solid var(--border-strong)",
                         }),
                         menuList: (provided) => ({
                           ...provided,
@@ -2797,7 +2797,7 @@ const MesobFinancial2 = () => {
                             : state.isFocused
                               ? "var(--surface-3)"
                               : "transparent",
-                          color: "#ffffff",
+                          color: "var(--text-1)",
                           cursor: "pointer",
                           "&:active": {
                             backgroundColor: "#2b427d",
@@ -2906,7 +2906,7 @@ const MesobFinancial2 = () => {
                         style={{
                           backgroundColor: "var(--accent-solid)",
                           borderColor: "var(--accent-solid)",
-                          color: "#ffffff",
+                          color: "var(--accent-ink)",
                           height: "38px",
                           borderRadius: "var(--r-sm)",
                           padding: "0 16px",
@@ -3026,7 +3026,7 @@ const MesobFinancial2 = () => {
                   {loadingTransactions ? (
                     <div className="d-flex flex-column align-items-center justify-content-center" style={{ height: "100%", minHeight: "300px" }}>
                       <Spinner color="primary" />
-                      <p style={{ color: "#ffffff", marginTop: "1rem" }}>{t('financialReport.loadingTransactions')}</p>
+                      <p style={{ color: "var(--text-1)", marginTop: "1rem" }}>{t('financialReport.loadingTransactions')}</p>
                     </div>
                   ) : (
                     <div style={{ width: "100%" }}>
@@ -3142,7 +3142,7 @@ const MesobFinancial2 = () => {
                               width: "40%",
                               padding: "8px",
                               border: "1px solid var(--border)",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                             }}
                           >
                             <strong>{t('financialReport.assets')}</strong>
@@ -3153,7 +3153,7 @@ const MesobFinancial2 = () => {
                               textAlign: "right",
                               padding: "8px",
                               border: "1px solid var(--border)",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                             }}
                           >
                             <strong>{t('financialReport.amount2')}</strong>
@@ -3164,7 +3164,7 @@ const MesobFinancial2 = () => {
                               textAlign: "right",
                               padding: "8px",
                               border: "1px solid var(--border)",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                             }}
                           >
                             <strong>{t('financialReport.amount2')}</strong>
@@ -3174,15 +3174,15 @@ const MesobFinancial2 = () => {
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
                             {t('financialReport.currentAssets')}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>{t('financialReport.cash')}</td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>{t('financialReport.cash')}</td>
                           <td style={{ color: getBalanceColor(calculateTotalCash()), textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr
                           onClick={() => setIsInventoryExpanded(!isInventoryExpanded)}
@@ -3191,16 +3191,16 @@ const MesobFinancial2 = () => {
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
                             {t('financialReport.inventory')} {isInventoryExpanded ? "▼" : "▶"}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         {isInventoryExpanded && getInventoryBreakdown().map(({ name, balance }) => (
                           <tr key={name}>
-                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff", paddingLeft: "20px" }}>{name}</td>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", paddingLeft: "20px" }}>{name}</td>
                             <td style={{ color: FINANCIAL_COLORS.asset, textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                               $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
-                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           </tr>
                         ))}
                         <tr>
@@ -3210,7 +3210,7 @@ const MesobFinancial2 = () => {
                           <td style={{ color: FINANCIAL_COLORS.asset, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {parseFloat(calculateTotalInventory()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
@@ -3219,22 +3219,22 @@ const MesobFinancial2 = () => {
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
                             {t('financialReport.fixedAssets')}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         {getFixedAssetBreakdown().map(({ name, balance }) => (
                           <tr key={name}>
-                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff", paddingLeft: "20px" }}>{name}</td>
-                            <td style={{ color: "#ffffff", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", paddingLeft: "20px" }}>{name}</td>
+                            <td style={{ color: "var(--text-1)", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                               $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
-                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           </tr>
                         ))}
                         <tr>
@@ -3244,7 +3244,7 @@ const MesobFinancial2 = () => {
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {parseFloat(calculateTotalFixedAssets()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
@@ -3253,29 +3253,29 @@ const MesobFinancial2 = () => {
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff", fontWeight: "bold" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}
                           >
                             <strong>{t('financialReport.liabilitiesEquity')}</strong>
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           >
                             {t('financialReport.payable')}
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
                             style={{
@@ -3297,16 +3297,16 @@ const MesobFinancial2 = () => {
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           >
                             {t('financialReport.beginningEquity')}
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
                             style={{
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                               textAlign: "right",
                               padding: "8px",
                               border: "1px solid var(--border)",
@@ -3325,12 +3325,12 @@ const MesobFinancial2 = () => {
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           >
                             {t('financialReport.retainedEarnings')}
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
                             style={{
@@ -3360,7 +3360,7 @@ const MesobFinancial2 = () => {
                             <strong>{t('financialReport.totalLiabilitiesEquity')}</strong>
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
                             style={{
@@ -3447,7 +3447,7 @@ const MesobFinancial2 = () => {
                         border: "1px solid var(--border)",
                       })}
                     >
-                      <div style={{ marginBottom: "8px", color: "#ffffff", fontWeight: "bold", fontSize: "0.9rem" }}>
+                      <div style={{ marginBottom: "8px", color: "var(--text-1)", fontWeight: "bold", fontSize: "0.9rem" }}>
                         {t('financialReport.totalCashOnHand')}
                       </div>
                       <BalanceValue
@@ -3472,7 +3472,7 @@ const MesobFinancial2 = () => {
                         border: "1px solid var(--border)",
                       }}
                     >
-                      <div style={{ marginBottom: "8px", color: "#ffffff", fontWeight: "bold", fontSize: "0.9rem" }}>
+                      <div style={{ marginBottom: "8px", color: "var(--text-1)", fontWeight: "bold", fontSize: "0.9rem" }}>
                         {t('financialReport.totalPayable')}
                       </div>
                       <div
@@ -3498,7 +3498,7 @@ const MesobFinancial2 = () => {
                       {/* <div 
                         style={{ 
                           fontWeight: "bold", 
-                          color: "#ffffff", 
+                          color: "var(--text-1)", 
                           marginBottom: "12px", 
                           fontSize: "0.95rem",
                           display: "flex",
@@ -3515,7 +3515,7 @@ const MesobFinancial2 = () => {
                         </span>
                       </div>
                       {isBreakdownExpanded && ( */}
-                      {/* <div style={{ fontWeight: "bold", color: "#ffffff", marginBottom: "12px", fontSize: "0.95rem" }}>
+                      {/* <div style={{ fontWeight: "bold", color: "var(--text-1)", marginBottom: "12px", fontSize: "0.95rem" }}>
                         {t('financialReport.breakdown')}
                       </div> */}
                       <div style={{ marginTop: "0px" }}>
@@ -3531,7 +3531,7 @@ const MesobFinancial2 = () => {
                           <div
                             style={{
                               marginBottom: "8px",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                               fontWeight: "bold",
                               fontSize: "0.9rem",
                             }}
@@ -3592,8 +3592,8 @@ const MesobFinancial2 = () => {
                                     alignItems: "center",
                                   }}
                                 >
-                                  <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                                    <span style={{ color: "#ffffff", fontSize: "0.9rem", marginLeft: "10px" }}>
+                                  <span style={{ color: "var(--text-1)", fontSize: "0.9rem" }}>
+                                    <span style={{ color: "var(--text-1)", fontSize: "0.9rem", marginLeft: "10px" }}>
                                       {translatePurpose(purpose)}:
                                     </span>
                                   </span>
@@ -3626,7 +3626,7 @@ const MesobFinancial2 = () => {
                           <div
                             style={{
                               marginBottom: "8px",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                               fontWeight: "bold",
                               fontSize: "0.9rem",
                             }}
@@ -3724,7 +3724,7 @@ const MesobFinancial2 = () => {
                                     alignItems: "center",
                                   }}
                                 >
-                                  <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
+                                  <span style={{ color: "var(--text-1)", fontSize: "0.9rem" }}>
                                     {purpose}:
                                   </span>
                                   <span
@@ -3771,7 +3771,7 @@ const MesobFinancial2 = () => {
                   {loadingTransactions ? (
                     <div className="d-flex flex-column align-items-center justify-content-center" style={{ height: "100%", minHeight: "300px" }}>
                       <Spinner color="primary" />
-                      <p style={{ color: "#ffffff", marginTop: "1rem" }}>Loading transactions...</p>
+                      <p style={{ color: "var(--text-1)", marginTop: "1rem" }}>Loading transactions...</p>
                     </div>
                   ) : (
                     <div style={{ width: "100%" }}>
@@ -3865,27 +3865,27 @@ const MesobFinancial2 = () => {
                     >
                       <tbody>
                         <tr>
-                          <td style={{ width: "40%", padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+                          <td style={{ width: "40%", padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
                             <strong>{t('financialReport.assets')}</strong>
                           </td>
-                          <td style={{ width: "30%", textAlign: "right", padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+                          <td style={{ width: "30%", textAlign: "right", padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
                             <strong>{t('financialReport.amount2')}</strong>
                           </td>
-                          <td style={{ width: "30%", textAlign: "right", padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+                          <td style={{ width: "30%", textAlign: "right", padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
                             <strong>{t('financialReport.amount2')}</strong>
                           </td>
                         </tr>
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>{t('financialReport.currentAssets')}</td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>{t('financialReport.cash')}</td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>{t('financialReport.cash')}</td>
                           <td style={{ color: getBalanceColor(calculateTotalCash()), textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr
                           onClick={() => setIsInventoryExpanded(!isInventoryExpanded)}
@@ -3894,16 +3894,16 @@ const MesobFinancial2 = () => {
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
                             {t('financialReport.inventory')} {isInventoryExpanded ? "▼" : "▶"}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         {isInventoryExpanded && getInventoryBreakdown().map(({ name, balance }) => (
                           <tr key={`bs2-inv-${name}`}>
-                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff", paddingLeft: "20px" }}>{name}</td>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", paddingLeft: "20px" }}>{name}</td>
                             <td style={{ color: FINANCIAL_COLORS.asset, textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                               $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
-                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           </tr>
                         ))}
                         <tr>
@@ -3913,27 +3913,27 @@ const MesobFinancial2 = () => {
                           <td style={{ color: FINANCIAL_COLORS.asset, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {parseFloat(calculateTotalInventory()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}><strong>{t('financialReport.totalCurrentAssets')}</strong></td>
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>{t('financialReport.fixedAssets')}</td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         {getFixedAssetBreakdown().map(({ name, balance }) => (
                           <tr key={`bs2-${name}`}>
-                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff", paddingLeft: "20px" }}>{name}</td>
-                            <td style={{ color: "#ffffff", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", paddingLeft: "20px" }}>{name}</td>
+                            <td style={{ color: "var(--text-1)", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                               $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
-                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           </tr>
                         ))}
                         <tr>
@@ -3941,32 +3941,32 @@ const MesobFinancial2 = () => {
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {parseFloat(calculateTotalFixedAssets()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}><strong>{t('financialReport.totalAssets')}</strong></td>
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff", fontWeight: "bold" }}>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
                             <strong>{t('financialReport.liabilitiesEquity')}</strong>
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           >
                             {t('financialReport.payable')}
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
                             style={{
@@ -3988,16 +3988,16 @@ const MesobFinancial2 = () => {
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           >
                             {t('financialReport.beginningEquity')}
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
                             style={{
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                               textAlign: "right",
                               padding: "8px",
                               border: "1px solid var(--border)",
@@ -4016,12 +4016,12 @@ const MesobFinancial2 = () => {
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           >
                             {t('financialReport.retainedEarnings')}
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
                             style={{
@@ -4051,7 +4051,7 @@ const MesobFinancial2 = () => {
                             <strong>{t('financialReport.totalLiabilitiesEquity')}</strong>
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
                             style={{
