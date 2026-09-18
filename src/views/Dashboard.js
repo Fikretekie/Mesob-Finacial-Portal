@@ -431,7 +431,7 @@ function Dashboard() {
                   marker: {
                     size: 5,
                     fillColor: color,
-                    strokeColor: "#0A0A0B",
+                    strokeColor: "var(--bg)",
                     strokeWidth: 2,
                     radius: 2,
                   },
@@ -441,8 +441,8 @@ function Dashboard() {
                     borderWidth: 1,
                     offsetY: -2,
                     style: {
-                      background: "#16181D",
-                      color: "#F4F6F8",
+                      background: "var(--surface-2)",
+                      color: "var(--text-1)",
                       fontSize: "11px",
                       fontFamily: "JetBrains Mono, monospace",
                       padding: { left: 8, right: 8, top: 4, bottom: 4 },
@@ -494,7 +494,7 @@ function Dashboard() {
           hideOverlappingLabels: true,
           style: {
             fontSize: "10px",
-            colors: "#7B828E",
+            colors: "var(--text-3)",
             fontFamily: "JetBrains Mono, monospace",
           },
         },
@@ -513,7 +513,7 @@ function Dashboard() {
             );
           },
           style: {
-            colors: "#7B828E",
+            colors: "var(--text-3)",
             fontSize: "10px",
             fontFamily: "JetBrains Mono, monospace",
           },
@@ -592,7 +592,7 @@ function Dashboard() {
         position: "top",
         horizontalAlign: "right",
         labels: {
-          colors: "#ffffff",
+          colors: "var(--text-1)",
         },
       },
     };
@@ -1120,7 +1120,7 @@ function Dashboard() {
                       style={{
                         backgroundColor: "var(--accent-solid)",
                         borderColor: "var(--accent-solid)",
-                        color: "#ffffff",
+                        color: "var(--accent-ink)",
                         height: "44px",
                         borderRadius: "10px",
                         width: "45%",
@@ -1158,7 +1158,7 @@ function Dashboard() {
             <Col xs={12}>
               <Card style={{ backgroundColor: "var(--surface-2)" }}>
                 <CardHeader>
-                  <CardTitle style={{ marginBottom: 0, color: "#ffffff" }} tag="h4">
+                  <CardTitle style={{ marginBottom: 0, color: "var(--text-1)" }} tag="h4">
                     {t('dashboard.selectUser')}
                   </CardTitle>
                 </CardHeader>
@@ -1179,22 +1179,22 @@ function Dashboard() {
                           minHeight: "38px",
                           height: "38px",
                           backgroundColor: "var(--surface-2)",
-                          color: "#ffffff",
-                          borderColor: state.isFocused ? "#ffffff" : "#ffffff",
-                          boxShadow: state.isFocused ? "0 0 0 1px #ffffff" : "none",
+                          color: "var(--text-1)",
+                          borderColor: state.isFocused ? "var(--text-1)" : "var(--text-1)",
+                          boxShadow: state.isFocused ? "0 0 0 1px var(--text-1)" : "none",
                           "&:hover": { borderColor: "var(--accent)" },
                         }),
                         valueContainer: (provided) => ({ ...provided, height: "38px", padding: "0 6px" }),
-                        input: (provided) => ({ ...provided, margin: "0px", color: "#ffffff" }),
-                        singleValue: (provided) => ({ ...provided, color: "#ffffff" }),
-                        placeholder: (provided) => ({ ...provided, color: "#ffffff", opacity: 0.7 }),
+                        input: (provided) => ({ ...provided, margin: "0px", color: "var(--text-1)" }),
+                        singleValue: (provided) => ({ ...provided, color: "var(--text-1)" }),
+                        placeholder: (provided) => ({ ...provided, color: "var(--text-1)", opacity: 0.7 }),
                         indicatorsContainer: (provided) => ({ ...provided, height: "38px" }),
-                        menu: (provided) => ({ ...provided, backgroundColor: "var(--surface-2)", border: "1px solid #ffffff" }),
+                        menu: (provided) => ({ ...provided, backgroundColor: "var(--surface-2)", border: "1px solid var(--text-1)" }),
                         menuList: (provided) => ({ ...provided, backgroundColor: "var(--surface-2)" }),
                         option: (provided, state) => ({
                           ...provided,
                           backgroundColor: state.isSelected ? "var(--accent-solid)" : state.isFocused ? "var(--surface-1)" : "var(--surface-2)",
-                          color: "#ffffff",
+                          color: "var(--text-1)",
                           cursor: "pointer",
                           "&:active": { backgroundColor: "var(--accent-solid)" },
                         }),
@@ -1674,7 +1674,7 @@ function Dashboard() {
                   );
                 }
                 const totalExp = rows.reduce((s, [, v]) => s + v, 0);
-                const expenseColors = ["#A855F7", "#C084FC", "#8B5CF6", "#7C3AED", "#6D28D9"];
+                const expenseColors = ["var(--purple)", "#C084FC", "#8B5CF6", "#7C3AED", "#6D28D9"];
                 const donutOptions = {
                   chart: {
                     type: "donut",
@@ -1686,7 +1686,7 @@ function Dashboard() {
                   colors: expenseColors,
                   legend: { show: false },
                   dataLabels: { enabled: false },
-                  stroke: { width: 2, colors: ["#0A0A0B"] },
+                  stroke: { width: 2, colors: ["var(--bg)"] },
                   tooltip: {
                     theme: "dark",
                     y: {
@@ -1700,9 +1700,9 @@ function Dashboard() {
                         size: "72%",
                         labels: {
                           show: true,
-                          name: { color: "#AEB6C2", fontSize: "11px", offsetY: 2 },
+                          name: { color: "var(--text-2)", fontSize: "11px", offsetY: 2 },
                           value: {
-                            color: "#F4F6F8",
+                            color: "var(--text-1)",
                             fontSize: "17px",
                             fontWeight: 700,
                             offsetY: 2,
@@ -1713,7 +1713,7 @@ function Dashboard() {
                             show: true,
                             showAlways: true,
                             label: t("dashboard.totalExpenses", "Total"),
-                            color: "#7B828E",
+                            color: "var(--text-3)",
                             fontSize: "10px",
                             formatter: () =>
                               `$${totalExp.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,

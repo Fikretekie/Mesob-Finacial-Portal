@@ -18,12 +18,12 @@
 /* Shared Cell Styles */
 .transaction-table th,
 .transaction-table td {
-  padding: 8px 8px;
+  padding: 12px 10px;
   text-align: left;
-  border-bottom: 1px solid #3a4555;
+  border-bottom: 1px solid var(--border);
   white-space: normal;
   overflow-wrap: break-word;
-  color: #ffffff;
+  color: var(--text-1);
 }
 
 /* Date */
@@ -90,7 +90,7 @@
 
 .journal-sale-txn {
   font-size: 13px;
-  color: #aaa;
+  color: var(--text-2);
   text-align: left;
   line-height: 1.35;
   min-width: 0;
@@ -99,7 +99,7 @@
 
 .journal-sale-txn-bold {
   font-weight: bold;
-  color: #ffffff;
+  color: var(--text-1);
 }
 
 .journal-sale-debit,
@@ -118,18 +118,29 @@
 
 /* Header */
 .transaction-table th {
-  background-color: #101926;
-  font-weight: bold;
-  color: #ffffff;
-  border-bottom: 1px solid #3a4555;
+  background-color: transparent;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 11px;
+  border-bottom: 1px solid var(--border);
+}
+/* Mono, tabular figures for date + serial columns (instrument look) */
+.transaction-table td:nth-child(1),
+.transaction-table td:nth-child(2) {
+  font-family: var(--font-mono, ui-monospace, "JetBrains Mono", Menlo, monospace);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+  font-size: 12px;
 }
 
 .transaction-table tr:hover {
-  background-color: #1a2332;
+  background-color: var(--surface-hover);
 }
 
 .transaction-table tbody tr {
-  background-color: #101926;
+  background-color: transparent;
 }
 
 /* Action Buttons */

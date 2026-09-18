@@ -84,7 +84,7 @@ function IftaReport() {
               <Button
                 onClick={handleExport}
                 disabled={loading || rows.length === 0}
-                style={{ background: "#096afa", border: "none", borderRadius: "3px", color: "#fff", fontWeight: 600, fontSize: "13px" }}
+                style={{ background: "#096afa", border: "none", borderRadius: "3px", color: "var(--text-1)", fontWeight: 600, fontSize: "13px" }}
               >
                 {t("iftaReport.exportCsv")}
               </Button>
@@ -99,7 +99,7 @@ function IftaReport() {
                   className="form-control"
                   value={quarter}
                   onChange={(e) => setQuarter(Number(e.target.value))}
-                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #3a4555", color: "#fff" }}
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-1)" }}
                 >
                   <option value={1}>Q1 (Jan–Mar)</option>
                   <option value={2}>Q2 (Apr–Jun)</option>
@@ -116,7 +116,7 @@ function IftaReport() {
                   className="form-control"
                   value={year}
                   onChange={(e) => setYear(Number(e.target.value))}
-                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #3a4555", color: "#fff", width: "100px" }}
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-1)", width: "100px" }}
                 />
               </div>
             </div>
@@ -135,7 +135,7 @@ function IftaReport() {
               </div>
             ) : (
               <div style={{ overflowX: "auto" }}>
-                <table className="table" style={{ color: "#fff", marginBottom: 0 }}>
+                <table className="table" style={{ color: "var(--text-1)", marginBottom: 0 }}>
                   <thead>
                     <tr style={{ color: "#9A9A9A", fontSize: "11px", textTransform: "uppercase" }}>
                       <th>{t("iftaReport.jurisdiction")}</th>
@@ -153,7 +153,7 @@ function IftaReport() {
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr style={{ fontWeight: 700, borderTop: "1.5px solid #3a4555" }}>
+                    <tr style={{ fontWeight: 700, borderTop: "1.5px solid var(--border)" }}>
                       <td>{t("iftaReport.totalMiles")}</td>
                       <td style={{ textAlign: "right" }}>{totalMiles.toFixed(2)}</td>
                       <td style={{ textAlign: "right" }}>{totalGallons > 0 ? totalGallons.toFixed(2) : "—"}</td>

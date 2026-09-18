@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { confirmSignUp, resendSignUpCode, signIn } from "aws-amplify/auth";
+import { confirmSignUp, resendSignUpCode, signIn, signOut } from "aws-amplify/auth";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
 import axios from "axios";
 import { apiUrl, ROUTES, STAGING_API_URL, CURRENT_ENV } from "../config/api";
+import { authHeader } from "../utils/apiFetch";
 
 const Confirm = () => {
   const [code, setCode] = useState("");
@@ -55,6 +56,31 @@ const Confirm = () => {
       await confirmSignUp({ username: email, confirmationCode: code });
       console.log(`✅ Cognito sign-up confirmed (email) [env: ${CURRENT_ENV}]`);
 
+      // Establish a REAL Cognito session now that the account is confirmed. The
+      // API is behind a Cognito authorizer, so every backend call below needs a
+      // token; before this the signup flow made token-less calls that 401'd.
+      const signupPassword = location.state?.password || password;
+      if (signupPassword) {
+        try {
+          await signOut();
+        } catch (e) {
+          // no existing session to clear — fine
+        }
+        await signIn({ username: email, password: signupPassword });
+        console.log(`✅ Signed in after confirmation [env: ${CURRENT_ENV}]`);
+      }
+
+      // Create the user's DB record now that we hold a token (moved out of
+      // Signup.js, which ran before the user was ever authenticated). The record
+      // id is the Cognito sub, so the backend's identity guard (sub === userId)
+      // passes on every subsequent call. The axios interceptor attaches the token.
+      const newUserId = location.state?.userId || location.state?.id;
+      const signupData = location.state?.data;
+      if (signupData && newUserId) {
+        await axios.put(apiUrl(`${ROUTES.USERS}/${newUserId}`), signupData);
+        console.log("✅ User record created after sign-in");
+      }
+
       showNotification("success", "Account confirmed successfully!");
 
       // Prepare welcome email content
@@ -100,6 +126,7 @@ const Confirm = () => {
             headers: {
               "Content-Type": "application/json",
               Accept: "application/json",
+              ...(await authHeader()),
             },
           }
         );
@@ -134,6 +161,7 @@ const Confirm = () => {
               headers: {
                 "Content-Type": "application/json",
                 Accept: "application/json",
+                ...(await authHeader()),
               },
               body: JSON.stringify({
                 id: location.state.id,

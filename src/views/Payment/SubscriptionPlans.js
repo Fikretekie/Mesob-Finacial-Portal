@@ -22,12 +22,13 @@ import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { FaPaypal, FaCreditCard, FaCheck } from "react-icons/fa";
 import LanguageSelector from "components/Languageselector/LanguageSelector";
 import { useTranslation } from "react-i18next";
+import { authHeader } from "../../utils/apiFetch";
 
 /* ─── inline styles ─────────────────────────────────────────── */
 const styles = {
   page: {
     minHeight: "100vh",
-    background: "#101926",
+    background: "var(--surface-2)",
     display: "flex",
     alignItems: "flex-start",
     justifyContent: "center",
@@ -58,19 +59,19 @@ const styles = {
   h2: {
     fontSize: "clamp(1.5rem, 6vw, 1.8rem)", // ← larger, more readable
     fontWeight: "700",
-    color: "#ffffff",
+    color: "var(--text-1)",
     marginBottom: "0.875rem",
     lineHeight: 1.2,
   },
   accent: { color: "white" },
   subtitle: {
-    color: "#94a3b8",
+    color: "var(--text-3)",
     fontSize: "clamp(0.9rem, 4vw, 1rem)", // ← more readable
     lineHeight: 1.5,
     margin: 0,
     textAlign: "center",
   },
-  bold: { fontWeight: "600", color: "#e2e8f0" },
+  bold: { fontWeight: "600", color: "var(--text-2)" },
   /* features box */
   featuresBox: {
     background: "#282d57",
@@ -98,17 +99,17 @@ const styles = {
     fontSize: "14px",
   },
   featureText: {
-    color: "#94a3b8",
+    color: "var(--text-3)",
     fontSize: "clamp(0.85rem, 3.5vw, 0.95rem)", // ← balanced sizing
     lineHeight: 1.5,
     margin: 0,
   },
   featureBold: {
     fontWeight: "600",
-    color: "#e2e8f0",
+    color: "var(--text-2)",
   },
   pitch: {
-    color: "#64748b",
+    color: "var(--text-3)",
     fontSize: "clamp(0.8rem, 3vw, 0.9rem)",
     textAlign: "center",
     marginTop: "0.75rem",
@@ -121,18 +122,18 @@ const styles = {
   price: {
     fontSize: "clamp(1.9rem, 8vw, 2.4rem)", // ← more prominent
     fontWeight: "700",
-    color: "#ffffff",
+    color: "var(--text-1)",
     margin: 0,
     marginBottom: "0.25rem",
   },
-  perMonth: { fontSize: "clamp(0.85rem, 3vw, 1rem)", fontWeight: "400", color: "#64748b" },
+  perMonth: { fontSize: "clamp(0.85rem, 3vw, 1rem)", fontWeight: "400", color: "var(--text-3)" },
   /* CTA */
   ctaBtn: {
     width: "100%",
     background: "linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%)",
     border: "none",
     borderRadius: "12px",
-    color: "#ffffff",
+    color: "var(--text-1)",
     fontWeight: "600",
     fontSize: "clamp(0.95rem, 4vw, 1.05rem)", // ← readable
     padding: "1rem 1.25rem",
@@ -203,7 +204,7 @@ const styles = {
   modalHeader: {
     backgroundColor: "#111827",
     borderBottom: "1px solid #1e293b",
-    color: "#ffffff",
+    color: "var(--text-1)",
     padding: "1rem 1.5rem",
   },
   modalBody: {
@@ -223,7 +224,7 @@ const styles = {
     padding: "clamp(11px, 3vw, 14px)",
     fontSize: "clamp(0.85rem, 3vw, 0.95rem)",
     fontWeight: "600",
-    color: "#fff",
+    color: "var(--text-1)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -236,7 +237,7 @@ const styles = {
     background: "#1e293b",
     border: "1px solid #334155",
     borderRadius: "8px",
-    color: "#94a3b8",
+    color: "var(--text-3)",
     padding: "8px 16px",
     cursor: "pointer",
     fontSize: "clamp(0.8rem, 3vw, 0.9rem)",
@@ -245,7 +246,7 @@ const styles = {
   /* confirm modal */
   confirmModalBody: {
     backgroundColor: "#0d1117",
-    color: "#94a3b8",
+    color: "var(--text-3)",
     padding: "1.5rem 1.25rem",
     fontSize: "clamp(0.85rem, 3vw, 0.95rem)",
     lineHeight: 1.6,
@@ -254,7 +255,7 @@ const styles = {
     background: "linear-gradient(135deg,#ef4444,#b91c1c)",
     border: "none",
     borderRadius: "8px",
-    color: "#fff",
+    color: "var(--text-1)",
     padding: "8px 16px",
     cursor: "pointer",
     fontWeight: "600",
@@ -376,7 +377,7 @@ const SubscriptionPlans = () => {
       if (!email || !userId) { setError("Email or User ID missing"); return; }
       const response = await fetch(`${backendBaseUrl}/Subscription/Session`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await authHeader()) },
         body: JSON.stringify({
           planType: billingCycle,
           redirectUrl: window.location.origin + "/customer/dashboard",
@@ -565,7 +566,7 @@ const SubscriptionPlans = () => {
                 {loading ? (
                   <div style={{ textAlign: "center", padding: "1.25rem 0" }}>
                     <Spinner style={{ color: "#60a5fa" }} />
-                    <p style={{ color: "#64748b", marginTop: "0.75rem", fontSize: "clamp(0.8rem, 3vw, 0.9rem)" }}>
+                    <p style={{ color: "var(--text-3)", marginTop: "0.75rem", fontSize: "clamp(0.8rem, 3vw, 0.9rem)" }}>
                       {t("subscription.loadingSubscription")}
                     </p>
                   </div>
@@ -629,7 +630,7 @@ const SubscriptionPlans = () => {
               toggle={() => setIsModalOpen(false)}
               style={styles.modalHeader}
             >
-              <span style={{ color: "#fff", fontWeight: 600, fontSize: "clamp(0.95rem, 4vw, 1.1rem)" }}>
+              <span style={{ color: "var(--text-1)", fontWeight: 600, fontSize: "clamp(0.95rem, 4vw, 1.1rem)" }}>
                 {t("subscription.choosePaymentMethod")}
               </span>
             </ModalHeader>
@@ -693,7 +694,7 @@ const SubscriptionPlans = () => {
                                 `${backendBaseUrl}/createPaypalSubscription`,
                                 {
                                   method: "POST",
-                                  headers: { "Content-Type": "application/json" },
+                                  headers: { "Content-Type": "application/json", ...(await authHeader()) },
                                   body: JSON.stringify({
                                     planId, userId, email,
                                     redirectUrl: window.location.origin + "/customer/subscription",
@@ -729,8 +730,8 @@ const SubscriptionPlans = () => {
               <button
                 style={styles.cancelModalBtn}
                 onClick={() => setIsModalOpen(false)}
-                onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "#334155"; }}
-                onMouseLeave={e => { e.currentTarget.style.color = "#94a3b8"; e.currentTarget.style.background = "#1e293b"; }}
+                onMouseEnter={e => { e.currentTarget.style.color = "var(--text-1)"; e.currentTarget.style.background = "#334155"; }}
+                onMouseLeave={e => { e.currentTarget.style.color = "var(--text-3)"; e.currentTarget.style.background = "#1e293b"; }}
               >
                 {t("subscription.cancel")}
               </button>
@@ -745,7 +746,7 @@ const SubscriptionPlans = () => {
               toggle={() => setShowConfirmModal(false)}
               style={styles.modalHeader}
             >
-              <span style={{ color: "#fff", fontSize: "clamp(0.95rem, 4vw, 1.1rem)" }}>
+              <span style={{ color: "var(--text-1)", fontSize: "clamp(0.95rem, 4vw, 1.1rem)" }}>
                 {t("subscription.confirmUnsubscribe")}
               </span>
             </ModalHeader>

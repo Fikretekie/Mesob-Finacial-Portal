@@ -214,7 +214,7 @@ const captureChartAsImage = async (chartElementId) => {
     }
     // No setTimeout here — we wait once upfront in generatePDF
     const canvas = await html2canvas(chartElement, {
-      backgroundColor: '#ffffff', // ← white background so charts aren't transparent/blank
+      backgroundColor: 'var(--text-1)', // ← white background so charts aren't transparent/blank
       scale: 2,
       logging: false,
       useCORS: true,
@@ -962,7 +962,7 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
             {isGenerating ? <Spinner size="sm" /> : dt("downloadDashboard")}
           </Button>
           <Button onClick={() => generatePDF("both")} disabled={isGenerating}
-            style={{ backgroundColor: "var(--accent-solid)", borderColor: "var(--accent-solid)", color: "#ffffff", padding: "12px 20px", fontSize: "14px", fontWeight: "700", borderRadius: "var(--r-md)" }}>
+            style={{ backgroundColor: "var(--accent-solid)", borderColor: "var(--accent-solid)", color: "var(--accent-ink)", padding: "12px 20px", fontSize: "14px", fontWeight: "700", borderRadius: "var(--r-md)" }}>
             {isGenerating ? <Spinner size="sm" /> : dt("downloadBoth")}
           </Button>
         </div>

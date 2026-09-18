@@ -31,7 +31,7 @@
 }
 
 .amount.positive {
-  background-color: #00D97E;
+  background-color: var(--green);
 }
 
 

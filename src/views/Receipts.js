@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { apiUrl, ROUTES, normalizeReceiptUrl } from "../config/api";
+import { authHeader } from "../utils/apiFetch";
 import {
   Card,
   CardHeader,
@@ -179,7 +180,8 @@ const Receipts = ({ selectedUser }) => {
 
     // Get a fresh presigned URL
     const res = await fetch(
-      apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`)
+      apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`),
+      { headers: { ...(await authHeader()) } }
     );
     const data = await res.json();
 
@@ -210,7 +212,8 @@ const Receipts = ({ selectedUser }) => {
     if (!s3Key) throw new Error("Could not extract S3 key from URL");
 
     const res = await fetch(
-      apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`)
+      apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`),
+      { headers: { ...(await authHeader()) } }
     );
     const data = await res.json();
     if (!res.ok || !data.url) throw new Error(data.error || "Failed to get download URL");
@@ -357,7 +360,7 @@ const Receipts = ({ selectedUser }) => {
                 <CardHeader style={{ backgroundColor: "var(--surface-2)" }}></CardHeader>
                 <CardBody style={{ paddingBottom: "15px", backgroundColor: "var(--surface-2)" }}>
                   <FormGroup style={{ marginBottom: "0" }}>
-                    <Label style={{ color: "#ffffff" }}>
+                    <Label style={{ color: "var(--text-1)" }}>
                       {t('receipts.selectUserToView')}
                     </Label>
                     <Select
@@ -393,18 +396,18 @@ const Receipts = ({ selectedUser }) => {
                           height: "38px",
                           backgroundColor: "var(--surface-3) !important",
                           borderColor: "var(--border) !important",
-                          color: "#ffffff !important",
+                          color: "var(--text-1) !important",
                         }),
                         valueContainer: (provided) => ({
                           ...provided,
                           height: "38px",
                           padding: "0 6px",
-                          color: "#ffffff !important",
+                          color: "var(--text-1) !important",
                         }),
                         input: (provided) => ({
                           ...provided,
                           margin: "0px",
-                          color: "#ffffff !important",
+                          color: "var(--text-1) !important",
                         }),
                         indicatorsContainer: (provided) => ({
                           ...provided,
@@ -412,7 +415,7 @@ const Receipts = ({ selectedUser }) => {
                         }),
                         singleValue: (provided) => ({
                           ...provided,
-                          color: "#ffffff !important",
+                          color: "var(--text-1) !important",
                         }),
                         placeholder: (provided) => ({
                           ...provided,
@@ -425,7 +428,7 @@ const Receipts = ({ selectedUser }) => {
                         option: (provided, state) => ({
                           ...provided,
                           backgroundColor: state.isFocused ? "var(--border)" : "var(--surface-3)",
-                          color: "#ffffff",
+                          color: "var(--text-1)",
                         }),
                       }}
                     />
@@ -448,7 +451,7 @@ const Receipts = ({ selectedUser }) => {
                   <div className="d-flex flex-column flex-lg-row gap-3 w-100 align-items-lg-end">
                     <div className="d-flex flex-column flex-sm-row gap-3 flex-lg-grow-1">
                       <FormGroup className="mb-0 flex-fill p-2">
-                        <Label for="fromDate" className="mb-1" style={{ color: "#ffffff" }}>
+                        <Label for="fromDate" className="mb-1" style={{ color: "var(--text-1)" }}>
                           {t('receipts.from')}
                         </Label>
                         <Input
@@ -457,11 +460,11 @@ const Receipts = ({ selectedUser }) => {
                           value={fromDate}
                           onChange={(e) => setFromDate(e.target.value)}
                           className="w-100"
-                          style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
+                          style={{ backgroundColor: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "4px" }}
                         />
                       </FormGroup>
                       <FormGroup className="mb-0 flex-fill p-2">
-                        <Label for="toDate" className="mb-1" style={{ color: "#ffffff" }}>
+                        <Label for="toDate" className="mb-1" style={{ color: "var(--text-1)" }}>
                           {t('receipts.to')}
                         </Label>
                         <Input
@@ -470,27 +473,27 @@ const Receipts = ({ selectedUser }) => {
                           value={toDate}
                           onChange={(e) => setToDate(e.target.value)}
                           className="w-100"
-                          style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
+                          style={{ backgroundColor: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </div>
                     <div className="d-flex gap-2">
                       <Button
                         onClick={handleRun}
-                        style={{ minWidth: "90px", backgroundColor: "var(--accent)", borderColor: "var(--accent)", color: "#ffffff" }}
+                        style={{ minWidth: "90px", backgroundColor: "var(--accent)", borderColor: "var(--accent)", color: "var(--text-1)" }}
                       >
                         {t('receipts.run')}
                       </Button>
                       <Button
                         onClick={handleClear}
-                        style={{ minWidth: "90px", backgroundColor: "var(--surface-3)", borderColor: "var(--surface-3)", color: "#ffffff" }}
+                        style={{ minWidth: "90px", backgroundColor: "var(--surface-3)", borderColor: "var(--surface-3)", color: "var(--text-1)" }}
                       >
                         {t('receipts.clear')}
                       </Button>
                       <Button
                         onClick={handleDownloadAll}
                         disabled={disabled}
-                        style={{ minWidth: "120px", backgroundColor: "var(--accent-solid)", borderColor: "var(--accent-solid)", color: "#ffffff" }}
+                        style={{ minWidth: "120px", backgroundColor: "var(--accent-solid)", borderColor: "var(--accent-solid)", color: "var(--accent-ink)" }}
                       >
                         {t('receipts.downloadAll')}
                       </Button>
@@ -500,7 +503,7 @@ const Receipts = ({ selectedUser }) => {
               </CardHeader>
               <CardBody style={{ backgroundColor: "var(--surface-2)" }}>
                 {userRole === 0 && !selectedUserId && (
-                  <div className="text-center my-4" style={{ color: "#ffffff" }}>
+                  <div className="text-center my-4" style={{ color: "var(--text-1)" }}>
                     {t('receipts.pleaseSelectUser')}
                   </div>
                 )}
@@ -508,20 +511,20 @@ const Receipts = ({ selectedUser }) => {
                 {loading ? (
                   <div className="text-center py-4">
                     <Spinner color="primary" />
-                    <p className="mt-2" style={{ color: "#ffffff" }}>
+                    <p className="mt-2" style={{ color: "var(--text-1)" }}>
                       {t('receipts.loadingReceipts')}
                     </p>
                   </div>
                 ) : receipts.length === 0 ? (
                   <div className="text-center py-4">
-                    <p style={{ color: "#ffffff" }}>
+                    <p style={{ color: "var(--text-1)" }}>
                       {t('receipts.noReceipts')}
                     </p>
                   </div>
                 ) : (
                   <>
                     {searchedDates && (
-                      <div className="mb-3" style={{ color: "#ffffff" }}>
+                      <div className="mb-3" style={{ color: "var(--text-1)" }}>
                         <strong>{t('receipts.searchedDates')}</strong> {searchedDates.from} - {searchedDates.to}
                       </div>
                     )}
@@ -531,25 +534,25 @@ const Receipts = ({ selectedUser }) => {
                       <Table responsive style={{ backgroundColor: "var(--surface-2)" }}>
                         <thead>
                           <tr>
-                            <th style={{ color: "#ffffff", borderColor: "var(--border)" }}>
+                            <th style={{ color: "var(--text-1)", borderColor: "var(--border)" }}>
                               {t('receipts.srNo')}
                             </th>
-                            <th style={{ color: "#ffffff", borderColor: "var(--border)" }}>
+                            <th style={{ color: "var(--text-1)", borderColor: "var(--border)" }}>
                               {t('receipts.date')}
                             </th>
-                            <th style={{ color: "#ffffff", borderColor: "var(--border)" }}>
+                            <th style={{ color: "var(--text-1)", borderColor: "var(--border)" }}>
                               {t('receipts.purpose')}
                             </th>
-                            <th style={{ color: "#ffffff", borderColor: "var(--border)" }}>
+                            <th style={{ color: "var(--text-1)", borderColor: "var(--border)" }}>
                               {t('receipts.amount')}
                             </th>
-                            <th style={{ color: "#ffffff", borderColor: "var(--border)" }}>
+                            <th style={{ color: "var(--text-1)", borderColor: "var(--border)" }}>
                               {t('receipts.type')}
                             </th>
-                            <th style={{ color: "#ffffff", borderColor: "var(--border)" }}>
+                            <th style={{ color: "var(--text-1)", borderColor: "var(--border)" }}>
                               {t('receipts.category')}
                             </th>
-                            <th style={{ color: "#ffffff", borderColor: "var(--border)" }}>
+                            <th style={{ color: "var(--text-1)", borderColor: "var(--border)" }}>
                               {t('receipts.actions')}
                             </th>
                           </tr>
@@ -557,14 +560,14 @@ const Receipts = ({ selectedUser }) => {
                         <tbody>
                           {receipts.map((receipt, index) => (
                             <tr key={receipt.id || receipt.receiptUrl} style={{ borderColor: "var(--border)" }}>
-                              <td style={{ color: "#ffffff", borderColor: "var(--border)" }}>{index + 1}</td>
-                              <td style={{ color: "#ffffff", borderColor: "var(--border)" }}>
+                              <td style={{ color: "var(--text-1)", borderColor: "var(--border)" }}>{index + 1}</td>
+                              <td style={{ color: "var(--text-1)", borderColor: "var(--border)" }}>
                                 {new Date(receipt.createdAt).toLocaleDateString()}
                               </td>
-                              <td style={{ color: "#ffffff", borderColor: "var(--border)" }}>{receipt.transactionPurpose}</td>
-                              <td style={{ color: "#ffffff", borderColor: "var(--border)" }}>${receipt.transactionAmount}</td>
-                              <td style={{ color: "#ffffff", borderColor: "var(--border)" }}>{receipt.transactionType}</td>
-                              <td style={{ color: "#ffffff", borderColor: "var(--border)" }}>{receipt.subType || "-"}</td>
+                              <td style={{ color: "var(--text-1)", borderColor: "var(--border)" }}>{receipt.transactionPurpose}</td>
+                              <td style={{ color: "var(--text-1)", borderColor: "var(--border)" }}>${receipt.transactionAmount}</td>
+                              <td style={{ color: "var(--text-1)", borderColor: "var(--border)" }}>{receipt.transactionType}</td>
+                              <td style={{ color: "var(--text-1)", borderColor: "var(--border)" }}>{receipt.subType || "-"}</td>
                               <td>
                                 <FaEye
                                   onClick={
@@ -609,43 +612,43 @@ const Receipts = ({ selectedUser }) => {
                           <CardBody style={{ backgroundColor: "var(--surface-2)" }}>
                             <Row>
                               <Col xs={6}>
-                                <strong style={{ color: "#ffffff" }}>{t('receipts.srNo')}:</strong>
+                                <strong style={{ color: "var(--text-1)" }}>{t('receipts.srNo')}:</strong>
                               </Col>
-                              <Col xs={6} style={{ color: "#ffffff" }}>
+                              <Col xs={6} style={{ color: "var(--text-1)" }}>
                                 {index + 1}
                               </Col>
                             </Row>
                             <Row className="mt-2">
                               <Col xs={6}>
-                                <strong style={{ color: "#ffffff" }}>{t('receipts.date')}:</strong>
+                                <strong style={{ color: "var(--text-1)" }}>{t('receipts.date')}:</strong>
                               </Col>
-                              <Col xs={6} style={{ color: "#ffffff" }}>
+                              <Col xs={6} style={{ color: "var(--text-1)" }}>
                                 {new Date(receipt.createdAt).toLocaleDateString()}
                               </Col>
                             </Row>
                             <Row className="mt-2">
                               <Col xs={6}>
-                                <strong style={{ color: "#ffffff" }}>{t('receipts.purpose')}:</strong>
+                                <strong style={{ color: "var(--text-1)" }}>{t('receipts.purpose')}:</strong>
                               </Col>
-                              <Col xs={6} style={{ color: "#ffffff" }}>{receipt.transactionPurpose}</Col>
+                              <Col xs={6} style={{ color: "var(--text-1)" }}>{receipt.transactionPurpose}</Col>
                             </Row>
                             <Row className="mt-2">
                               <Col xs={6}>
-                                <strong style={{ color: "#ffffff" }}>{t('receipts.amount')}:</strong>
+                                <strong style={{ color: "var(--text-1)" }}>{t('receipts.amount')}:</strong>
                               </Col>
-                              <Col xs={6} style={{ color: "#ffffff" }}>${receipt.transactionAmount}</Col>
+                              <Col xs={6} style={{ color: "var(--text-1)" }}>${receipt.transactionAmount}</Col>
                             </Row>
                             <Row className="mt-2">
                               <Col xs={6}>
-                                <strong style={{ color: "#ffffff" }}>{t('receipts.type')}:</strong>
+                                <strong style={{ color: "var(--text-1)" }}>{t('receipts.type')}:</strong>
                               </Col>
-                              <Col xs={6} style={{ color: "#ffffff" }}>{receipt.transactionType}</Col>
+                              <Col xs={6} style={{ color: "var(--text-1)" }}>{receipt.transactionType}</Col>
                             </Row>
                             <Row className="mt-2">
                               <Col xs={6}>
-                                <strong style={{ color: "#ffffff" }}>{t('receipts.category')}:</strong>
+                                <strong style={{ color: "var(--text-1)" }}>{t('receipts.category')}:</strong>
                               </Col>
-                              <Col xs={6} style={{ color: "#ffffff" }}>{receipt.subType || "-"}</Col>
+                              <Col xs={6} style={{ color: "var(--text-1)" }}>{receipt.subType || "-"}</Col>
                             </Row>
                             <Row className="mt-3">
                               <Col xs={12}>
@@ -658,7 +661,7 @@ const Receipts = ({ selectedUser }) => {
                                         : undefined
                                     }
                                     disabled={disabled}
-                                    style={{ backgroundColor: "var(--accent-solid)", borderColor: "var(--accent-solid)", color: "#ffffff" }}
+                                    style={{ backgroundColor: "var(--accent-solid)", borderColor: "var(--accent-solid)", color: "var(--accent-ink)" }}
                                   >
                                     <FaEye className="me-1" />
                                     {t('receipts.preview')}
@@ -671,7 +674,7 @@ const Receipts = ({ selectedUser }) => {
                                         : undefined
                                     }
                                     disabled={disabled}
-                                    style={{ backgroundColor: "var(--accent-solid)", borderColor: "var(--accent-solid)", color: "#ffffff" }}
+                                    style={{ backgroundColor: "var(--accent-solid)", borderColor: "var(--accent-solid)", color: "var(--accent-ink)" }}
                                   >
                                     <FaDownload className="me-1" />
                                     {t('receipts.download')}

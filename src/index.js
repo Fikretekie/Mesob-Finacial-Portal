@@ -184,6 +184,32 @@ axios.interceptors.request.use(async (config) => {
   return config;
 });
 
+// ── Mirror the interceptor for fetch() ──────────────────────────────────────
+// Several backend calls use fetch() (and a fetchWithRetry wrapper) instead of
+// axios, so the interceptor above never sees them. Wrap the global fetch once so
+// EVERY call to our execute-api host carries the Cognito ID token — and nothing
+// else (S3 presigned URLs, Cognito, fonts, third parties) ever does. Raw JWT,
+// no "Bearer " prefix, same as the authorizer expects.
+const __origFetch = window.fetch.bind(window);
+window.fetch = async (input, init = {}) => {
+  try {
+    const url = typeof input === "string" ? input : (input && input.url) || "";
+    if (url.includes("execute-api.us-east-1.amazonaws.com")) {
+      const { tokens } = await fetchAuthSession();
+      const idToken = tokens?.idToken?.toString();
+      if (idToken) {
+        init = {
+          ...init,
+          headers: { ...(init.headers || {}), Authorization: idToken },
+        };
+      }
+    }
+  } catch (e) {
+    // not signed in / session refresh failed — send the request unchanged
+  }
+  return __origFetch(input, init);
+};
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(

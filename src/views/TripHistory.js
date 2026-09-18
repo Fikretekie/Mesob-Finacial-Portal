@@ -105,21 +105,21 @@ function TripHistory() {
             value={`$${deduction.toFixed(2)}`}
             sub={t("tripHistory.perMile", { rate: `$${IRS_RATE_PER_MILE.toFixed(2)}` })}
             iconBg="rgba(0,217,126,0.14)"
-            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00D97E" strokeWidth="1.8" strokeLinecap="round"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>}
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>}
           />
           <StatTile
             label={t("tripHistory.thisMonth")}
             value={`${(monthSummary.businessMiles + monthSummary.personalMiles).toFixed(1)} mi`}
             sub={now.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
             iconBg="rgba(168,85,247,0.14)"
-            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A855F7" strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M3 9h18M8 3v3M16 3v3" /></svg>}
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M3 9h18M8 3v3M16 3v3" /></svg>}
           />
           <StatTile
             label={t("tripHistory.trips")}
             value={trips.length}
             sub={t("tripHistory.allTime")}
             iconBg="rgba(255,165,59,0.14)"
-            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFA53B" strokeWidth="1.8" strokeLinecap="round"><path d="M3 17l6-6 4 4 8-8" /></svg>}
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" strokeWidth="1.8" strokeLinecap="round"><path d="M3 17l6-6 4 4 8-8" /></svg>}
           />
         </div>
 
@@ -146,10 +146,10 @@ function TripHistory() {
                       background: isSelected ? "#096afa" : "transparent",
                     }}
                   >
-                    <span style={{ fontSize: "10px", color: isSelected ? "#fff" : "#9A9A9A" }}>
+                    <span style={{ fontSize: "10px", color: isSelected ? "var(--text-1)" : "#9A9A9A" }}>
                       {d.toLocaleDateString("en-US", { weekday: "short" })}
                     </span>
-                    <span style={{ fontSize: "14px", fontWeight: 700, color: "#fff" }}>
+                    <span style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-1)" }}>
                       {d.getDate()}
                     </span>
                     <span style={{ fontSize: "10px", color: isSelected ? "rgba(255,255,255,0.85)" : "#9A9A9A" }}>

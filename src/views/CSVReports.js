@@ -167,7 +167,7 @@ const handleDownload = async (url) => {
             background: "linear-gradient(135deg, var(--accent) 0%, var(--accent-solid) 100%)",
             border: "none",
             borderRadius: "8px",
-            color: "#fff",
+            color: "var(--text-1)",
             fontWeight: "600",
             fontSize: "clamp(0.85rem, 3vw, 0.95rem)",
             padding: "0.75rem",
@@ -233,7 +233,7 @@ const handleDownload = async (url) => {
                 <div style={{ marginBottom: "1.5rem" }}>
                   <h2
                     style={{
-                      color: "#ffffff",
+                      color: "var(--text-1)",
                       fontSize: "clamp(1.3rem, 5vw, 1.6rem)",
                       fontWeight: "700",
                       margin: "0 0 0.5rem 0",
@@ -310,10 +310,10 @@ const handleDownload = async (url) => {
                     <Table responsive style={{ backgroundColor: "var(--surface-2)" }}>
                       <thead>
                         <tr>
-                          <th style={{ color: "#ffffff", borderColor: "var(--border)" }}>
+                          <th style={{ color: "var(--text-1)", borderColor: "var(--border)" }}>
                             {t("backupCSV.backupFile")}
                           </th>
-                          <th style={{ color: "#ffffff", borderColor: "var(--border)" }}>
+                          <th style={{ color: "var(--text-1)", borderColor: "var(--border)" }}>
                             {t("backupCSV.actions")}
                           </th>
                         </tr>
@@ -321,7 +321,7 @@ const handleDownload = async (url) => {
                       <tbody>
                         {backupUrls.map((url, index) => (
                           <tr key={index} style={{ borderColor: "var(--border)" }}>
-                            <td style={{ color: "#ffffff", borderColor: "var(--border)" }}>
+                            <td style={{ color: "var(--text-1)", borderColor: "var(--border)" }}>
                               {url.split("/").pop()}
                             </td>
                             <td style={{ borderColor: "var(--border)" }}>
@@ -339,7 +339,7 @@ const handleDownload = async (url) => {
                       </tbody>
                     </Table>
                   ) : (
-                    <p style={{ color: "#ffffff" }}>
+                    <p style={{ color: "var(--text-1)" }}>
                       {t("backupCSV.noBackups")}
                     </p>
                   )}

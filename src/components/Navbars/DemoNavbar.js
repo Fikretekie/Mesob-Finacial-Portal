@@ -40,6 +40,19 @@ function DemoNavbar(props) {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
+  const [theme, setTheme] = useState(
+    (typeof document !== "undefined" &&
+      document.documentElement.getAttribute("data-theme")) ||
+      "dark"
+  );
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try {
+      localStorage.setItem("mksv-theme", next);
+    } catch (e) {}
+    setTheme(next);
+  };
   const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
@@ -293,6 +306,37 @@ function DemoNavbar(props) {
               {!location.pathname.includes("/profile") && <LanguageSelector />}
             </div>
 
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              title={theme === "dark" ? "Light mode" : "Dark mode"}
+              style={{
+                marginLeft: 8,
+                width: 38,
+                height: 38,
+                display: "grid",
+                placeItems: "center",
+                borderRadius: "var(--r-sm, 8px)",
+                cursor: "pointer",
+                background: "var(--surface-3)",
+                border: "1px solid var(--border)",
+                color: "var(--text-2)",
+                flex: "0 0 auto",
+              }}
+            >
+              {theme === "dark" ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z" />
+                </svg>
+              )}
+            </button>
+
             {!isMobile && (
               <NavbarBrand href="/" style={{ marginLeft: "1rem" }}>
                 {getBrand()}
@@ -313,7 +357,7 @@ function DemoNavbar(props) {
             >
               <h3
                 style={{
-                  color: "#ffffff",
+                  color: "var(--text-1)",
                   margin: 0,
                   fontSize: "clamp(12px, 3vw, 18px)",
                   whiteSpace: "nowrap",

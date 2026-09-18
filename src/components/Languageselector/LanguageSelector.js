@@ -93,7 +93,7 @@ return (
     style={{
       backgroundColor: "#5e72e4",
       borderColor: "#5e72e4",
-      color: "#ffffff",
+      color: "var(--text-1)",
       padding: isMobile ? "6px 10px" : "2px 14px",
       borderRadius: "6px",
       fontSize: isMobile ? "12px" : "13px",
@@ -117,7 +117,7 @@ return (
         strategy="fixed"
         style={{
           backgroundColor: "#1a273a",
-          border: "1px solid #3a4555",
+          border: "1px solid var(--border)",
           borderRadius: "6px",
           marginTop: "6px",
           minWidth: "200px",
@@ -133,7 +133,7 @@ return (
             active={selectedLanguage === lang.code}
             style={{
               backgroundColor: selectedLanguage === lang.code ? "#2b427d" : "transparent",
-              color: "#ffffff",
+              color: "var(--text-1)",
               padding: "10px 16px",
               cursor: "pointer",
               display: "flex",

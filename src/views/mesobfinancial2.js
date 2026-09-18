@@ -28,6 +28,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faDownload, faCircleInfo, faTimes } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { apiUrl, ROUTES, S3_BUCKET_NAME, normalizeReceiptUrl } from "../config/api";
+import { authHeader } from "../utils/apiFetch";
 import { Helmet } from "react-helmet";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
@@ -154,6 +155,11 @@ const MesobFinancial2 = () => {
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editType, setEditType] = useState("");
+  const [editPurpose, setEditPurpose] = useState("");
+  const [editAmount, setEditAmount] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
   const [transactionType, setTransactionType] = useState("");
   const [transactionPurpose, setTransactionPurpose] = useState("");
   const [transactionAmount, setTransactionAmount] = useState("");
@@ -318,7 +324,7 @@ const MesobFinancial2 = () => {
         apiUrl(`${ROUTES.TRANSACTION}/${selectedUnpaidTransaction.id}`),
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...(await authHeader()) },
           body: JSON.stringify({
             userId: localStorage.getItem("userId"),
             installmentAmount: parseFloat(installmentAmount),
@@ -347,7 +353,7 @@ const MesobFinancial2 = () => {
         apiUrl(ROUTES.TRANSACTION),
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...(await authHeader()) },
           body: JSON.stringify({
             userId: localStorage.getItem("userId"),
             transactionType: "Pay",
@@ -424,7 +430,8 @@ const MesobFinancial2 = () => {
       }
 
       const res = await fetch(
-        apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`)
+        apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`),
+        { headers: { ...(await authHeader()) } }
       );
       const data = await res.json();
 
@@ -937,7 +944,7 @@ const MesobFinancial2 = () => {
         apiUrl(ROUTES.RECEIPT),
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...(await authHeader()) },
           body: JSON.stringify(payload),
         }
       );
@@ -1004,7 +1011,7 @@ const MesobFinancial2 = () => {
           apiUrl(`${ROUTES.TRANSACTION}/${transaction.id}`),
           {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...(await authHeader()) },
             body: JSON.stringify(updatedTransaction),
           }
         );
@@ -1526,12 +1533,12 @@ const MesobFinancial2 = () => {
         onClick={() => setIsRevenueExpanded(!isRevenueExpanded)}
         style={{ cursor: "pointer" }}
       >
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
           <strong>
             {t("financialReport.revenue")} {isRevenueExpanded ? "▼" : "▶"}
           </strong>
         </td>
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
       </tr>
 
       {isRevenueExpanded &&
@@ -1563,12 +1570,12 @@ const MesobFinancial2 = () => {
 
             return (
               <tr key={`revenue-${purpose}`}>
-                <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+                <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
                   {translatePurpose(purpose)}
                 </td>
                 <td
                   style={{
-                    color: "#ffffff",
+                    color: "var(--text-1)",
                     padding: "8px",
                     border: "1px solid var(--border)",
                     textAlign: "right",
@@ -1616,13 +1623,13 @@ const MesobFinancial2 = () => {
         onClick={() => setIsOtherIncomeExpanded(!isOtherIncomeExpanded)}
         style={{ cursor: "pointer" }}
       >
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
           <strong>
             {t("businessTypes.income.otherIncome")}{" "}
             {isOtherIncomeExpanded ? "▼" : "▶"}
           </strong>
         </td>
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
       </tr>
 
       {isOtherIncomeExpanded &&
@@ -1630,7 +1637,7 @@ const MesobFinancial2 = () => {
           .filter(([purpose]) => isGainOnSalePurpose(purpose))
           .map(([purpose, amount]) => (
             <tr key={`other-income-${purpose}`}>
-              <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+              <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
                 {translatePurpose(purpose)}
               </td>
               <td
@@ -1682,12 +1689,12 @@ const MesobFinancial2 = () => {
         onClick={() => setIsExpenseExpanded(!isExpenseExpanded)}
         style={{ cursor: "pointer" }}
       >
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
           <strong>
             {t("financialReport.expenses")} {isExpenseExpanded ? "▼" : "▶"}
           </strong>
         </td>
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
       </tr>
 
       {isExpenseExpanded &&
@@ -1717,7 +1724,7 @@ const MesobFinancial2 = () => {
 
             return (
               <tr key={`expense-${purpose}`}>
-                <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+                <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
                   {translatePurpose(purpose)}
                 </td>
                 <td
@@ -1770,13 +1777,13 @@ const MesobFinancial2 = () => {
         onClick={() => setIsOtherExpenseExpanded(!isOtherExpenseExpanded)}
         style={{ cursor: "pointer" }}
       >
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
           <strong>
             {t("financialReport.otherExpense")}{" "}
             {isOtherExpenseExpanded ? "▼" : "▶"}
           </strong>
         </td>
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
       </tr>
 
       {isOtherExpenseExpanded &&
@@ -1784,7 +1791,7 @@ const MesobFinancial2 = () => {
           .filter(([purpose]) => isLossOnSalePurpose(purpose))
           .map(([purpose, amount]) => (
             <tr key={`other-expense-${purpose}`}>
-              <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+              <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
                 {translatePurpose(purpose)}
               </td>
               <td
@@ -1833,7 +1840,7 @@ const MesobFinancial2 = () => {
       </tr>
 
       <tr>
-        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+        <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
           <strong>
             {parseFloat(calculateTotalRevenue()) - parseFloat(calculateTotalExpenses()) < 0
               ? t("financialReport.netLoss")
@@ -2213,6 +2220,56 @@ const MesobFinancial2 = () => {
       } finally {
         setLoadingDelete(false);
       }
+    }
+  };
+
+  const handleEdit = (transaction) => {
+    setEditingTransaction(transaction);
+    setEditType(transaction.transactionType || "Receive");
+    setEditPurpose(transaction.transactionPurpose || "");
+    setEditAmount(String(transaction.transactionAmount ?? ""));
+    setEditModalOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingTransaction) return;
+    const amt = parseFloat(editAmount);
+    if (!editPurpose.trim() || isNaN(amt)) {
+      notify("tr", "Please enter a purpose and a valid amount", "warning");
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      const updated = {
+        ...editingTransaction,
+        transactionType: editType,
+        transactionPurpose: editPurpose.trim(),
+        transactionAmount: amt,
+        updatedAt: new Date().toISOString(),
+      };
+      const res = await axios.put(
+        apiUrl(`${ROUTES.TRANSACTION}/${Number(editingTransaction.id)}`),
+        updated,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      if (res.status === 200) {
+        notify("tr", "Transaction updated successfully", "success");
+        setEditModalOpen(false);
+        setEditingTransaction(null);
+        await fetchTransactions();
+        await fetchUserInitialBalance();
+      } else {
+        throw new Error("Failed to update transaction");
+      }
+    } catch (error) {
+      console.error("Edit error:", error);
+      notify(
+        "tr",
+        error.response?.data?.message || "Failed to update transaction",
+        "danger"
+      );
+    } finally {
+      setSavingEdit(false);
     }
   };
 
@@ -2694,11 +2751,11 @@ const MesobFinancial2 = () => {
                           minHeight: "38px",
                           height: "38px",
                           backgroundColor: "transparent",
-                          color: "#ffffff",
-                          borderColor: state.isFocused ? "#ffffff" : "#ffffff",
-                          boxShadow: state.isFocused ? "0 0 0 1px #ffffff" : "none",
+                          color: "var(--text-1)",
+                          borderColor: state.isFocused ? "var(--border-strong)" : "var(--border-strong)",
+                          boxShadow: state.isFocused ? "0 0 0 1px var(--border-strong)" : "none",
                           "&:hover": {
-                            borderColor: "#ffffff",
+                            borderColor: "var(--border-strong)",
                           },
                         }),
                         valueContainer: (provided) => ({
@@ -2709,15 +2766,15 @@ const MesobFinancial2 = () => {
                         input: (provided) => ({
                           ...provided,
                           margin: "0px",
-                          color: "#ffffff",
+                          color: "var(--text-1)",
                         }),
                         singleValue: (provided) => ({
                           ...provided,
-                          color: "#ffffff",
+                          color: "var(--text-1)",
                         }),
                         placeholder: (provided) => ({
                           ...provided,
-                          color: "#ffffff",
+                          color: "var(--text-1)",
                           opacity: 0.7,
                         }),
                         indicatorsContainer: (provided) => ({
@@ -2727,7 +2784,7 @@ const MesobFinancial2 = () => {
                         menu: (provided) => ({
                           ...provided,
                           backgroundColor: "transparent",
-                          border: "1px solid #ffffff",
+                          border: "1px solid var(--border-strong)",
                         }),
                         menuList: (provided) => ({
                           ...provided,
@@ -2740,7 +2797,7 @@ const MesobFinancial2 = () => {
                             : state.isFocused
                               ? "var(--surface-3)"
                               : "transparent",
-                          color: "#ffffff",
+                          color: "var(--text-1)",
                           cursor: "pointer",
                           "&:active": {
                             backgroundColor: "#2b427d",
@@ -2759,6 +2816,17 @@ const MesobFinancial2 = () => {
       <div className="content" style={{ marginTop: 80, paddingTop: "0", backgroundColor: "transparent" }}>
         {/* Transactions Table Section - First */}
         <Container fluid style={{ paddingInline: 0 }}>
+          <div className="mksv-hero">
+            <div>
+              <h1 className="mksv-hero-title">{t('financialReport.title', 'Financial Reports')}</h1>
+              <p className="mksv-hero-sub">{t('financialReport.subtitle', 'Track, analyze, and grow your business.')}</p>
+            </div>
+            <div className="mksv-hero-tag">SIMPLE TOOLS.<br />REAL GROWTH.</div>
+            <svg className="mksv-hero-mtn" viewBox="0 0 300 80" fill="none" preserveAspectRatio="none">
+              <path d="M0 80 L0 64 L52 36 L92 52 L132 20 L172 48 L216 24 L258 44 L300 28 L300 80 Z" fill="#3b82f6" fillOpacity="0.10" />
+              <path d="M0 64 L52 36 L92 52 L132 20 L172 48 L216 24 L258 44 L300 28" stroke="#3b82f6" strokeOpacity="0.55" strokeWidth="1.5" />
+            </svg>
+          </div>
           <Row>
             <Col xs={12} style={{ paddingLeft: "1px", paddingRight: "1px" }}>
               <Card style={{ backgroundColor: "transparent", boxShadow: "var(--shadow-1), var(--glass-inset), var(--card-glow)", paddingBottom: 8, borderRadius: "8px" }}>
@@ -2838,7 +2906,7 @@ const MesobFinancial2 = () => {
                         style={{
                           backgroundColor: "var(--accent-solid)",
                           borderColor: "var(--accent-solid)",
-                          color: "#ffffff",
+                          color: "var(--accent-ink)",
                           height: "38px",
                           borderRadius: "var(--r-sm)",
                           padding: "0 16px",
@@ -2890,333 +2958,44 @@ const MesobFinancial2 = () => {
                   </CardTitle>
                   <ExpandToggle id="summary" />
                 </CardHeader>
-                <CardBody
-                  style={{
-                    overflowY: "auto",
-                    overflowX: "visible",
-                    height: "400px",
-                    backgroundColor: "transparent",
-                  }}
-                >
-                  <div>
-                    <div
-                      style={getBalanceCardStyle(parseFloat(calculateTotalCash()), {
-                        backgroundColor: "var(--surface-3)",
-                        padding: "12px 15px",
-                        borderRadius: "6px",
-                        marginBottom: "12px",
-                        border: "1px solid var(--border)",
-                      })}
-                    >
-                      <div style={{ marginBottom: "8px", color: "#ffffff", fontWeight: "bold", fontSize: "0.9rem" }}>
-                        {t('financialReport.totalCashOnHand')}
+                <CardBody style={{ overflowY: "auto", overflowX: "visible", height: "400px", backgroundColor: "transparent" }}>
+                  <div className="mksv-stats">
+                    <div className="mksv-stat">
+                      <div className="mksv-ico mksv-ico--income"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="6" width="18" height="12" rx="2" /><circle cx="12" cy="12" r="2.4" /></svg></div>
+                      <div className="mksv-stat-main">
+                        <div className="mksv-stat-label">{t('financialReport.totalCashOnHand')}</div>
+                        <BalanceValue value={parseFloat(calculateTotalCash())} tooltip={t('financialReport.cashDeficitTooltip')} style={{ fontSize: "1.15rem", fontWeight: 800 }}>
+                          ${parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </BalanceValue>
                       </div>
-                      <BalanceValue
-                        value={parseFloat(calculateTotalCash())}
-                        tooltip={t("financialReport.cashDeficitTooltip")}
-                        style={{ fontSize: "1.1rem" }}
-                      >
-                        $
-                        {parseFloat(calculateTotalCash()).toLocaleString(
-                          "en-US",
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }
-                        )}
-                      </BalanceValue>
+                      <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><path d="M2 26 12 24 22 25 32 18 42 20 52 10 64 6 64 34 2 34Z" fill="#34d39922" /><polyline points="2,26 12,24 22,25 32,18 42,20 52,10 64,6" fill="none" stroke="#34d399" strokeWidth="2" /></svg>
                     </div>
 
-                    <div
-                      style={{
-                        backgroundColor: "var(--surface-3)",
-                        padding: "12px 15px",
-                        borderRadius: "6px",
-                        marginBottom: "12px",
-                        border: "1px solid var(--border)",
-                      }}
-                    >
-                      <div style={{ marginBottom: "8px", color: "#ffffff", fontWeight: "bold", fontSize: "0.9rem" }}>
-                        {t('financialReport.totalPayable')}
+                    <div className="mksv-stat">
+                      <div className="mksv-ico mksv-ico--payable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 3h9l5 5v13H6z" /><path d="M9 12h7M9 16h7" /></svg></div>
+                      <div className="mksv-stat-main">
+                        <div className="mksv-stat-label">{t('financialReport.totalPayable')}</div>
+                        <div className="mksv-stat-val" style={{ color: FINANCIAL_COLORS.payable }}>${parseFloat(calculateTotalPayable()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       </div>
-                      <div
-                        style={{
-                          color: FINANCIAL_COLORS.payable,
-                          fontWeight: "bold",
-                          fontSize: "1.1rem",
-                        }}
-                      >
-                        $
-                        {parseFloat(calculateTotalPayable()).toLocaleString(
-                          "en-US",
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }
-                        )}
-                      </div>
+                      <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><polyline points="2,20 12,18 22,22 32,16 42,19 52,14 64,12" fill="none" stroke="#e6b25f" strokeWidth="2" /></svg>
                     </div>
 
-                    <div style={{ marginTop: "0px" }}>
-                      {/* Commented out dropdown functionality */}
-                      {/* <div 
-                        style={{ 
-                          fontWeight: "bold", 
-                          color: "#ffffff", 
-                          marginBottom: "12px", 
-                          fontSize: "0.95rem",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          cursor: "pointer",
-                          userSelect: "none"
-                        }}
-                        onClick={() => setIsBreakdownExpanded(!isBreakdownExpanded)}
-                      >
-                        <span>{t('financialReport.breakdown')}</span>
-                        <span style={{ fontSize: "1.2rem", marginLeft: "8px" }}>
-                          {isBreakdownExpanded ? "▼" : "▶"}
-                        </span>
+                    <div className="mksv-stat">
+                      <div className="mksv-ico mksv-ico--accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-7" /></svg></div>
+                      <div className="mksv-stat-main">
+                        <div className="mksv-stat-label">{t('financialReport.totalRevenue')}</div>
+                        <div className="mksv-stat-val" style={{ color: "#3b82f6" }}>${parseFloat(calculateTotalRevenue()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       </div>
-                      {isBreakdownExpanded && ( */}
-                      {/* <div style={{ fontWeight: "bold", color: "#ffffff", marginBottom: "12px", fontSize: "0.95rem" }}>
-                        {t('financialReport.breakdown')}
-                      </div> */}
-                      <div style={{ marginTop: "0px" }}>
-                        <div
-                          style={{
-                            backgroundColor: "var(--surface-3)",
-                            padding: "12px 15px",
-                            borderRadius: "6px",
-                            marginBottom: "12px",
-                            border: "1px solid var(--border)",
-                          }}
-                        >
-                          <div
-                            style={{
-                              marginBottom: "8px",
-                              color: "#ffffff",
-                              fontWeight: "bold",
-                              fontSize: "0.9rem",
-                            }}
-                          >
-                            {t("financialReport.totalRevenue")}
-                          </div>
-                          <div
-                            style={{
-                              color: FINANCIAL_COLORS.income,
-                              fontWeight: "bold",
-                              fontSize: "1.1rem",
-                            }}
-                          >
-                            $
-                            {parseFloat(calculateTotalRevenue()).toLocaleString(
-                              "en-US",
-                              {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }
-                            )}
-                          </div>
-                        </div>
-                        {/* <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid var(--border)", paddingTop: "12px" }}>
-                          {Object.entries(revenues)
-                            .filter(([purpose, amount]) => {
-                              const filteredItems = getFilteredItems();
-                              return filteredItems.some(
-                                (item) =>
-                                  item.transactionPurpose === purpose &&
-                                  item.transactionType === "Receive"
-                              );
-                            })
-                            .map(([purpose, amount]) => {
-                              const filteredItems = getFilteredItems();
-                              const totalAmount = filteredItems.reduce(
-                                (sum, item) => {
-                                  if (
-                                    item.transactionPurpose === purpose &&
-                                    item.transactionType === "Receive"
-                                  ) {
-                                    return (
-                                      sum + parseFloat(item.transactionAmount || 0)
-                                    );
-                                  }
-                                  return sum;
-                                },
-                                0
-                              );
+                      <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><path d="M2 28 12 22 22 24 32 15 42 17 52 9 64 4 64 34 2 34Z" fill="#3b82f622" /><polyline points="2,28 12,22 22,24 32,15 42,17 52,9 64,4" fill="none" stroke="#3b82f6" strokeWidth="2" /></svg>
+                    </div>
 
-                              return (
-                                <div
-                                  key={purpose}
-                                  style={{
-                                    marginBottom: "8px",
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                                    <span style={{ color: "#ffffff", fontSize: "0.9rem", marginLeft: "10px" }}>
-                                      {translatePurpose(purpose)}:
-                                    </span>
-                                  </span>
-                                  <span
-                                    style={{
-                                      color: FINANCIAL_COLORS.income,
-                                      fontWeight: "bold",
-                                      fontSize: "0.9rem",
-                                    }}
-                                  >
-                                    $
-                                    {totalAmount.toLocaleString("en-US", {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                    })}
-                                  </span>
-                                </div>
-                              );
-                            })}
-                        </div> */}
-                        <div
-                          style={{
-                            backgroundColor: "var(--surface-3)",
-                            padding: "12px 15px",
-                            borderRadius: "6px",
-                            marginBottom: "12px",
-                            border: "1px solid var(--border)",
-                          }}
-                        >
-                          <div
-                            style={{
-                              marginBottom: "8px",
-                              color: "#ffffff",
-                              fontWeight: "bold",
-                              fontSize: "0.9rem",
-                            }}
-                          >
-                            {t("financialReport.totalExpense")}
-                          </div>
-                          <div
-                            style={{
-                              color: FINANCIAL_COLORS.expense,
-                              fontWeight: "bold",
-                              fontSize: "1.1rem",
-                            }}
-                          >
-                            $
-                            {parseFloat(calculateTotalExpenses(true)).toLocaleString(
-                              "en-US",
-                              {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }
-                            )}
-                          </div>
-                        </div>
-                        {/* <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid var(--border)", paddingTop: "12px" }}>
-                          {Object.entries(expenses)
-                            .filter(([purpose, amount]) => {
-                              const filteredItems = getFilteredItems();
-                              // Check for regular expenses (Pay/Payable) OR COGS expenses (sale_inventory)
-                              const hasRegularExpense = filteredItems.some(
-                                (item) =>
-                                  item.transactionPurpose === purpose &&
-                                  (item.transactionType === "Pay" ||
-                                    (item.transactionType === "Payable" &&
-                                      item.status !== "Paid"))
-                              );
-                              const hasCOGS = filteredItems.some(
-                                (item) =>
-                                  item.transactionType === "Receive" &&
-                                  item.subType === "sale_inventory" &&
-                                  (item.assetName === purpose || item.transactionPurpose === purpose)
-                              );
-                              return hasRegularExpense || hasCOGS;
-                            })
-                            .map(([purpose, amount]) => {
-                              const filteredItems = getFilteredItems();
-                              // Calculate total from regular expenses
-                              let totalAmount = filteredItems.reduce(
-                                (sum, item) => {
-                                  if (
-                                    item.transactionPurpose === purpose &&
-                                    (item.transactionType === "Pay" ||
-                                      (item.transactionType === "Payable" &&
-                                        item.status !== "Paid"))
-                                  ) {
-                                    return (
-                                      sum + parseFloat(item.transactionAmount || 0)
-                                    );
-                                  }
-                                  return sum;
-                                },
-                                0
-                              );
-                              // Add COGS amount
-                              filteredItems.forEach((item) => {
-                                if (
-                                  item.transactionType === "Receive" &&
-                                  item.subType === "sale_inventory" &&
-                                  (item.assetName === purpose || item.transactionPurpose === purpose)
-                                ) {
-                                  totalAmount += parseFloat(item.originalAmount || 0);
-                                }
-                              });
-
-                              const isPaid = filteredItems.some(
-                                (item) =>
-                                  item.transactionPurpose === purpose &&
-                                  item.transactionType === "Payable" &&
-                                  item.status === "Paid"
-                              );
-
-                              // Check if this is a COGS expense
-                              const isCOGS = filteredItems.some(
-                                (item) =>
-                                  item.transactionType === "Receive" &&
-                                  item.subType === "sale_inventory" &&
-                                  (item.assetName === purpose || item.transactionPurpose === purpose)
-                              );
-
-                              return (
-                                <div
-                                  key={purpose}
-                                  style={{
-                                    marginBottom: "8px",
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                                    <span style={{ color: "#ffffff", fontSize: "0.9rem", marginLeft: "10px" }}>
-                                      {translatePurpose(purpose)}:
-                                    </span>
-                                  </span>
-                                  <span
-                                    style={{
-                                      color: isCOGS
-                                        ? FINANCIAL_COLORS.cashOut
-                                        : isPaid
-                                          ? FINANCIAL_COLORS.payable
-                                          : FINANCIAL_COLORS.expense,
-                                      fontWeight: "bold",
-                                      fontSize: "0.9rem",
-                                    }}
-                                  >
-                                    $
-                                    {totalAmount.toLocaleString("en-US", {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                    })}
-                                  </span>
-                                </div>
-                              );
-                            })}
-                        </div> */}
+                    <div className="mksv-stat">
+                      <div className="mksv-ico mksv-ico--expense"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 12a9 9 0 11-9-9v9z" /></svg></div>
+                      <div className="mksv-stat-main">
+                        <div className="mksv-stat-label">{t('financialReport.totalExpense')}</div>
+                        <div className="mksv-stat-val" style={{ color: FINANCIAL_COLORS.expense }}>${parseFloat(calculateTotalExpenses(true)).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       </div>
-                      {/* )} Commented out closing bracket for dropdown */}
+                      <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><polyline points="2,14 12,16 22,13 32,17 42,15 52,19 64,17" fill="none" stroke="#a855f7" strokeWidth="2" /></svg>
                     </div>
                   </div>
                 </CardBody>
@@ -3247,7 +3026,7 @@ const MesobFinancial2 = () => {
                   {loadingTransactions ? (
                     <div className="d-flex flex-column align-items-center justify-content-center" style={{ height: "100%", minHeight: "300px" }}>
                       <Spinner color="primary" />
-                      <p style={{ color: "#ffffff", marginTop: "1rem" }}>{t('financialReport.loadingTransactions')}</p>
+                      <p style={{ color: "var(--text-1)", marginTop: "1rem" }}>{t('financialReport.loadingTransactions')}</p>
                     </div>
                   ) : (
                     <div style={{ width: "100%" }}>
@@ -3264,6 +3043,7 @@ const MesobFinancial2 = () => {
                         }
                         selectedTimeRange={selectedTimeRange}
                         handleDelete={handleDelete}
+                        handleEdit={handleEdit}
                         handleAddExpense={handleAddExpense}
                         handleReceiptClick={handleReceiptClick}
                         scheduleCount={scheduleCount}
@@ -3362,7 +3142,7 @@ const MesobFinancial2 = () => {
                               width: "40%",
                               padding: "8px",
                               border: "1px solid var(--border)",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                             }}
                           >
                             <strong>{t('financialReport.assets')}</strong>
@@ -3373,7 +3153,7 @@ const MesobFinancial2 = () => {
                               textAlign: "right",
                               padding: "8px",
                               border: "1px solid var(--border)",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                             }}
                           >
                             <strong>{t('financialReport.amount2')}</strong>
@@ -3384,7 +3164,7 @@ const MesobFinancial2 = () => {
                               textAlign: "right",
                               padding: "8px",
                               border: "1px solid var(--border)",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                             }}
                           >
                             <strong>{t('financialReport.amount2')}</strong>
@@ -3394,15 +3174,15 @@ const MesobFinancial2 = () => {
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
                             {t('financialReport.currentAssets')}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>{t('financialReport.cash')}</td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>{t('financialReport.cash')}</td>
                           <td style={{ color: getBalanceColor(calculateTotalCash()), textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr
                           onClick={() => setIsInventoryExpanded(!isInventoryExpanded)}
@@ -3411,16 +3191,16 @@ const MesobFinancial2 = () => {
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
                             {t('financialReport.inventory')} {isInventoryExpanded ? "▼" : "▶"}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         {isInventoryExpanded && getInventoryBreakdown().map(({ name, balance }) => (
                           <tr key={name}>
-                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff", paddingLeft: "20px" }}>{name}</td>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", paddingLeft: "20px" }}>{name}</td>
                             <td style={{ color: FINANCIAL_COLORS.asset, textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                               $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
-                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           </tr>
                         ))}
                         <tr>
@@ -3430,7 +3210,7 @@ const MesobFinancial2 = () => {
                           <td style={{ color: FINANCIAL_COLORS.asset, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {parseFloat(calculateTotalInventory()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
@@ -3439,22 +3219,22 @@ const MesobFinancial2 = () => {
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
                             {t('financialReport.fixedAssets')}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         {getFixedAssetBreakdown().map(({ name, balance }) => (
                           <tr key={name}>
-                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff", paddingLeft: "20px" }}>{name}</td>
-                            <td style={{ color: "#ffffff", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", paddingLeft: "20px" }}>{name}</td>
+                            <td style={{ color: "var(--text-1)", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                               $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
-                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           </tr>
                         ))}
                         <tr>
@@ -3464,7 +3244,7 @@ const MesobFinancial2 = () => {
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {parseFloat(calculateTotalFixedAssets()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
@@ -3473,29 +3253,29 @@ const MesobFinancial2 = () => {
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff", fontWeight: "bold" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}
                           >
                             <strong>{t('financialReport.liabilitiesEquity')}</strong>
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           >
                             {t('financialReport.payable')}
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
                             style={{
@@ -3517,16 +3297,16 @@ const MesobFinancial2 = () => {
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           >
                             {t('financialReport.beginningEquity')}
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
                             style={{
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                               textAlign: "right",
                               padding: "8px",
                               border: "1px solid var(--border)",
@@ -3545,12 +3325,12 @@ const MesobFinancial2 = () => {
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           >
                             {t('financialReport.retainedEarnings')}
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
                             style={{
@@ -3580,7 +3360,7 @@ const MesobFinancial2 = () => {
                             <strong>{t('financialReport.totalLiabilitiesEquity')}</strong>
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
                             style={{
@@ -3667,7 +3447,7 @@ const MesobFinancial2 = () => {
                         border: "1px solid var(--border)",
                       })}
                     >
-                      <div style={{ marginBottom: "8px", color: "#ffffff", fontWeight: "bold", fontSize: "0.9rem" }}>
+                      <div style={{ marginBottom: "8px", color: "var(--text-1)", fontWeight: "bold", fontSize: "0.9rem" }}>
                         {t('financialReport.totalCashOnHand')}
                       </div>
                       <BalanceValue
@@ -3692,7 +3472,7 @@ const MesobFinancial2 = () => {
                         border: "1px solid var(--border)",
                       }}
                     >
-                      <div style={{ marginBottom: "8px", color: "#ffffff", fontWeight: "bold", fontSize: "0.9rem" }}>
+                      <div style={{ marginBottom: "8px", color: "var(--text-1)", fontWeight: "bold", fontSize: "0.9rem" }}>
                         {t('financialReport.totalPayable')}
                       </div>
                       <div
@@ -3718,7 +3498,7 @@ const MesobFinancial2 = () => {
                       {/* <div 
                         style={{ 
                           fontWeight: "bold", 
-                          color: "#ffffff", 
+                          color: "var(--text-1)", 
                           marginBottom: "12px", 
                           fontSize: "0.95rem",
                           display: "flex",
@@ -3735,7 +3515,7 @@ const MesobFinancial2 = () => {
                         </span>
                       </div>
                       {isBreakdownExpanded && ( */}
-                      {/* <div style={{ fontWeight: "bold", color: "#ffffff", marginBottom: "12px", fontSize: "0.95rem" }}>
+                      {/* <div style={{ fontWeight: "bold", color: "var(--text-1)", marginBottom: "12px", fontSize: "0.95rem" }}>
                         {t('financialReport.breakdown')}
                       </div> */}
                       <div style={{ marginTop: "0px" }}>
@@ -3751,7 +3531,7 @@ const MesobFinancial2 = () => {
                           <div
                             style={{
                               marginBottom: "8px",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                               fontWeight: "bold",
                               fontSize: "0.9rem",
                             }}
@@ -3812,8 +3592,8 @@ const MesobFinancial2 = () => {
                                     alignItems: "center",
                                   }}
                                 >
-                                  <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                                    <span style={{ color: "#ffffff", fontSize: "0.9rem", marginLeft: "10px" }}>
+                                  <span style={{ color: "var(--text-1)", fontSize: "0.9rem" }}>
+                                    <span style={{ color: "var(--text-1)", fontSize: "0.9rem", marginLeft: "10px" }}>
                                       {translatePurpose(purpose)}:
                                     </span>
                                   </span>
@@ -3846,7 +3626,7 @@ const MesobFinancial2 = () => {
                           <div
                             style={{
                               marginBottom: "8px",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                               fontWeight: "bold",
                               fontSize: "0.9rem",
                             }}
@@ -3944,7 +3724,7 @@ const MesobFinancial2 = () => {
                                     alignItems: "center",
                                   }}
                                 >
-                                  <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
+                                  <span style={{ color: "var(--text-1)", fontSize: "0.9rem" }}>
                                     {purpose}:
                                   </span>
                                   <span
@@ -3991,7 +3771,7 @@ const MesobFinancial2 = () => {
                   {loadingTransactions ? (
                     <div className="d-flex flex-column align-items-center justify-content-center" style={{ height: "100%", minHeight: "300px" }}>
                       <Spinner color="primary" />
-                      <p style={{ color: "#ffffff", marginTop: "1rem" }}>Loading transactions...</p>
+                      <p style={{ color: "var(--text-1)", marginTop: "1rem" }}>Loading transactions...</p>
                     </div>
                   ) : (
                     <div style={{ width: "100%" }}>
@@ -4008,6 +3788,7 @@ const MesobFinancial2 = () => {
                         }
                         selectedTimeRange={selectedTimeRange}
                         handleDelete={handleDelete}
+                        handleEdit={handleEdit}
                         handleAddExpense={handleAddExpense}
                         handleReceiptClick={handleReceiptClick}
                         scheduleCount={scheduleCount}
@@ -4084,27 +3865,27 @@ const MesobFinancial2 = () => {
                     >
                       <tbody>
                         <tr>
-                          <td style={{ width: "40%", padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+                          <td style={{ width: "40%", padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
                             <strong>{t('financialReport.assets')}</strong>
                           </td>
-                          <td style={{ width: "30%", textAlign: "right", padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+                          <td style={{ width: "30%", textAlign: "right", padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
                             <strong>{t('financialReport.amount2')}</strong>
                           </td>
-                          <td style={{ width: "30%", textAlign: "right", padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>
+                          <td style={{ width: "30%", textAlign: "right", padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
                             <strong>{t('financialReport.amount2')}</strong>
                           </td>
                         </tr>
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>{t('financialReport.currentAssets')}</td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}>{t('financialReport.cash')}</td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>{t('financialReport.cash')}</td>
                           <td style={{ color: getBalanceColor(calculateTotalCash()), textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr
                           onClick={() => setIsInventoryExpanded(!isInventoryExpanded)}
@@ -4113,16 +3894,16 @@ const MesobFinancial2 = () => {
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
                             {t('financialReport.inventory')} {isInventoryExpanded ? "▼" : "▶"}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         {isInventoryExpanded && getInventoryBreakdown().map(({ name, balance }) => (
                           <tr key={`bs2-inv-${name}`}>
-                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff", paddingLeft: "20px" }}>{name}</td>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", paddingLeft: "20px" }}>{name}</td>
                             <td style={{ color: FINANCIAL_COLORS.asset, textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                               $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
-                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           </tr>
                         ))}
                         <tr>
@@ -4132,27 +3913,27 @@ const MesobFinancial2 = () => {
                           <td style={{ color: FINANCIAL_COLORS.asset, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {parseFloat(calculateTotalInventory()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}><strong>{t('financialReport.totalCurrentAssets')}</strong></td>
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>{t('financialReport.fixedAssets')}</td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         {getFixedAssetBreakdown().map(({ name, balance }) => (
                           <tr key={`bs2-${name}`}>
-                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff", paddingLeft: "20px" }}>{name}</td>
-                            <td style={{ color: "#ffffff", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", paddingLeft: "20px" }}>{name}</td>
+                            <td style={{ color: "var(--text-1)", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                               $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
-                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           </tr>
                         ))}
                         <tr>
@@ -4160,32 +3941,32 @@ const MesobFinancial2 = () => {
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {parseFloat(calculateTotalFixedAssets()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}><strong>{t('financialReport.totalAssets')}</strong></td>
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
                             $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff", fontWeight: "bold" }}>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
                             <strong>{t('financialReport.liabilitiesEquity')}</strong>
                           </td>
-                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           >
                             {t('financialReport.payable')}
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
                             style={{
@@ -4207,16 +3988,16 @@ const MesobFinancial2 = () => {
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           >
                             {t('financialReport.beginningEquity')}
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
                             style={{
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                               textAlign: "right",
                               padding: "8px",
                               border: "1px solid var(--border)",
@@ -4235,12 +4016,12 @@ const MesobFinancial2 = () => {
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           >
                             {t('financialReport.retainedEarnings')}
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
                             style={{
@@ -4270,7 +4051,7 @@ const MesobFinancial2 = () => {
                             <strong>{t('financialReport.totalLiabilitiesEquity')}</strong>
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid var(--border)", color: "#ffffff" }}
+                            style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           ></td>
                           <td
                             style={{
@@ -4300,6 +4081,60 @@ const MesobFinancial2 = () => {
             </Col>
           </Row>
         </Container>
+        <Modal isOpen={editModalOpen} toggle={() => setEditModalOpen(false)}>
+          <ModalHeader toggle={() => setEditModalOpen(false)}>
+            {t('financialReport.editTransaction')}
+          </ModalHeader>
+          <ModalBody>
+            <FormGroup>
+              <Label>Type</Label>
+              <Input
+                type="select"
+                value={editType}
+                onChange={(e) => setEditType(e.target.value)}
+              >
+                {!["Receive", "Pay"].includes(editType) && (
+                  <option value={editType}>{editType}</option>
+                )}
+                <option value="Receive">Receive</option>
+                <option value="Pay">Pay</option>
+              </Input>
+            </FormGroup>
+            <FormGroup>
+              <Label>Purpose</Label>
+              <Input
+                type="text"
+                value={editPurpose}
+                onChange={(e) => setEditPurpose(e.target.value)}
+                placeholder="Transaction purpose"
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>Amount</Label>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                value={editAmount}
+                onChange={(e) => setEditAmount(e.target.value)}
+                placeholder="0.00"
+              />
+            </FormGroup>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="secondary"
+              onClick={() => setEditModalOpen(false)}
+              disabled={savingEdit}
+            >
+              Cancel
+            </Button>
+            <Button color="primary" onClick={handleSaveEdit} disabled={savingEdit}>
+              {savingEdit ? <Spinner size="sm" /> : "Save"}
+            </Button>
+          </ModalFooter>
+        </Modal>
+
         {/* <Modal
           isOpen={showDeleteConfirmation}
           toggle={() => setShowDeleteConfirmation(false)}

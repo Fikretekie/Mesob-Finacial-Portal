@@ -116,3 +116,56 @@
 @media (prefers-reduced-motion: reduce) {
   :root { --dur-fast: 0ms; --dur: 0ms; }
 }
+
+/* =========================================================================
+   Light theme — activated by [data-theme="light"] on <html>. Overrides only
+   colour tokens; radius/spacing/type/motion are shared. Toggle persists in
+   localStorage ("mksv-theme"); init in public/index.html, control in navbar.
+   ========================================================================= */
+:root { color-scheme: dark; }
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --bg:            #EEF2F7;
+  --surface-1:     #E7ECF3;
+  --surface-2:     #FFFFFF;
+  --surface-3:     #F4F7FB;
+  --surface-hover: #EAF0F7;
+
+  --border:        rgba(16, 35, 61, 0.10);
+  --border-strong: rgba(16, 35, 61, 0.18);
+
+  --text-1: #10233D;
+  --text-2: #4A5C74;
+  --text-3: #7C8AA0;
+
+  --green:  #0A9D63;
+  --red:    #D83A48;
+  --teal:   #0A8FB0;
+  --purple: #8B3FD6;
+  --amber:  #B9812A;
+
+  --accent:        #2563EB;
+  --accent-solid:  #2563EB;
+  --accent-ink:    #FFFFFF;
+  --accent-hover:  #1D4ED8;
+  --accent-soft:   rgba(37, 99, 235, 0.10);
+  --accent-ring:   rgba(37, 99, 235, 0.35);
+
+  --danger-soft:   rgba(216, 58, 72, 0.10);
+
+  --shadow-1: 0 1px 2px rgba(20, 40, 80, 0.10);
+  --shadow-2: 0 8px 24px rgba(20, 40, 80, 0.10);
+  --shadow-3: 0 24px 60px rgba(20, 40, 80, 0.14);
+
+  --glass-bg:      rgba(255, 255, 255, 0.72);
+  --glass-bg-2:    rgba(255, 255, 255, 0.60);
+  --glass-border:  rgba(16, 35, 61, 0.10);
+  --glass-sheen:   linear-gradient(180deg, rgba(255,255,255,0.60), rgba(255,255,255,0.10) 40%, rgba(255,255,255,0) 70%);
+  --glass-inset:   inset 0 1px 0 rgba(255, 255, 255, 0.90);
+
+  --card-border: rgba(37, 99, 235, 0.20);
+  --card-glow:
+    0 0 0 1px rgba(37, 99, 235, 0.10),
+    0 10px 30px rgba(20, 40, 80, 0.08);
+}

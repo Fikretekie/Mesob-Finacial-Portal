@@ -342,6 +342,7 @@ import { faApple } from "@fortawesome/free-brands-svg-icons";
 import { Link } from "react-router-dom";
 import { signIn, signInWithRedirect, signOut } from "aws-amplify/auth";
 import { clearAppStorageKeepingSession } from "utils/authStorage";
+import { authHeader } from "utils/apiFetch";
 import getUserInfo from "utils/Getuser";
 import NotificationAlert from "react-notification-alert";
 import { apiUrl, ROUTES, CURRENT_ENV } from "../config/api";
@@ -429,6 +430,7 @@ const Login = () => {
             headers: {
               "Content-Type": "application/json",
               Accept: "application/json",
+              ...(await authHeader()),
             },
           }
         );

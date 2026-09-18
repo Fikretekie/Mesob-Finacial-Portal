@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { BsTrashFill, BsReceipt } from "react-icons/bs";
+import { BsTrashFill, BsReceipt, BsPencilFill } from "react-icons/bs";
 import "./TransactionTable.css";
 import { useTranslation } from "react-i18next";
 import { translatePurpose } from "utils/translatedBusinessTypes";
@@ -24,6 +24,7 @@ const formatJournalPurpose = (purpose) =>
 const TransactionTable = ({
   items = [],
   handleDelete,
+  handleEdit,
   handleReceiptClick,
   disabled,
   scheduleCount,
@@ -96,12 +97,12 @@ const TransactionTable = ({
         : stripBrackets(name);
     const fmt = (n) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const pill = (color) => getAmountPillStyle(color);
-    const dash = <span style={{ color: "#ffffff", fontSize: "14px" }}>-</span>;
+    const dash = <span style={{ color: "var(--text-1)", fontSize: "14px" }}>-</span>;
 
     return (
       <tr key={`${transaction.id || idx}-${lineKey}`}>
-        <td style={{ color: "#ffffff", verticalAlign: "top", paddingTop: "8px" }}>{formatDate(transaction.createdAt)}</td>
-        <td style={{ color: "#ffffff", verticalAlign: "top", paddingTop: "8px" }}>{srNo}</td>
+        <td style={{ color: "var(--text-1)", verticalAlign: "top", paddingTop: "8px" }}>{formatDate(transaction.createdAt)}</td>
+        <td style={{ color: "var(--text-1)", verticalAlign: "top", paddingTop: "8px" }}>{srNo}</td>
         <td colSpan={3} className="journal-sale-cell">
           <div className="journal-sale-grid">
             <div className="journal-sale-txn journal-sale-txn-bold">{stripBrackets(t('financialReport.receive'))}</div>
@@ -130,6 +131,7 @@ const TransactionTable = ({
         </td>
         <td className="transaction-table-actions" style={{ verticalAlign: "top", paddingTop: "8px" }}>
           <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center" }}>
+            {handleEdit && <BsPencilFill className="edit-btn" onClick={() => isFeatureEnabled() && handleEdit(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#4a90e2" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5 }} />}
             <BsTrashFill className="delete-btn" onClick={() => isFeatureEnabled() && handleDelete(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#e10d05" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5 }} />
             {transaction.receiptUrl && <BsReceipt className="receipt-btn" onClick={() => isFeatureEnabled() && handleReceiptClick(transaction.receiptUrl)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#007bff" : "#ccc" }} />}
           </div>
@@ -194,9 +196,9 @@ const TransactionTable = ({
 
               return (
                 <tr key={`${transaction.id || idx}-single`}>
-                  <td style={{ color: "#ffffff" }}>{formatDate(transaction.createdAt)}</td>
-                  <td style={{ color: "#ffffff" }}>{srNo}</td>
-                  <td style={{ color: "#ffffff" }}>
+                  <td style={{ color: "var(--text-1)" }}>{formatDate(transaction.createdAt)}</td>
+                  <td style={{ color: "var(--text-1)" }}>{srNo}</td>
+                  <td style={{ color: "var(--text-1)" }}>
                     {transaction.transactionType === "Receive" ? (
                       <>
                         <div style={{ fontWeight: "bold" }}>{stripBrackets(t('financialReport.receive'))}</div>
@@ -233,7 +235,7 @@ const TransactionTable = ({
                         <div className="debit-value" style={{ ...debitPill, marginBottom: "4px" }}>
                           $ {parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
-                        <div style={{ color: "#ffffff", fontSize: "14px" }}>-</div>
+                        <div style={{ color: "var(--text-1)", fontSize: "14px" }}>-</div>
                       </>
                     )}
                     {transaction.transactionType === "Payable" && (
@@ -241,7 +243,7 @@ const TransactionTable = ({
                         <div className="debit-value" style={{ ...debitPill, marginBottom: "4px" }}>
                           $ {parseFloat(transaction.originalAmount || transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
-                        <div style={{ color: "#ffffff", fontSize: "14px" }}>-</div>
+                        <div style={{ color: "var(--text-1)", fontSize: "14px" }}>-</div>
                       </>
                     )}
                     {["Pay", "New_Item"].includes(transaction.transactionType) && (
@@ -249,14 +251,14 @@ const TransactionTable = ({
                         <div className="debit-value" style={{ ...debitPill, marginBottom: "4px" }}>
                           $ {parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
-                        <div style={{ color: "#ffffff", fontSize: "14px" }}>-</div>
+                        <div style={{ color: "var(--text-1)", fontSize: "14px" }}>-</div>
                       </>
                     )}
                   </td>
                   <td className="credit">
                     {transaction.transactionType === "Receive" && (
                       <>
-                        <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
+                        <div style={{ color: "var(--text-1)", fontSize: "14px", marginBottom: "4px" }}>-</div>
                         <div className="credit-value" style={creditPill}>
                           $ {parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
@@ -264,7 +266,7 @@ const TransactionTable = ({
                     )}
                     {transaction.transactionType === "Payable" && (
                       <>
-                        <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
+                        <div style={{ color: "var(--text-1)", fontSize: "14px", marginBottom: "4px" }}>-</div>
                         <div className="credit-value" style={creditPill}>
                           $ {parseFloat(transaction.originalAmount || transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
@@ -272,7 +274,7 @@ const TransactionTable = ({
                     )}
                     {["Pay", "New_Item"].includes(transaction.transactionType) && (
                       <>
-                        <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
+                        <div style={{ color: "var(--text-1)", fontSize: "14px", marginBottom: "4px" }}>-</div>
                         <div className="credit-value" style={creditPill}>
                           $ {parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
@@ -281,6 +283,7 @@ const TransactionTable = ({
                   </td>
                   <td className="transaction-table-actions" style={{ verticalAlign: "middle" }}>
                     <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center" }}>
+                      {handleEdit && <BsPencilFill className="edit-btn" onClick={() => isFeatureEnabled() && handleEdit(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#4a90e2" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5, display: "flex", alignItems: "center", justifyContent: "center" }} />}
                       <BsTrashFill className="delete-btn" onClick={() => isFeatureEnabled() && handleDelete(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#e10d05" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5, display: "flex", alignItems: "center", justifyContent: "center" }} />
                       {transaction.receiptUrl && <BsReceipt className="receipt-btn" onClick={() => isFeatureEnabled() && handleReceiptClick(transaction.receiptUrl)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#007bff" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5, display: "flex", alignItems: "center", justifyContent: "center" }} />}
                     </div>

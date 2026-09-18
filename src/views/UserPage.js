@@ -520,7 +520,7 @@ function UserPage() {
                 <h5
                   className="title mb-0"
                   style={{
-                    color: "#ffffff",
+                    color: "var(--text-1)",
                     fontSize: isUltraNarrow ? "1rem" : undefined,
                   }}
                 >
@@ -581,27 +581,27 @@ function UserPage() {
                   <Row >
                     <Col className="pr-1" md="6" >
                       <FormGroup>
-                        <label style={{ color: "#ffffff" }}>Name</label>
+                        <label style={{ color: "var(--text-1)" }}>Name</label>
                         <Input
                           name="name"
                           value={userData.name}
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
-                          style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
+                          style={{ backgroundColor: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
                     <Col className="pl-1" md="6">
                       <FormGroup>
-                        <label style={{ color: "#ffffff" }}>Email address</label>
+                        <label style={{ color: "var(--text-1)" }}>Email address</label>
                         <Input
                           name="email"
                           value={userData.email}
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="email"
-                          style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
+                          style={{ backgroundColor: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
@@ -609,27 +609,27 @@ function UserPage() {
                   <Row>
                     <Col className="pr-1" md="6">
                       <FormGroup>
-                        <label style={{ color: "#ffffff" }}>Phone</label>
+                        <label style={{ color: "var(--text-1)" }}>Phone</label>
                         <Input
                           name="phone"
                           value={userData.phone_number}
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
-                          style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
+                          style={{ backgroundColor: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
                     <Col className="pl-1" md="6">
                       <FormGroup>
-                        <label style={{ color: "#ffffff" }}>Company Name</label>
+                        <label style={{ color: "var(--text-1)" }}>Company Name</label>
                         <Input
                           name="companyName"
                           value={userData.companyName}
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
-                          style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
+                          style={{ backgroundColor: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
@@ -637,14 +637,14 @@ function UserPage() {
                   <Row>
                     <Col md="12">
                       <FormGroup>
-                        <label style={{ color: "#ffffff" }}>Business Type</label>
+                        <label style={{ color: "var(--text-1)" }}>Business Type</label>
                         {isEditing ? (
                           <Input
                             type="select"
                             name="businessType"
                             value={userData.businessType || ""}
                             onChange={handleInputChange}
-                            style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
+                            style={{ backgroundColor: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "4px" }}
                           >
                             <option value="">Select Business Type</option>
                             <option value="Trucking">Trucking</option>
@@ -675,7 +675,7 @@ function UserPage() {
                             disabled
                             type="text"
                             placeholder="Not specified"
-                            style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
+                            style={{ backgroundColor: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "4px" }}
                           />
                         )}
                       </FormGroup>
@@ -684,40 +684,40 @@ function UserPage() {
                   <Row>
                     <Col className="pr-1" md="4">
                       <FormGroup>
-                        <label style={{ color: "#ffffff" }}>Cash Balance</label>
+                        <label style={{ color: "var(--text-1)" }}>Cash Balance</label>
                         <Input
                           name="cashBalance"
                           value={userData.cashBalance}
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
-                          style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
+                          style={{ backgroundColor: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
                     <Col className="px-1" md="4">
                       <FormGroup>
-                        <label style={{ color: "#ffffff" }}>Outstanding Debt</label>
+                        <label style={{ color: "var(--text-1)" }}>Outstanding Debt</label>
                         <Input
                           name="outstandingDebt"
                           value={userData.outstandingDebt}
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
-                          style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
+                          style={{ backgroundColor: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
                     <Col className="pl-1" md="4">
                       <FormGroup>
-                        <label style={{ color: "#ffffff" }}>Valuable Items</label>
+                        <label style={{ color: "var(--text-1)" }}>Valuable Items</label>
                         <Input
                           name="valueableItems"
                           value={userData.valueableItems}
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
-                          style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
+                          style={{ backgroundColor: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
@@ -825,7 +825,7 @@ function UserPage() {
                               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                                 <span style={{
                                   backgroundColor: subscriptionData.subscriptionDetails.status === "active" ? "var(--accent-solid)" : "#f59e0b",
-                                  color: "#ffffff",
+                                  color: "var(--text-1)",
                                   padding: "4px 12px",
                                   borderRadius: "12px",
                                   fontSize: "12px",
@@ -840,7 +840,7 @@ function UserPage() {
                               </div>
                             </div>
                             <div style={{ textAlign: "right" }}>
-                              <div style={{ fontSize: "32px", fontWeight: "700", color: "#ffffff" }}>
+                              <div style={{ fontSize: "32px", fontWeight: "700", color: "var(--text-1)" }}>
                                 ${subscriptionData.subscriptionDetails.amount}
                               </div>
                               <div style={{ color: "var(--text-3)", fontSize: "14px" }}>
@@ -950,7 +950,7 @@ function UserPage() {
                             border: "1px solid var(--surface-3)"
                           }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                              <h5 style={{ color: "#ffffff", fontSize: "16px", fontWeight: "600", margin: 0 }}>
+                              <h5 style={{ color: "var(--text-1)", fontSize: "16px", fontWeight: "600", margin: 0 }}>
                                 Billing History
                               </h5>
                               <span style={{ color: "var(--text-3)", fontSize: "14px" }}>
@@ -1088,7 +1088,7 @@ function UserPage() {
                           border: "1px solid var(--surface-3)"
                         }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                            <h5 style={{ color: "#ffffff", fontSize: "16px", fontWeight: "600", margin: 0 }}>
+                            <h5 style={{ color: "var(--text-1)", fontSize: "16px", fontWeight: "600", margin: 0 }}>
                               Payment Method
                             </h5>
                             <Button
@@ -1142,7 +1142,7 @@ function UserPage() {
                           padding: "24px",
                           border: "1px solid var(--surface-3)"
                         }}>
-                          <h5 style={{ color: "#ffffff", marginBottom: "16px", fontSize: "16px", fontWeight: "600" }}>
+                          <h5 style={{ color: "var(--text-1)", marginBottom: "16px", fontSize: "16px", fontWeight: "600" }}>
                             Manage Subscription
                           </h5>
                           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
@@ -1160,7 +1160,7 @@ function UserPage() {
                               style={{
                                 backgroundColor: "#e53e3e",
                                 borderColor: "#e53e3e",
-                                color: "#ffffff",
+                                color: "var(--text-1)",
                                 fontSize: "14px"
                               }}
                               onClick={() => setShowCancelModal(true)}
@@ -1183,7 +1183,7 @@ function UserPage() {
                           border: "1px solid var(--surface-3)"
                         }}>
                           <div style={{ fontSize: "48px", marginBottom: "16px" }}>📋</div>
-                          <h4 style={{ color: "#ffffff", marginBottom: "12px" }}>No Active Subscription</h4>
+                          <h4 style={{ color: "var(--text-1)", marginBottom: "12px" }}>No Active Subscription</h4>
                           <p style={{ color: "var(--text-3)", marginBottom: "24px", maxWidth: "400px", margin: "0 auto 24px" }}>
                             Subscribe to Pro Plan to unlock unlimited transactions, advanced reports, and more features.
                           </p>
@@ -1223,7 +1223,7 @@ function UserPage() {
                         style={{
                           backgroundColor: "#e53e3e",
                           borderColor: "#e53e3e",
-                          color: "#ffffff",
+                          color: "var(--text-1)",
                           fontSize: "12px",
                           padding: "8px 16px",
                           borderRadius: "6px",
@@ -1247,14 +1247,14 @@ function UserPage() {
         >
           <span style={{ color: "#e53e3e", fontWeight: "bold" }}>Reset All Transactions</span>
         </ModalHeader>
-        <ModalBody style={{ backgroundColor: "var(--surface-2)", color: "#ffffff" }}>
-          <p style={{ color: "#ffffff", marginBottom: "12px" }}>
+        <ModalBody style={{ backgroundColor: "var(--surface-2)", color: "var(--text-1)" }}>
+          <p style={{ color: "var(--text-1)", marginBottom: "12px" }}>
             This will permanently delete <strong>all transactions</strong> and reset your dashboard balances to zero.
           </p>
           <p style={{ color: "#e53e3e", marginBottom: "20px", fontWeight: "500" }}>
             We strongly recommend downloading your financial reports before continuing. This action cannot be undone.
           </p>
-          <p style={{ color: "#ffffff", marginBottom: "8px" }}>Type <strong>RESET</strong> to confirm:</p>
+          <p style={{ color: "var(--text-1)", marginBottom: "8px" }}>Type <strong>RESET</strong> to confirm:</p>
           <Input
             type="text"
             placeholder="Type RESET here"
@@ -1262,7 +1262,7 @@ function UserPage() {
             onChange={(e) => setResetConfirmText(e.target.value)}
             style={{
               backgroundColor: "var(--surface-2)",
-              color: "#ffffff",
+              color: "var(--text-1)",
               border: "1px solid var(--border)",
               marginBottom: "20px",
             }}
@@ -1271,7 +1271,7 @@ function UserPage() {
             <Button
               onClick={handleDownloadReport}
               disabled={isWorking}
-              style={{ backgroundColor: "var(--accent)", borderColor: "var(--accent)", color: "#ffffff", flex: "1" }}
+              style={{ backgroundColor: "var(--accent)", borderColor: "var(--accent)", color: "var(--text-1)", flex: "1" }}
             >
               {isWorking ? "Downloading..." : "Download Financial Report"}
             </Button>
@@ -1284,7 +1284,7 @@ function UserPage() {
               style={{
                 backgroundColor: resetConfirmText === "RESET" ? "#e53e3e" : "#666",
                 borderColor: resetConfirmText === "RESET" ? "#e53e3e" : "#666",
-                color: "#ffffff",
+                color: "var(--text-1)",
               }}
             >
               {isWorking ? "Processing..." : "Confirm Reset"}
@@ -1301,8 +1301,8 @@ function UserPage() {
         >
           <span style={{ color: "#e53e3e", fontWeight: "bold" }}>Cancel Subscription</span>
         </ModalHeader>
-        <ModalBody style={{ backgroundColor: "var(--surface-2)", color: "#ffffff" }}>
-          <p style={{ color: "#ffffff", marginBottom: "12px" }}>
+        <ModalBody style={{ backgroundColor: "var(--surface-2)", color: "var(--text-1)" }}>
+          <p style={{ color: "var(--text-1)", marginBottom: "12px" }}>
             Are you sure you want to cancel your subscription?
           </p>
           <p style={{ color: "#fbbf24", marginBottom: "20px", fontWeight: "500" }}>
@@ -1342,7 +1342,7 @@ function UserPage() {
             style={{
               backgroundColor: "#e53e3e",
               borderColor: "#e53e3e",
-              color: "#ffffff"
+              color: "var(--text-1)"
             }}
           >
             {cancelLoading ? (

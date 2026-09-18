@@ -382,13 +382,13 @@ const AdminSubscriptions = () => {
   return (
     <>
       <PanelHeader size="sm" />
-      <div className="content" style={{ backgroundColor: "#101926", paddingInline: 15 }}>
+      <div className="content" style={{ backgroundColor: "var(--surface-2)", paddingInline: 15 }}>
         <Row>
           <Col xs={12} style={{ paddingInline: 0 }}>
-            <Card style={{ backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
-              <CardHeader style={{ backgroundColor: "#101926" }}>
+            <Card style={{ backgroundColor: "var(--surface-2)", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+              <CardHeader style={{ backgroundColor: "var(--surface-2)" }}>
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
-                  <CardTitle tag="h4" className="mb-0" style={{ color: "#ffffff" }}>
+                  <CardTitle tag="h4" className="mb-0" style={{ color: "var(--text-1)" }}>
                     Subscriptions
                   </CardTitle>
                   <div className="d-flex flex-wrap gap-2">
@@ -425,7 +425,7 @@ const AdminSubscriptions = () => {
                   </NavItem>
                 </Nav>
               </CardHeader>
-              <CardBody style={{ backgroundColor: "#101926" }}>
+              <CardBody style={{ backgroundColor: "var(--surface-2)" }}>
                 <TabContent activeTab={activeTab}>
                   <TabPane tabId="1">
                     <div className="mb-3">
@@ -468,11 +468,11 @@ const AdminSubscriptions = () => {
                     ) : loading ? (
                       <div className="text-center py-4">
                         <Spinner color="primary" />
-                        <p className="mt-2" style={{ color: "#ffffff" }}>Loading subscriptions...</p>
+                        <p className="mt-2" style={{ color: "var(--text-1)" }}>Loading subscriptions...</p>
                       </div>
                     ) : isMobile ? (
                       getFilteredSubscriptions(true).length === 0 ? (
-                        <div className="text-center py-4" style={{ color: "#ffffff" }}>
+                        <div className="text-center py-4" style={{ color: "var(--text-1)" }}>
                           No active subscriptions found
                         </div>
                       ) : (
@@ -493,7 +493,7 @@ const AdminSubscriptions = () => {
                         fixedHeader
                         fixedHeaderScrollHeight="400px"
                         noDataComponent={
-                          <div className="text-center py-4" style={{ color: "#ffffff" }}>
+                          <div className="text-center py-4" style={{ color: "var(--text-1)" }}>
                             No active subscriptions found
                           </div>
                         }
@@ -506,25 +506,25 @@ const AdminSubscriptions = () => {
                           headRow: {
                             style: {
                               backgroundColor: "#000000",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                             },
                           },
                           headCells: {
                             style: {
                               backgroundColor: "#000000",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                             },
                           },
                           cells: {
                             style: {
                               backgroundColor: "#000000",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                             },
                           },
                           rows: {
                             style: {
                               backgroundColor: "#000000",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                               "&:hover": {
                                 backgroundColor: "#000000",
                               },
@@ -533,7 +533,7 @@ const AdminSubscriptions = () => {
                           pagination: {
                             style: {
                               backgroundColor: "#000000",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                             },
                           },
                         }}
@@ -546,11 +546,11 @@ const AdminSubscriptions = () => {
                     ) : loading ? (
                       <div className="text-center py-4">
                         <Spinner color="primary" />
-                        <p className="mt-2" style={{ color: "#ffffff" }}>Loading data...</p>
+                        <p className="mt-2" style={{ color: "var(--text-1)" }}>Loading data...</p>
                       </div>
                     ) : isMobile ? (
                       getFilteredSubscriptions(false).length === 0 ? (
-                        <div className="text-center py-4" style={{ color: "#ffffff" }}>
+                        <div className="text-center py-4" style={{ color: "var(--text-1)" }}>
                           No cancelled/inactive subscriptions found
                         </div>
                       ) : (
@@ -571,7 +571,7 @@ const AdminSubscriptions = () => {
                         fixedHeader
                         fixedHeaderScrollHeight="400px"
                         noDataComponent={
-                          <div className="text-center py-4" style={{ color: "#ffffff" }}>
+                          <div className="text-center py-4" style={{ color: "var(--text-1)" }}>
                             No cancelled/inactive subscriptions found
                           </div>
                         }
@@ -584,25 +584,25 @@ const AdminSubscriptions = () => {
                           headRow: {
                             style: {
                               backgroundColor: "#000000",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                             },
                           },
                           headCells: {
                             style: {
                               backgroundColor: "#000000",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                             },
                           },
                           cells: {
                             style: {
                               backgroundColor: "#000000",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                             },
                           },
                           rows: {
                             style: {
                               backgroundColor: "#000000",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                               "&:hover": {
                                 backgroundColor: "#000000",
                               },
@@ -611,7 +611,7 @@ const AdminSubscriptions = () => {
                           pagination: {
                             style: {
                               backgroundColor: "#000000",
-                              color: "#ffffff",
+                              color: "var(--text-1)",
                             },
                           },
                         }}
