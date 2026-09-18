@@ -20,10 +20,10 @@
 .transaction-table td {
   padding: 8px 8px;
   text-align: left;
-  border-bottom: 1px solid #3a4555;
+  border-bottom: 1px solid var(--border);
   white-space: normal;
   overflow-wrap: break-word;
-  color: #ffffff;
+  color: var(--text-1);
 }
 
 /* Date */
@@ -90,7 +90,7 @@
 
 .journal-sale-txn {
   font-size: 13px;
-  color: #aaa;
+  color: var(--text-2);
   text-align: left;
   line-height: 1.35;
   min-width: 0;
@@ -99,7 +99,7 @@
 
 .journal-sale-txn-bold {
   font-weight: bold;
-  color: #ffffff;
+  color: var(--text-1);
 }
 
 .journal-sale-debit,
@@ -118,18 +118,18 @@
 
 /* Header */
 .transaction-table th {
-  background-color: #101926;
+  background-color: var(--surface-3);
   font-weight: bold;
-  color: #ffffff;
-  border-bottom: 1px solid #3a4555;
+  color: var(--text-1);
+  border-bottom: 1px solid var(--border);
 }
 
 .transaction-table tr:hover {
-  background-color: #1a2332;
+  background-color: var(--surface-hover);
 }
 
 .transaction-table tbody tr {
-  background-color: #101926;
+  background-color: transparent;
 }
 
 /* Action Buttons */
