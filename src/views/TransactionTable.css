@@ -18,7 +18,7 @@
 /* Shared Cell Styles */
 .transaction-table th,
 .transaction-table td {
-  padding: 8px 8px;
+  padding: 12px 10px;
   text-align: left;
   border-bottom: 1px solid var(--border);
   white-space: normal;
@@ -118,10 +118,21 @@
 
 /* Header */
 .transaction-table th {
-  background-color: var(--surface-3);
-  font-weight: bold;
-  color: var(--text-1);
+  background-color: transparent;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 11px;
   border-bottom: 1px solid var(--border);
+}
+/* Mono, tabular figures for date + serial columns (instrument look) */
+.transaction-table td:nth-child(1),
+.transaction-table td:nth-child(2) {
+  font-family: var(--font-mono, ui-monospace, "JetBrains Mono", Menlo, monospace);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+  font-size: 12px;
 }
 
 .transaction-table tr:hover {

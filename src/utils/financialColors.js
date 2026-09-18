@@ -102,13 +102,34 @@ export const getTransactionColor = (transaction, context = "default") => {
   return FINANCIAL_COLORS.income;
 };
 
-export const getAmountPillStyle = (color, compact = false) => ({
-  backgroundColor: color,
-  color: "#000000",
-  fontWeight: "bold",
-  padding: compact ? "4px 8px" : "4px 12px",
-  boxSizing: "border-box",
-});
+// Map the fixed data hexes to theme tokens so pills adapt to light/dark.
+const HEX_TO_VAR = {
+  "#00D97E": "var(--green)",
+  "#FF4D4D": "var(--red)",
+  "#FFA53B": "var(--amber)",
+  "#00B4D8": "var(--teal)",
+  "#A855F7": "var(--purple)",
+  "#A0A0A0": "var(--text-3)",
+};
+
+// Soft "glassy" pill: a low-alpha wash of the colour with colour-matched mono
+// text, instead of a solid block. color-mix keeps the wash correct in both
+// themes (falls back to just the coloured text if unsupported).
+export const getAmountPillStyle = (color, compact = false) => {
+  const c = HEX_TO_VAR[String(color).toUpperCase()] || color;
+  return {
+    backgroundColor: `color-mix(in srgb, ${c} 15%, transparent)`,
+    color: c,
+    fontWeight: 700,
+    padding: compact ? "4px 9px" : "5px 11px",
+    borderRadius: "8px",
+    fontFamily: 'var(--font-mono, ui-monospace, "JetBrains Mono", Menlo, monospace)',
+    fontVariantNumeric: "tabular-nums",
+    whiteSpace: "nowrap",
+    display: "inline-block",
+    boxSizing: "border-box",
+  };
+};
 
 export const getJournalPillStyle = (transaction, context, compact = false) =>
   getAmountPillStyle(getTransactionColor(transaction, context), compact);
