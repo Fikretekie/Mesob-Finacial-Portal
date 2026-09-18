@@ -888,3 +888,22 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   color: var(--text-1) !important;
 }
 .modal-content .modal-title { font-weight: 700 !important; }
+
+/* ---- Modal form fields: crisp in both themes (reactstrap form-control
+   defaults to dark text, low-contrast on the dark modal surface). ---- */
+.modal-content .form-control,
+.modal-content select.form-control,
+.modal-content textarea.form-control {
+  background: var(--surface-3) !important;
+  color: var(--text-1) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--r-sm) !important;
+}
+.modal-content .form-control:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-ring) !important;
+  background: var(--surface-3) !important;
+  color: var(--text-1) !important;
+}
+.modal-content .form-control::placeholder { color: var(--text-3) !important; }
+.modal-content select.form-control { color-scheme: light dark; }
