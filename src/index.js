@@ -37,6 +37,7 @@ import OAuthListener from "components/OAuthListener";
 import TermsOfUse from "views/Terms";
 import CompleteProfile from "views/CompleteProfile";
 import "./i18n";
+import "./utils/attachAuthToken";
 import { getEnv } from "./config/api";
 
 // Create Redux store
