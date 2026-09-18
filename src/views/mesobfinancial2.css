@@ -459,3 +459,88 @@
         height: 400px !important;
       }
     }
+/* ── Elevated Financial Report (mksv-*) ───────────────────────────── */
+.mksv-hero {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 4px 2px 16px;
+  overflow: hidden;
+}
+.mksv-hero-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+}
+.mksv-hero-sub {
+  margin: 6px 0 0;
+  color: var(--text-2);
+  font-size: 14px;
+}
+.mksv-hero-tag {
+  text-align: right;
+  font-family: var(--font-mono, ui-monospace, "JetBrains Mono", Menlo, monospace);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  font-size: 12.5px;
+  color: var(--text-1);
+  line-height: 1.7;
+  position: relative;
+  z-index: 1;
+  white-space: nowrap;
+}
+.mksv-hero-mtn {
+  position: absolute;
+  right: 0;
+  top: 2px;
+  width: 300px;
+  height: 78px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+@media (max-width: 991px) {
+  .mksv-hero-tag, .mksv-hero-mtn { display: none; }
+  .mksv-hero-title { font-size: 22px; }
+}
+
+.mksv-stats { display: flex; flex-direction: column; gap: 12px; }
+.mksv-stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-3);
+}
+.mksv-ico {
+  width: 40px; height: 40px;
+  border-radius: 11px;
+  flex: 0 0 40px;
+  display: grid;
+  place-items: center;
+}
+.mksv-ico svg { width: 20px; height: 20px; }
+.mksv-stat-main { flex: 1; min-width: 0; }
+.mksv-stat-label {
+  font-size: 11px;
+  color: var(--text-2);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.mksv-stat-val {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+.mksv-spark { width: 60px; height: 32px; flex: 0 0 60px; }
+.mksv-ico--income  { background: rgba(52,211,153,0.13);  color: #34d399; }
+.mksv-ico--payable { background: rgba(230,178,95,0.13);  color: #e6b25f; }
+.mksv-ico--accent  { background: rgba(59,130,246,0.14);  color: #3b82f6; }
+.mksv-ico--expense { background: rgba(168,85,247,0.14);  color: #a855f7; }

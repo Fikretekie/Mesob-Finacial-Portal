@@ -2816,6 +2816,17 @@ const MesobFinancial2 = () => {
       <div className="content" style={{ marginTop: 80, paddingTop: "0", backgroundColor: "transparent" }}>
         {/* Transactions Table Section - First */}
         <Container fluid style={{ paddingInline: 0 }}>
+          <div className="mksv-hero">
+            <div>
+              <h1 className="mksv-hero-title">{t('financialReport.title', 'Financial Reports')}</h1>
+              <p className="mksv-hero-sub">{t('financialReport.subtitle', 'Track, analyze, and grow your business.')}</p>
+            </div>
+            <div className="mksv-hero-tag">SIMPLE TOOLS.<br />REAL GROWTH.</div>
+            <svg className="mksv-hero-mtn" viewBox="0 0 300 80" fill="none" preserveAspectRatio="none">
+              <path d="M0 80 L0 64 L52 36 L92 52 L132 20 L172 48 L216 24 L258 44 L300 28 L300 80 Z" fill="#3b82f6" fillOpacity="0.10" />
+              <path d="M0 64 L52 36 L92 52 L132 20 L172 48 L216 24 L258 44 L300 28" stroke="#3b82f6" strokeOpacity="0.55" strokeWidth="1.5" />
+            </svg>
+          </div>
           <Row>
             <Col xs={12} style={{ paddingLeft: "1px", paddingRight: "1px" }}>
               <Card style={{ backgroundColor: "transparent", boxShadow: "var(--shadow-1), var(--glass-inset), var(--card-glow)", paddingBottom: 8, borderRadius: "8px" }}>
@@ -2947,333 +2958,44 @@ const MesobFinancial2 = () => {
                   </CardTitle>
                   <ExpandToggle id="summary" />
                 </CardHeader>
-                <CardBody
-                  style={{
-                    overflowY: "auto",
-                    overflowX: "visible",
-                    height: "400px",
-                    backgroundColor: "transparent",
-                  }}
-                >
-                  <div>
-                    <div
-                      style={getBalanceCardStyle(parseFloat(calculateTotalCash()), {
-                        backgroundColor: "var(--surface-3)",
-                        padding: "12px 15px",
-                        borderRadius: "6px",
-                        marginBottom: "12px",
-                        border: "1px solid var(--border)",
-                      })}
-                    >
-                      <div style={{ marginBottom: "8px", color: "#ffffff", fontWeight: "bold", fontSize: "0.9rem" }}>
-                        {t('financialReport.totalCashOnHand')}
+                <CardBody style={{ overflowY: "auto", overflowX: "visible", height: "400px", backgroundColor: "transparent" }}>
+                  <div className="mksv-stats">
+                    <div className="mksv-stat">
+                      <div className="mksv-ico mksv-ico--income"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="6" width="18" height="12" rx="2" /><circle cx="12" cy="12" r="2.4" /></svg></div>
+                      <div className="mksv-stat-main">
+                        <div className="mksv-stat-label">{t('financialReport.totalCashOnHand')}</div>
+                        <BalanceValue value={parseFloat(calculateTotalCash())} tooltip={t('financialReport.cashDeficitTooltip')} style={{ fontSize: "1.15rem", fontWeight: 800 }}>
+                          ${parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </BalanceValue>
                       </div>
-                      <BalanceValue
-                        value={parseFloat(calculateTotalCash())}
-                        tooltip={t("financialReport.cashDeficitTooltip")}
-                        style={{ fontSize: "1.1rem" }}
-                      >
-                        $
-                        {parseFloat(calculateTotalCash()).toLocaleString(
-                          "en-US",
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }
-                        )}
-                      </BalanceValue>
+                      <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><path d="M2 26 12 24 22 25 32 18 42 20 52 10 64 6 64 34 2 34Z" fill="#34d39922" /><polyline points="2,26 12,24 22,25 32,18 42,20 52,10 64,6" fill="none" stroke="#34d399" strokeWidth="2" /></svg>
                     </div>
 
-                    <div
-                      style={{
-                        backgroundColor: "var(--surface-3)",
-                        padding: "12px 15px",
-                        borderRadius: "6px",
-                        marginBottom: "12px",
-                        border: "1px solid var(--border)",
-                      }}
-                    >
-                      <div style={{ marginBottom: "8px", color: "#ffffff", fontWeight: "bold", fontSize: "0.9rem" }}>
-                        {t('financialReport.totalPayable')}
+                    <div className="mksv-stat">
+                      <div className="mksv-ico mksv-ico--payable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 3h9l5 5v13H6z" /><path d="M9 12h7M9 16h7" /></svg></div>
+                      <div className="mksv-stat-main">
+                        <div className="mksv-stat-label">{t('financialReport.totalPayable')}</div>
+                        <div className="mksv-stat-val" style={{ color: FINANCIAL_COLORS.payable }}>${parseFloat(calculateTotalPayable()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       </div>
-                      <div
-                        style={{
-                          color: FINANCIAL_COLORS.payable,
-                          fontWeight: "bold",
-                          fontSize: "1.1rem",
-                        }}
-                      >
-                        $
-                        {parseFloat(calculateTotalPayable()).toLocaleString(
-                          "en-US",
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }
-                        )}
-                      </div>
+                      <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><polyline points="2,20 12,18 22,22 32,16 42,19 52,14 64,12" fill="none" stroke="#e6b25f" strokeWidth="2" /></svg>
                     </div>
 
-                    <div style={{ marginTop: "0px" }}>
-                      {/* Commented out dropdown functionality */}
-                      {/* <div 
-                        style={{ 
-                          fontWeight: "bold", 
-                          color: "#ffffff", 
-                          marginBottom: "12px", 
-                          fontSize: "0.95rem",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          cursor: "pointer",
-                          userSelect: "none"
-                        }}
-                        onClick={() => setIsBreakdownExpanded(!isBreakdownExpanded)}
-                      >
-                        <span>{t('financialReport.breakdown')}</span>
-                        <span style={{ fontSize: "1.2rem", marginLeft: "8px" }}>
-                          {isBreakdownExpanded ? "▼" : "▶"}
-                        </span>
+                    <div className="mksv-stat">
+                      <div className="mksv-ico mksv-ico--accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-7" /></svg></div>
+                      <div className="mksv-stat-main">
+                        <div className="mksv-stat-label">{t('financialReport.totalRevenue')}</div>
+                        <div className="mksv-stat-val" style={{ color: "#3b82f6" }}>${parseFloat(calculateTotalRevenue()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       </div>
-                      {isBreakdownExpanded && ( */}
-                      {/* <div style={{ fontWeight: "bold", color: "#ffffff", marginBottom: "12px", fontSize: "0.95rem" }}>
-                        {t('financialReport.breakdown')}
-                      </div> */}
-                      <div style={{ marginTop: "0px" }}>
-                        <div
-                          style={{
-                            backgroundColor: "var(--surface-3)",
-                            padding: "12px 15px",
-                            borderRadius: "6px",
-                            marginBottom: "12px",
-                            border: "1px solid var(--border)",
-                          }}
-                        >
-                          <div
-                            style={{
-                              marginBottom: "8px",
-                              color: "#ffffff",
-                              fontWeight: "bold",
-                              fontSize: "0.9rem",
-                            }}
-                          >
-                            {t("financialReport.totalRevenue")}
-                          </div>
-                          <div
-                            style={{
-                              color: FINANCIAL_COLORS.income,
-                              fontWeight: "bold",
-                              fontSize: "1.1rem",
-                            }}
-                          >
-                            $
-                            {parseFloat(calculateTotalRevenue()).toLocaleString(
-                              "en-US",
-                              {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }
-                            )}
-                          </div>
-                        </div>
-                        {/* <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid var(--border)", paddingTop: "12px" }}>
-                          {Object.entries(revenues)
-                            .filter(([purpose, amount]) => {
-                              const filteredItems = getFilteredItems();
-                              return filteredItems.some(
-                                (item) =>
-                                  item.transactionPurpose === purpose &&
-                                  item.transactionType === "Receive"
-                              );
-                            })
-                            .map(([purpose, amount]) => {
-                              const filteredItems = getFilteredItems();
-                              const totalAmount = filteredItems.reduce(
-                                (sum, item) => {
-                                  if (
-                                    item.transactionPurpose === purpose &&
-                                    item.transactionType === "Receive"
-                                  ) {
-                                    return (
-                                      sum + parseFloat(item.transactionAmount || 0)
-                                    );
-                                  }
-                                  return sum;
-                                },
-                                0
-                              );
+                      <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><path d="M2 28 12 22 22 24 32 15 42 17 52 9 64 4 64 34 2 34Z" fill="#3b82f622" /><polyline points="2,28 12,22 22,24 32,15 42,17 52,9 64,4" fill="none" stroke="#3b82f6" strokeWidth="2" /></svg>
+                    </div>
 
-                              return (
-                                <div
-                                  key={purpose}
-                                  style={{
-                                    marginBottom: "8px",
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                                    <span style={{ color: "#ffffff", fontSize: "0.9rem", marginLeft: "10px" }}>
-                                      {translatePurpose(purpose)}:
-                                    </span>
-                                  </span>
-                                  <span
-                                    style={{
-                                      color: FINANCIAL_COLORS.income,
-                                      fontWeight: "bold",
-                                      fontSize: "0.9rem",
-                                    }}
-                                  >
-                                    $
-                                    {totalAmount.toLocaleString("en-US", {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                    })}
-                                  </span>
-                                </div>
-                              );
-                            })}
-                        </div> */}
-                        <div
-                          style={{
-                            backgroundColor: "var(--surface-3)",
-                            padding: "12px 15px",
-                            borderRadius: "6px",
-                            marginBottom: "12px",
-                            border: "1px solid var(--border)",
-                          }}
-                        >
-                          <div
-                            style={{
-                              marginBottom: "8px",
-                              color: "#ffffff",
-                              fontWeight: "bold",
-                              fontSize: "0.9rem",
-                            }}
-                          >
-                            {t("financialReport.totalExpense")}
-                          </div>
-                          <div
-                            style={{
-                              color: FINANCIAL_COLORS.expense,
-                              fontWeight: "bold",
-                              fontSize: "1.1rem",
-                            }}
-                          >
-                            $
-                            {parseFloat(calculateTotalExpenses(true)).toLocaleString(
-                              "en-US",
-                              {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }
-                            )}
-                          </div>
-                        </div>
-                        {/* <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid var(--border)", paddingTop: "12px" }}>
-                          {Object.entries(expenses)
-                            .filter(([purpose, amount]) => {
-                              const filteredItems = getFilteredItems();
-                              // Check for regular expenses (Pay/Payable) OR COGS expenses (sale_inventory)
-                              const hasRegularExpense = filteredItems.some(
-                                (item) =>
-                                  item.transactionPurpose === purpose &&
-                                  (item.transactionType === "Pay" ||
-                                    (item.transactionType === "Payable" &&
-                                      item.status !== "Paid"))
-                              );
-                              const hasCOGS = filteredItems.some(
-                                (item) =>
-                                  item.transactionType === "Receive" &&
-                                  item.subType === "sale_inventory" &&
-                                  (item.assetName === purpose || item.transactionPurpose === purpose)
-                              );
-                              return hasRegularExpense || hasCOGS;
-                            })
-                            .map(([purpose, amount]) => {
-                              const filteredItems = getFilteredItems();
-                              // Calculate total from regular expenses
-                              let totalAmount = filteredItems.reduce(
-                                (sum, item) => {
-                                  if (
-                                    item.transactionPurpose === purpose &&
-                                    (item.transactionType === "Pay" ||
-                                      (item.transactionType === "Payable" &&
-                                        item.status !== "Paid"))
-                                  ) {
-                                    return (
-                                      sum + parseFloat(item.transactionAmount || 0)
-                                    );
-                                  }
-                                  return sum;
-                                },
-                                0
-                              );
-                              // Add COGS amount
-                              filteredItems.forEach((item) => {
-                                if (
-                                  item.transactionType === "Receive" &&
-                                  item.subType === "sale_inventory" &&
-                                  (item.assetName === purpose || item.transactionPurpose === purpose)
-                                ) {
-                                  totalAmount += parseFloat(item.originalAmount || 0);
-                                }
-                              });
-
-                              const isPaid = filteredItems.some(
-                                (item) =>
-                                  item.transactionPurpose === purpose &&
-                                  item.transactionType === "Payable" &&
-                                  item.status === "Paid"
-                              );
-
-                              // Check if this is a COGS expense
-                              const isCOGS = filteredItems.some(
-                                (item) =>
-                                  item.transactionType === "Receive" &&
-                                  item.subType === "sale_inventory" &&
-                                  (item.assetName === purpose || item.transactionPurpose === purpose)
-                              );
-
-                              return (
-                                <div
-                                  key={purpose}
-                                  style={{
-                                    marginBottom: "8px",
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                                    <span style={{ color: "#ffffff", fontSize: "0.9rem", marginLeft: "10px" }}>
-                                      {translatePurpose(purpose)}:
-                                    </span>
-                                  </span>
-                                  <span
-                                    style={{
-                                      color: isCOGS
-                                        ? FINANCIAL_COLORS.cashOut
-                                        : isPaid
-                                          ? FINANCIAL_COLORS.payable
-                                          : FINANCIAL_COLORS.expense,
-                                      fontWeight: "bold",
-                                      fontSize: "0.9rem",
-                                    }}
-                                  >
-                                    $
-                                    {totalAmount.toLocaleString("en-US", {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                    })}
-                                  </span>
-                                </div>
-                              );
-                            })}
-                        </div> */}
+                    <div className="mksv-stat">
+                      <div className="mksv-ico mksv-ico--expense"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 12a9 9 0 11-9-9v9z" /></svg></div>
+                      <div className="mksv-stat-main">
+                        <div className="mksv-stat-label">{t('financialReport.totalExpense')}</div>
+                        <div className="mksv-stat-val" style={{ color: FINANCIAL_COLORS.expense }}>${parseFloat(calculateTotalExpenses(true)).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       </div>
-                      {/* )} Commented out closing bracket for dropdown */}
+                      <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><polyline points="2,14 12,16 22,13 32,17 42,15 52,19 64,17" fill="none" stroke="#a855f7" strokeWidth="2" /></svg>
                     </div>
                   </div>
                 </CardBody>
