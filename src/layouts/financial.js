@@ -132,7 +132,7 @@ function Financial(props) {
               opacity: 1,
               transition: "opacity 0.3s ease-in-out",
               backgroundColor: "#007bff",
-              color: "white",
+              color: "var(--text-1)",
               border: "none",
               borderRadius: "50%",
               width: "50px",
