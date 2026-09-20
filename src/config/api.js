@@ -147,7 +147,12 @@ export function normalizeReceiptUrl(rawUrl) {
 /** Route path segments (no leading slash; append to API_BASE_URL). */
 export const ROUTES = {
   USERS: "Users",
-   MILEAGE_TRIP: "MileageTrip",
+      MILEAGE_TRIP: "MileageTrip",
+  /** IFTA fuel-purchase log (state, gallons). */
+  FUEL_PURCHASE: "FuelPurchase",
+  /** Receipt OCR (AWS Textract Analyze Expense) -- POST { imageBase64 },
+   * returns { vendor, total, date }. */
+  RECEIPT_OCR: "ReceiptOcr",
      /** IFTA fuel-purchase log (state, gallons). Not yet implemented on the
    * backend -- see CLAUDE.md IFTA notes. */
   FUEL_PURCHASE: "FuelPurchase",

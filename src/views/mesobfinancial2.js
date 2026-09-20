@@ -34,6 +34,7 @@ import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
 import TransactionTable from "./TransactionTable";
 import DownloadReportModal from "components/DownloadReportModal";
+import QuickScanReceipt from "components/QuickScanReceipt";
 import { setSelectedUser } from "../store/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { Search, Maximize2, Minimize2 } from "lucide-react";
@@ -58,6 +59,21 @@ const LOSS_ON_SALE_PREFIX = "Loss on Sale";
 
 const isGainOnSalePurpose = (purpose) =>
   typeof purpose === "string" && purpose.startsWith(GAIN_ON_SALE_PREFIX);
+
+const FUEL_VENDOR_KEYWORDS = [
+  "shell", "chevron", "exxon", "mobil", "bp", "marathon", "citgo", "sunoco",
+  "valero", "pilot", "flying j", "love's", "loves travel", "ta travel",
+  "speedway", "circle k", "76 ", "phillips 66", "casey's",
+];
+
+/** Best-guess expense category from an OCR-scanned vendor name. Only
+ * covers Fuel Expense for Trucking accounts today -- other business
+ * types/categories can be added here as needed. */
+const guessCategoryFromVendor = (vendor, businessType) => {
+  if (!vendor || businessType !== "Trucking") return "";
+  const v = vendor.toLowerCase();
+  return FUEL_VENDOR_KEYWORDS.some((kw) => v.includes(kw)) ? "Fuel Expense" : "";
+};
 const isLossOnSalePurpose = (purpose) =>
   typeof purpose === "string" && purpose.startsWith(LOSS_ON_SALE_PREFIX);
 
@@ -467,11 +483,41 @@ const MesobFinancial2 = () => {
         });
       }
 
-      const reader = new FileReader();
+            const reader = new FileReader();
       reader.onload = async (event) => {
         const filecontent = event.target.result.split(",")[1];
         setReceipt(file);
         setfileContent(filecontent);
+
+        try {
+          const res = await axios.post(apiUrl(ROUTES.RECEIPT_OCR), {
+            imageBase64: filecontent,
+          });
+          const { vendor, total } = res.data || {};
+          const totalNum = total
+            ? parseFloat(String(total).replace(/[^0-9.]/g, ""))
+            : null;
+
+          if (totalNum && !transactionAmount) {
+            setTransactionAmount(String(totalNum));
+          }
+          const guessedCategory = guessCategoryFromVendor(
+            vendor,
+            localStorage.getItem("businessType")
+          );
+          if (guessedCategory && !transactionPurpose) {
+            setTransactionPurpose(guessedCategory);
+          }
+          if (vendor || totalNum) {
+            notify(
+              "tr",
+              `Receipt scanned${vendor ? `: ${vendor}` : ""}${totalNum ? ` — $${totalNum}` : ""}. Please review before saving.`,
+              "success"
+            );
+          }
+        } catch (err) {
+          console.error("Receipt OCR failed:", err);
+        }
       };
 
       reader.readAsDataURL(file);
@@ -2817,9 +2863,10 @@ const MesobFinancial2 = () => {
         {/* Transactions Table Section - First */}
         <Container fluid style={{ paddingInline: 0 }}>
           <div className="mksv-hero">
-            <div>
+                       <div>
               <h1 className="mksv-hero-title">{t('financialReport.title', 'Financial Reports')}</h1>
               <p className="mksv-hero-sub">{t('financialReport.subtitle', 'Track, analyze, and grow your business.')}</p>
+              <QuickScanReceipt />
             </div>
             <div className="mksv-hero-tag">SIMPLE TOOLS.<br />REAL GROWTH.</div>
             <svg className="mksv-hero-mtn" viewBox="0 0 300 80" fill="none" preserveAspectRatio="none">
@@ -4991,7 +5038,7 @@ const MesobFinancial2 = () => {
           calculateTotalPayable={calculateTotalPayable}
           calculateTotalInventory={calculateTotalInventory}
           searchedDates={searchedDates}
-          currentLanguage={currentLanguage}
+               currentLanguage={currentLanguage}
         />
       </div>
     </>

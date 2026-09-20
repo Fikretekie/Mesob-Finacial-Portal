@@ -37,6 +37,7 @@ import i18n from "../i18n";
 import LanguageSelector from "components/Languageselector/LanguageSelector";
 import { faPlus, faDownload, faSearch } from "@fortawesome/free-solid-svg-icons";
 import DownloadReportModal from "components/DownloadReportModal";
+import QuickScanReceipt from "components/QuickScanReceipt";
 import BalanceValue from "components/BalanceValue";
 import {
   FINANCIAL_COLORS,
@@ -1227,10 +1228,11 @@ function Dashboard() {
                 return nm ? `${g}, ${nm}` : g;
               })()}
             </h2>
-            <p className="dash-overview__sub">
+                       <p className="dash-overview__sub">
               {t("dashboard.overviewSubtitle", "Here's your financial overview for")}{" "}
               {new Date().toLocaleDateString(undefined, { month: "long", year: "numeric" })}
             </p>
+            <QuickScanReceipt />
           </div>
           <span className="dash-overview__meta">
             {t("dashboard.booksCurrent", "Books current")} ·{" "}
@@ -1805,7 +1807,7 @@ function Dashboard() {
         calculateTotalPayable={calculateTotalPayable}
         calculateTotalInventory={calculateTotalInventory}
         searchedDates={dashboardDateRange}
-        currentLanguage={i18n.language}
+         currentLanguage={i18n.language}
       />
     </>
   );
