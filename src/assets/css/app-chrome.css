@@ -927,3 +927,27 @@ input[type="time"]::-webkit-calendar-picker-indicator {
    (#101926) and showed through the transparent navbar as a dark strip in
    light mode (most visible on mobile), and at any uncovered edge. ---- */
 html, body { background-color: var(--bg) !important; }
+
+/* ---- Base content text follows the theme. Newer pages (Mileage/Fuel/IFTA/
+   Trip) have text (e.g. stat-tile values) with no explicit color that used to
+   inherit white — invisible in light mode. Default content + cards to
+   var(--text-1); elements with their own color still win. ---- */
+.main-panel { color: var(--text-1); }
+.main-panel .card,
+.main-panel .card-body { color: var(--text-1); }
+
+/* ---- Native <select> dropdowns (State/Quarter/Year on Mileage/Fuel/IFTA and
+   modal selects). Some set a near-transparent inline bg, and their option
+   popups didn't follow the theme (unreadable in dark). Force a solid field +
+   themed options in both modes. ---- */
+.main-panel select,
+.modal-content select {
+  background-color: var(--surface-3) !important;
+  color: var(--text-1) !important;
+  border: 1px solid var(--border-strong) !important;
+  color-scheme: light dark;
+}
+select option {
+  background: var(--surface-2);
+  color: var(--text-1);
+}

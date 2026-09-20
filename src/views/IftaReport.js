@@ -79,12 +79,12 @@ function IftaReport() {
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
               <div>
                 <h4 style={{ marginTop: 0, marginBottom: "4px" }}>{t("iftaReport.title")}</h4>
-                <p style={{ color: "#9A9A9A", fontSize: "13px", margin: 0 }}>{t("iftaReport.subtitle")}</p>
+                <p style={{ color: "var(--text-3)", fontSize: "13px", margin: 0 }}>{t("iftaReport.subtitle")}</p>
               </div>
               <Button
                 onClick={handleExport}
                 disabled={loading || rows.length === 0}
-                style={{ background: "#096afa", border: "none", borderRadius: "3px", color: "var(--text-1)", fontWeight: 600, fontSize: "13px" }}
+                style={{ background: "#096afa", border: "none", borderRadius: "3px", color: "var(--accent-ink)", fontWeight: 600, fontSize: "13px" }}
               >
                 {t("iftaReport.exportCsv")}
               </Button>
@@ -92,7 +92,7 @@ function IftaReport() {
 
             <div style={{ display: "flex", gap: "12px", margin: "20px 0" }}>
               <div>
-                <label style={{ fontSize: "11px", color: "#9A9A9A", textTransform: "uppercase" }}>
+                <label style={{ fontSize: "11px", color: "var(--text-3)", textTransform: "uppercase" }}>
                   {t("iftaReport.quarter")}
                 </label>
                 <select
@@ -108,7 +108,7 @@ function IftaReport() {
                 </select>
               </div>
               <div>
-                <label style={{ fontSize: "11px", color: "#9A9A9A", textTransform: "uppercase" }}>
+                <label style={{ fontSize: "11px", color: "var(--text-3)", textTransform: "uppercase" }}>
                   {t("iftaReport.year")}
                 </label>
                 <input
@@ -128,16 +128,16 @@ function IftaReport() {
             )}
 
             {loading ? (
-              <div style={{ textAlign: "center", padding: "24px", color: "#9A9A9A" }}>...</div>
+              <div style={{ textAlign: "center", padding: "24px", color: "var(--text-3)" }}>...</div>
             ) : rows.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "24px", color: "#9A9A9A", fontSize: "13px" }}>
+              <div style={{ textAlign: "center", padding: "24px", color: "var(--text-3)", fontSize: "13px" }}>
                 {t("iftaReport.noData")}
               </div>
             ) : (
               <div style={{ overflowX: "auto" }}>
                 <table className="table" style={{ color: "var(--text-1)", marginBottom: 0 }}>
                   <thead>
-                    <tr style={{ color: "#9A9A9A", fontSize: "11px", textTransform: "uppercase" }}>
+                    <tr style={{ color: "var(--text-3)", fontSize: "11px", textTransform: "uppercase" }}>
                       <th>{t("iftaReport.jurisdiction")}</th>
                       <th style={{ textAlign: "right" }}>{t("iftaReport.miles")}</th>
                       <th style={{ textAlign: "right" }}>{t("iftaReport.gallonsPurchased")}</th>
@@ -163,7 +163,7 @@ function IftaReport() {
               </div>
             )}
 
-            <p style={{ color: "#9A9A9A", fontSize: "11px", marginTop: "16px", marginBottom: 0 }}>
+            <p style={{ color: "var(--text-3)", fontSize: "11px", marginTop: "16px", marginBottom: 0 }}>
               {t("iftaReport.note")}
             </p>
           </CardBody>
