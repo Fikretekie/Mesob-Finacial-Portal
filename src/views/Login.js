@@ -341,6 +341,7 @@ import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { faApple } from "@fortawesome/free-brands-svg-icons";
 import { Link } from "react-router-dom";
 import { signIn, signInWithRedirect, signOut } from "aws-amplify/auth";
+import { isNativeApp, openNativeSocialSignIn, nativeOAuthState } from "utils/nativeOAuth";
 import { clearAppStorageKeepingSession } from "utils/authStorage";
 import { authHeader } from "utils/apiFetch";
 import getUserInfo from "utils/Getuser";
@@ -365,16 +366,41 @@ const Login = () => {
   const errorMessage =
     state?.message || new URLSearchParams(location.search).get("message");
 
-  useEffect(() => {
+      useEffect(() => {
     if (error) {
       console.error("Login error:", errorMessage || "Login failed.");
+      setLoading(false);
+      setSocialAuth("");
     }
   }, [error, errorMessage]);
+
+  useEffect(() => {
+    if (!isNativeApp()) return undefined;
+    let listenerPromise;
+    import("@capacitor/app").then(({ App: CapacitorApp }) => {
+      listenerPromise = CapacitorApp.addListener("resume", () => {
+        setTimeout(() => {
+          if (nativeOAuthState.pending) {
+            nativeOAuthState.pending = false;
+            setLoading(false);
+            setSocialAuth("");
+          }
+        }, 600);
+      });
+    });
+    return () => {
+      if (listenerPromise) listenerPromise.then((h) => h.remove());
+    };
+  }, []);
 
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
       setSocialAuth("google");
+      if (isNativeApp()) {
+        await openNativeSocialSignIn("Google");
+        return;
+      }
       console.log(`🔵 Initiating Google sign-in with redirect... [env: ${CURRENT_ENV}]`);
       await signOut();
       await signInWithRedirect({
@@ -393,6 +419,10 @@ const Login = () => {
     try {
       setLoading(true);
       setSocialAuth("apple");
+      if (isNativeApp()) {
+        await openNativeSocialSignIn("SignInWithApple");
+        return;
+      }
       await signOut();
 
       console.log(`🔵 Initiating Apple sign-in with redirect... [env: ${CURRENT_ENV}]`);

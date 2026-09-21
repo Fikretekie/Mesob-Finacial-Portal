@@ -34,6 +34,8 @@ import SubscriptionPlans from "views/Payment/SubscriptionPlans";
 import SubscriptionPage from "views/Payment/Subscription";
 import Confirm from "views/Confirm";
 import OAuthListener from "components/OAuthListener";
+import NativeOAuthListener from "components/NativeOAuthListener";
+import { getNativeIdToken } from "./utils/nativeOAuth";
 import TermsOfUse from "views/Terms";
 import CompleteProfile from "views/CompleteProfile";
 import "./i18n";
@@ -169,8 +171,16 @@ axios.interceptors.request.use(async (config) => {
   try {
     const url = config.url || "";
     if (url.includes("execute-api.us-east-1.amazonaws.com")) {
-      const { tokens } = await fetchAuthSession();
-      const idToken = tokens?.idToken?.toString();
+      let idToken;
+      try {
+        const { tokens } = await fetchAuthSession();
+        idToken = tokens?.idToken?.toString();
+      } catch (e) {
+        // Not signed in via Amplify -- fall through to the native check below.
+      }
+      // Users who signed in via the native Google/Apple flow (nativeOAuth.js)
+      // never get an Amplify session -- check our own stored tokens instead.
+      if (!idToken) idToken = await getNativeIdToken();
       if (idToken) {
         config.headers = config.headers || {};
         // API Gateway REST Cognito authorizers reject the "Bearer " prefix —
@@ -195,8 +205,14 @@ window.fetch = async (input, init = {}) => {
   try {
     const url = typeof input === "string" ? input : (input && input.url) || "";
     if (url.includes("execute-api.us-east-1.amazonaws.com")) {
-      const { tokens } = await fetchAuthSession();
-      const idToken = tokens?.idToken?.toString();
+      let idToken;
+      try {
+        const { tokens } = await fetchAuthSession();
+        idToken = tokens?.idToken?.toString();
+      } catch (e) {
+        // Not signed in via Amplify -- fall through to the native check below.
+      }
+      if (!idToken) idToken = await getNativeIdToken();
       if (idToken) {
         init = {
           ...init,
@@ -215,6 +231,7 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Provider store={store}>
     <BrowserRouter>
+      <NativeOAuthListener />
       <Routes>
         {/* Route for the Login page */}
         <Route path="/login" element={<Login />} />

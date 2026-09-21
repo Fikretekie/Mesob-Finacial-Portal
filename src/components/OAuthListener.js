@@ -1,15 +1,14 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { apiUrl, ROUTES, COGNITO_USERINFO_URL, CURRENT_ENV } from "../config/api";
+import { COGNITO_USERINFO_URL, CURRENT_ENV } from "../config/api";
 import { getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
 import { Hub } from "aws-amplify/utils";
-import { clearAppStorageKeepingSession } from "../utils/authStorage";
+import { completeOAuthSignIn } from "../utils/postOAuthComplete";
 
 const OAuthListener = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Fetch user info from Cognito's /oauth2/userInfo endpoint
   const fetchUserInfoFromOAuth = async () => {
     try {
       const session = await fetchAuthSession();
@@ -62,7 +61,6 @@ const OAuthListener = () => {
             console.log(`✅ Cognito sign-in (OAuth) [env: ${CURRENT_ENV}], fetching user...`);
 
             try {
-              // Get current user
               const user = await getCurrentUser();
 
               let provider = localStorage.getItem("provider");
@@ -77,7 +75,6 @@ const OAuthListener = () => {
               let email = null;
               let userName = null;
 
-              // Try from signInDetails
               if (
                 user.signInDetails?.loginId &&
                 user.signInDetails.loginId.includes("@")
@@ -86,7 +83,6 @@ const OAuthListener = () => {
                 console.log("📧 Email from signInDetails:", email);
               }
 
-              // Fallback: get from /oauth2/userInfo
               if (!email) {
                 console.log(
                   "🔍 Fetching user info from OAuth userInfo endpoint..."
@@ -109,98 +105,15 @@ const OAuthListener = () => {
                 }
               }
 
-              if (!email) {
-                console.error("❌ No email retrieved from any method");
-                navigate(`/signup?provider=${provider}&needsEmail=true`, {
-                  replace: true,
-                });
-                return;
-              }
-
               console.log("📧 Final email:", email);
 
-              // Check if user exists in DynamoDB
-              console.log("🔍 Checking user in DynamoDB...");
-              try {
-                const checkResponse = await fetch(
-                  apiUrl(`${ROUTES.EXISTING_USER_CHECK}?email=${encodeURIComponent(email)}`),
-                  {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                  }
-                );
-
-                console.log("🔍 API Response Status:", checkResponse.status);
-
-                if (!checkResponse.ok) {
-                  throw new Error(`API error: ${checkResponse.status}`);
-                }
-
-                const checkResult = await checkResponse.json();
-                console.log("🔎 API Result:", checkResult);
-
-                if (!checkResult.exists) {
-                  // User does not exist, redirect to signup
-                  console.log(`🆕 New user (OAuth), redirecting to signup [env: ${CURRENT_ENV}]`);
-                  localStorage.setItem("socialSignup", "true");
-                  localStorage.setItem("socialEmail", email);
-                  localStorage.setItem("socialProvider", provider);
-
-                  const finalName = userName || "";
-
-                  navigate(
-                    `/signup?provider=${provider}&email=${encodeURIComponent(
-                      email
-                    )}&userId=${user.userId}&name=${encodeURIComponent(
-                      finalName
-                    )}`,
-                    { replace: true }
-                  );
-                  return;
-                } else {
-                  console.log(`✅ User exists, OAuth sign-in complete [env: ${CURRENT_ENV}]`);
-                  const userData = checkResult.user;
-                  console.log("🔎 API Result:", checkResult);
-                  // Keep the Cognito session Amplify just stored (was localStorage.clear()).
-                  clearAppStorageKeepingSession();
-                  localStorage.setItem("userId", userData.id);
-                  localStorage.setItem("user_email", userData.email || email);
-                  localStorage.setItem("user_name", userData.name || "");
-                  localStorage.setItem(
-                    "role",
-                    userData.role?.toString() || "2"
-                  );
-                  localStorage.setItem(
-                    "outstandingDebt",
-                    userData.outstandingDebt || "0"
-                  );
-                  localStorage.setItem(
-                    "valueableItems",
-                    userData.valueableItems || "0"
-                  );
-                  localStorage.setItem(
-                    "cashBalance",
-                    userData.cashBalance || "0"
-                  );
-                  localStorage.setItem("authToken", "authenticated");
-
-                  console.log("✅ Existing user, navigating to dashboard...");
-                  const dashboardPath =
-                    userData.role === 2
-                      ? "/customer/dashboard"
-                      : "/admin/dashboard";
-                  navigate(dashboardPath, { replace: true });
-                }
-              } catch (apiError) {
-                console.error("🔴 API Error:", apiError);
-                navigate("/login", {
-                  state: {
-                    error: "api_failed",
-                    message: "Could not verify user account",
-                  },
-                  replace: true,
-                });
-              }
+              await completeOAuthSignIn({
+                email,
+                name: userName,
+                provider,
+                userId: user.userId,
+                navigate,
+              });
             } catch (err) {
               console.error("🔴 Sign-in processing error:", err);
               navigate("/login", {
