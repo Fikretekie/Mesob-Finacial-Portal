@@ -650,32 +650,61 @@ const MesobFinancial2 = () => {
         };
       } else if (isPayableBoughtItem) {
         // Haven't Yet Paid → Bought a new item (payable, not paid)
-        newTransaction = {
-          userId: localStorage.getItem("userId"),
-          transactionType: "Payable",
-          subType: "New_Item",
-          status: "Unpaid",
-          transactionPurpose: resolvedAssetName || "",
-          transactionAmount: parseFloat(transactionAmount),
-          originalAmount: parseFloat(transactionAmount),
-          assetType: assetType || null,
-          assetName: resolvedAssetName || null,
-          receiptUrl: Url || "",
-        };
+        newTransaction =
+          assetType === "cogs"
+            ? {
+                // Cost of goods bought on credit — expensed as COGS, not capitalized.
+                userId: localStorage.getItem("userId"),
+                transactionType: "Payable",
+                subType: "COGS",
+                status: "Unpaid",
+                transactionPurpose: resolvedAssetName || "",
+                transactionAmount: parseFloat(transactionAmount),
+                originalAmount: parseFloat(transactionAmount),
+                remainingAmount: parseFloat(transactionAmount),
+                assetName: resolvedAssetName || null,
+                receiptUrl: Url || "",
+              }
+            : {
+                userId: localStorage.getItem("userId"),
+                transactionType: "Payable",
+                subType: "New_Item",
+                status: "Unpaid",
+                transactionPurpose: resolvedAssetName || "",
+                transactionAmount: parseFloat(transactionAmount),
+                originalAmount: parseFloat(transactionAmount),
+                assetType: assetType || null,
+                assetName: resolvedAssetName || null,
+                receiptUrl: Url || "",
+              };
       } else if (isPayBoughtItem) {
         // Paid Cash → Bought a new item (item name only, no description)
-        newTransaction = {
-          userId: localStorage.getItem("userId"),
-          transactionType: "New_Item",
-          subType: "New_Item",
-          status: "Paid",
-          transactionPurpose: resolvedAssetName || "",
-          transactionAmount: parseFloat(transactionAmount),
-          originalAmount: parseFloat(transactionAmount),
-          assetType: assetType || null,
-          assetName: resolvedAssetName || null,
-          receiptUrl: Url || "",
-        };
+        newTransaction =
+          assetType === "cogs"
+            ? {
+                // Cost of goods paid in cash — expensed as COGS immediately.
+                userId: localStorage.getItem("userId"),
+                transactionType: "Pay",
+                subType: "COGS",
+                status: "Paid",
+                transactionPurpose: resolvedAssetName || "",
+                transactionAmount: parseFloat(transactionAmount),
+                originalAmount: parseFloat(transactionAmount),
+                assetName: resolvedAssetName || null,
+                receiptUrl: Url || "",
+              }
+            : {
+                userId: localStorage.getItem("userId"),
+                transactionType: "New_Item",
+                subType: "New_Item",
+                status: "Paid",
+                transactionPurpose: resolvedAssetName || "",
+                transactionAmount: parseFloat(transactionAmount),
+                originalAmount: parseFloat(transactionAmount),
+                assetType: assetType || null,
+                assetName: resolvedAssetName || null,
+                receiptUrl: Url || "",
+              };
       } else {
         // All other cases (receive other income, pay expense, pay recorded, pay bought item, Payable expense)
         newTransaction = {
@@ -1318,13 +1347,13 @@ const MesobFinancial2 = () => {
       const amount = parseFloat(transaction.transactionAmount) || 0;
 
       if (transaction.transactionType === "Receive") {
-        if (
-          transaction.subType === "sale_fixed" ||
-          transaction.subType === "sale_inventory"
-        ) {
+        // Fixed-asset disposals book only their gain/loss (Other Income/Expense).
+        if (transaction.subType === "sale_fixed") {
           recordAssetSaleGainLoss(transaction, newRevenues, newExpenses);
           return;
         }
+        // Ordinary sales AND inventory sales are gross operating revenue; the cost
+        // of inventory sold is recognized separately as COGS (calculateCOGS).
         const purpose = transaction.transactionPurpose;
         newRevenues[purpose] = (newRevenues[purpose] || 0) + amount;
       } else if (
@@ -1349,8 +1378,11 @@ const MesobFinancial2 = () => {
           transaction.payableId !== "outstanding-debt" &&
           !purpose.includes("Outstanding Debt") &&
           !isPayableNewItem &&
-          !isPaymentForNewItem
+          !isPaymentForNewItem &&
+          transaction.subType !== "COGS"
         ) {
+          // COGS-tagged purchases are shown under Cost of Goods Sold, not in the
+          // Operating Expenses detail — keep them out of the expenses map.
           newExpenses[purpose] = (newExpenses[purpose] || 0) + amount;
         }
 
@@ -1513,13 +1545,15 @@ const MesobFinancial2 = () => {
     return Math.max(0, cost);
   };
 
+  // Other income / expense are now DISPOSAL gains/losses on FIXED assets only.
+  // Inventory (current-asset) sales are booked GROSS instead: full sale price in
+  // operating revenue, book value (cost) in COGS — so the income statement shows
+  // real Revenue / COGS / Gross Profit for merchandisers. Net income is unchanged
+  // either way (gain = sale price − cost).
   const calculateOtherIncome = () => {
     const filteredItems = getFilteredItems();
     const total = filteredItems.reduce((sum, value) => {
-      if (
-        value.transactionType === "Receive" &&
-        (value.subType === "sale_fixed" || value.subType === "sale_inventory")
-      ) {
+      if (value.transactionType === "Receive" && value.subType === "sale_fixed") {
         const gain =
           parseFloat(value.transactionAmount || 0) -
           parseFloat(value.originalAmount || 0);
@@ -1533,10 +1567,7 @@ const MesobFinancial2 = () => {
   const calculateOtherExpense = () => {
     const filteredItems = getFilteredItems();
     const total = filteredItems.reduce((sum, value) => {
-      if (
-        value.transactionType === "Receive" &&
-        (value.subType === "sale_fixed" || value.subType === "sale_inventory")
-      ) {
+      if (value.transactionType === "Receive" && value.subType === "sale_fixed") {
         const gain =
           parseFloat(value.transactionAmount || 0) -
           parseFloat(value.originalAmount || 0);
@@ -1551,9 +1582,9 @@ const MesobFinancial2 = () => {
     const filteredItems = getFilteredItems();
     const total = filteredItems.reduce((sum, value) => {
       if (value.transactionType === "Receive") {
-        if (value.subType === "sale_fixed" || value.subType === "sale_inventory") {
-          return sum;
-        }
+        // Fixed-asset disposals are not revenue (only their gain/loss is booked).
+        if (value.subType === "sale_fixed") return sum;
+        // Everything else — ordinary sales AND inventory sales — is gross revenue.
         return sum + parseFloat(value.transactionAmount || 0);
       }
       return sum;
@@ -1561,10 +1592,80 @@ const MesobFinancial2 = () => {
     return total.toFixed(2);
   };
 
-  const calculateOperatingExpenses = () => {
+  // Is this a Pay/unpaid-Payable that counts as an outflow on the P&L?
+  // (excludes outstanding-debt settlement and asset purchases on credit/cash)
+  const isCountableOutflow = (value) => {
+    const isPayableNewItem =
+      value.transactionType === "Payable" && value.subType === "New_Item";
+    let isPaymentForNewItem = false;
+    if (
+      value.transactionType === "Pay" &&
+      value.payableId &&
+      value.payableId !== "outstanding-debt"
+    ) {
+      const originalPayable = items.find((item) => item.id === value.payableId);
+      if (originalPayable && originalPayable.subType === "New_Item") {
+        isPaymentForNewItem = true;
+      }
+    }
     return (
-      parseFloat(calculateTotalExpenses()) - parseFloat(calculateOtherExpense())
+      (value.transactionType === "Pay" ||
+        (value.transactionType === "Payable" && value.status !== "Paid")) &&
+      value.payableId !== "outstanding-debt" &&
+      !value.transactionPurpose.includes("Outstanding Debt") &&
+      !isPayableNewItem &&
+      !isPaymentForNewItem
+    );
+  };
+
+  // Amount a Payable contributes: its REMAINING balance (installment Pay records
+  // supply the paid portion, so remaining + payments = the original once). Pays
+  // contribute their own amount. Mirrors the installment double-count fix.
+  const outflowAmount = (value) =>
+    value.transactionType === "Payable"
+      ? parseFloat(
+          value.remainingAmount != null
+            ? value.remainingAmount
+            : value.transactionAmount || 0
+        ) || 0
+      : parseFloat(value.transactionAmount || 0);
+
+  // Cost of Goods Sold = book value (cost) of inventory sold + purchases the user
+  // chose to expense at entry as cost-of-goods (subType "COGS").
+  const calculateCOGS = () => {
+    const filteredItems = getFilteredItems();
+    const soldInventoryCost = filteredItems.reduce((sum, value) => {
+      if (value.transactionType === "Receive" && value.subType === "sale_inventory") {
+        return sum + parseFloat(value.originalAmount || 0);
+      }
+      return sum;
+    }, 0);
+    const directCogs = filteredItems.reduce((sum, value) => {
+      if (value.subType === "COGS" && isCountableOutflow(value)) {
+        return sum + outflowAmount(value);
+      }
+      return sum;
+    }, 0);
+    return (soldInventoryCost + directCogs).toFixed(2);
+  };
+
+  const calculateGrossProfit = () => {
+    return (
+      parseFloat(calculateOperatingRevenue()) - parseFloat(calculateCOGS())
     ).toFixed(2);
+  };
+
+  // Operating expenses = countable outflows that are NOT cost-of-goods and NOT
+  // asset purchases. (Fixed-asset disposal losses live in Other Expense.)
+  const calculateOperatingExpenses = () => {
+    const filteredItems = getFilteredItems();
+    const total = filteredItems.reduce((sum, value) => {
+      if (value.subType !== "COGS" && isCountableOutflow(value)) {
+        return sum + outflowAmount(value);
+      }
+      return sum;
+    }, 0);
+    return total.toFixed(2);
   };
 
   const calculateTotalRevenue = () => {
@@ -1596,7 +1697,6 @@ const MesobFinancial2 = () => {
               (item) =>
                 item.transactionPurpose === purpose &&
                 item.transactionType === "Receive" &&
-                item.subType !== "sale_inventory" &&
                 item.subType !== "sale_fixed"
             );
           })
@@ -1606,7 +1706,6 @@ const MesobFinancial2 = () => {
               if (
                 item.transactionPurpose === purpose &&
                 item.transactionType === "Receive" &&
-                item.subType !== "sale_inventory" &&
                 item.subType !== "sale_fixed"
               ) {
                 return sum + parseFloat(item.transactionAmount || 0);
@@ -1664,6 +1763,33 @@ const MesobFinancial2 = () => {
           })}
         </td>
       </tr>
+
+      {parseFloat(calculateCOGS()) > 0 && (
+        <>
+          <tr>
+            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
+              <strong>{t("financialReport.costOfGoodsSold")}</strong>
+            </td>
+            <td style={{ color: FINANCIAL_COLORS.expense, fontWeight: "bold", padding: "8px", border: "1px solid var(--border)", textAlign: "right" }}>
+              $
+              {parseFloat(calculateCOGS()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </td>
+          </tr>
+          <tr>
+            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
+              <strong>
+                {parseFloat(calculateGrossProfit()) < 0
+                  ? t("financialReport.grossLoss")
+                  : t("financialReport.grossProfit")}
+              </strong>
+            </td>
+            <td style={{ color: getNetIncomeColor(parseFloat(calculateGrossProfit())), fontWeight: "bold", padding: "8px", border: "1px solid var(--border)", textAlign: "right" }}>
+              $
+              {parseFloat(calculateGrossProfit()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </td>
+          </tr>
+        </>
+      )}
 
       <tr
         onClick={() => setIsOtherIncomeExpanded(!isOtherIncomeExpanded)}
@@ -1800,7 +1926,7 @@ const MesobFinancial2 = () => {
             fontWeight: "bold",
           }}
         >
-          <strong>{t("financialReport.totalExpenses")}</strong>
+          <strong>{t("financialReport.operatingExpenses")}</strong>
         </td>
         <td
           style={{
@@ -2018,46 +2144,16 @@ const MesobFinancial2 = () => {
     return Object.entries(byName).map(([name, balance]) => ({ name, balance: Math.max(0, balance) })).filter((x) => x.balance > 0);
   };
 
+  // Authoritative total expenses driving net income (Revenue − Expenses).
+  // = Cost of Goods Sold + Operating Expenses + Other Expense (fixed-asset
+  // disposal losses). The installment-remaining and asset-purchase exclusions
+  // live in isCountableOutflow/outflowAmount, shared with the subtotals above.
   const calculateTotalExpenses = () => {
-    const filteredItems = getFilteredItems();
-    const payExpenses = filteredItems.reduce((sum, value) => {
-      // Exclude Payable+New_Item (asset purchases on credit) - these are inventory, not expenses
-      const isPayableNewItem = value.transactionType === "Payable" && value.subType === "New_Item";
-
-      // Exclude Pay transactions that are payments for New_Item Payables (asset purchases)
-      let isPaymentForNewItem = false;
-      if (value.transactionType === "Pay" && value.payableId && value.payableId !== "outstanding-debt") {
-        const originalPayable = items.find(item => item.id === value.payableId);
-        if (originalPayable && originalPayable.subType === "New_Item") {
-          isPaymentForNewItem = true;
-        }
-      }
-
-      if (
-        (value.transactionType === "Pay" ||
-          (value.transactionType === "Payable" && value.status !== "Paid")) &&
-        value.payableId !== "outstanding-debt" &&
-        !value.transactionPurpose.includes("Outstanding Debt") &&
-        !isPayableNewItem &&
-        !isPaymentForNewItem
-      ) {
-        return sum + parseFloat(value.transactionAmount || 0);
-      }
-      return sum;
-    }, 0);
-    const lossOnSale = filteredItems.reduce((sum, item) => {
-      if (
-        item.transactionType === "Receive" &&
-        (item.subType === "sale_inventory" || item.subType === "sale_fixed")
-      ) {
-        const gain =
-          parseFloat(item.transactionAmount || 0) -
-          parseFloat(item.originalAmount || 0);
-        if (gain < 0) return sum + Math.abs(gain);
-      }
-      return sum;
-    }, 0);
-    return (payExpenses + lossOnSale).toFixed(2);
+    return (
+      parseFloat(calculateCOGS()) +
+      parseFloat(calculateOperatingExpenses()) +
+      parseFloat(calculateOtherExpense())
+    ).toFixed(2);
   };
 
   const calculateTotalCash = () => {
@@ -4609,7 +4705,13 @@ const MesobFinancial2 = () => {
                     <option value="">{t('financialReport.selectAssetType')}</option>
                     <option value="fixed">{t('financialReport.fixedAsset')}</option>
                     <option value="current">{t('financialReport.currentAsset')}</option>
+                    <option value="cogs">{t('financialReport.costOfGoodsExpense')}</option>
                   </Input>
+                  {assetType === "cogs" && (
+                    <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                      {t('financialReport.costOfGoodsHint')}
+                    </small>
+                  )}
                 </FormGroup>
                 {assetType && (
                   <FormGroup>
@@ -4690,7 +4792,13 @@ const MesobFinancial2 = () => {
                     <option value="">{t('financialReport.selectAssetType')}</option>
                     <option value="fixed">{t('financialReport.fixedAsset')}</option>
                     <option value="current">{t('financialReport.currentAsset')}</option>
+                    <option value="cogs">{t('financialReport.costOfGoodsExpense')}</option>
                   </Input>
+                  {assetType === "cogs" && (
+                    <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                      {t('financialReport.costOfGoodsHint')}
+                    </small>
+                  )}
                 </FormGroup>
                 {assetType && (
                   <FormGroup>

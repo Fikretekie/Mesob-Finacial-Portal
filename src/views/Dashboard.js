@@ -169,11 +169,13 @@ function computeDashboardMetrics(
         dailyData[dateKey].newItem += amount;
       }
     } else if (tx.transactionType === "New_Item") {
+      // Asset purchase — capitalized, NOT an operating expense (matches the
+      // Financial Report). It reduces cash and adds to assets (newItem), but must
+      // not hit the expenses total or net income, or the Dashboard shows a false
+      // loss whenever a user buys equipment/inventory.
       newItem += m ? amount : 0;
       cashOnHand -= amount;
       if (m) {
-        expenses += amount;
-        dailyData[dateKey].expenses += amount;
         dailyData[dateKey].newItem += amount;
       }
     } else if (
