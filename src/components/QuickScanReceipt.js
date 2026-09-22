@@ -47,10 +47,21 @@ function QuickScanReceipt() {
   const [category, setCategory] = useState("");
   const [state, setState] = useState("");
   const [gallons, setGallons] = useState("");
+  // How the scanned purchase is recorded on the books:
+  //   expense   -> operating expense (Pay / subType "Expense") — the default
+  //   cogs      -> cost of goods sold now (Pay / subType "COGS")
+  //   inventory -> capitalized as current asset (New_Item / assetType "current")
+  //   fixed     -> capitalized as fixed asset (New_Item / assetType "fixed")
+  const [destination, setDestination] = useState("expense");
+  const [itemName, setItemName] = useState("");
 
   const businessType = localStorage.getItem("businessType") || "";
   const expenseOptions = businessTypes[businessType]?.expenses || [];
-  const isFuelTunnel = businessType === "Trucking" && category === "Fuel Expense";
+  const isAssetDestination = destination === "inventory" || destination === "fixed";
+  // Fuel handling (State/Gallons + IFTA FuelPurchase) only applies to a fuel
+  // operating expense, not to goods capitalized as inventory/assets.
+  const isFuelTunnel =
+    businessType === "Trucking" && category === "Fuel Expense" && destination === "expense";
 
   const resetAndClose = () => {
     setShowReview(false);
@@ -60,6 +71,8 @@ function QuickScanReceipt() {
     setCategory("");
     setState("");
     setGallons("");
+    setDestination("expense");
+    setItemName("");
     setError("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -109,6 +122,7 @@ function QuickScanReceipt() {
       const totalNum = total ? parseFloat(String(total).replace(/[^0-9.]/g, "")) : null;
 
       setAmount(totalNum ? String(totalNum) : "");
+      if (vendor) setItemName(String(vendor));
       const guessed = guessCategoryFromVendor(vendor, businessType);
       setCategory(guessed);
       if (guessed === "Fuel Expense") {
@@ -128,6 +142,10 @@ function QuickScanReceipt() {
     const amountNum = parseFloat(amount);
     if (!amountNum || amountNum <= 0) {
       setError("Enter a valid amount.");
+      return;
+    }
+    if (isAssetDestination && !itemName.trim()) {
+      setError("Enter an item name.");
       return;
     }
     if (isFuelTunnel && (!state || !gallons)) {
@@ -152,16 +170,32 @@ function QuickScanReceipt() {
         receiptUrl = uploadRes.data?.url || "";
       }
 
-      await axios.post(apiUrl(ROUTES.TRANSACTION), {
-        userId,
-        transactionType: "Pay",
-        transactionPurpose: category || "Other",
-        transactionAmount: amountNum,
-        originalAmount: amountNum,
-        subType: "Expense",
-        receiptUrl,
-        status: "Paid",
-      });
+      const transaction = isAssetDestination
+        ? {
+            // Capitalize: goods kept as stock, or equipment. Not an expense/COGS.
+            userId,
+            transactionType: "New_Item",
+            subType: "New_Item",
+            status: "Paid",
+            transactionPurpose: itemName.trim(),
+            transactionAmount: amountNum,
+            originalAmount: amountNum,
+            assetType: destination === "fixed" ? "fixed" : "current",
+            assetName: itemName.trim(),
+            receiptUrl,
+          }
+        : {
+            // Operating expense, or cost of goods expensed now (subType "COGS").
+            userId,
+            transactionType: "Pay",
+            transactionPurpose: category || "Other",
+            transactionAmount: amountNum,
+            originalAmount: amountNum,
+            subType: destination === "cogs" ? "COGS" : "Expense",
+            receiptUrl,
+            status: "Paid",
+          };
+      await axios.post(apiUrl(ROUTES.TRANSACTION), transaction);
 
       if (isFuelTunnel) {
         const today = new Date();
@@ -274,14 +308,45 @@ function QuickScanReceipt() {
                 <Input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
               </FormGroup>
               <FormGroup>
-                <Label>Category</Label>
-                <Input type="select" value={category} onChange={(e) => setCategory(e.target.value)}>
-                  <option value="">Select category...</option>
-                  {expenseOptions.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
+                <Label>Record as</Label>
+                <Input type="select" value={destination} onChange={(e) => setDestination(e.target.value)}>
+                  <option value="expense">Operating expense</option>
+                  <option value="cogs">Cost of goods (expense now)</option>
+                  <option value="inventory">Inventory (keep as stock)</option>
+                  <option value="fixed">Fixed asset</option>
                 </Input>
+                {destination === "cogs" && (
+                  <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                    Recorded as Cost of Goods Sold right away — for resale goods you buy and sell quickly.
+                  </small>
+                )}
+                {isAssetDestination && (
+                  <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                    Capitalized as {destination === "fixed" ? "a fixed asset" : "inventory"} — it won't hit expenses until sold or disposed.
+                  </small>
+                )}
               </FormGroup>
+              {isAssetDestination ? (
+                <FormGroup>
+                  <Label>Item name</Label>
+                  <Input
+                    type="text"
+                    value={itemName}
+                    onChange={(e) => setItemName(e.target.value)}
+                    placeholder="e.g. Inventory purchase"
+                  />
+                </FormGroup>
+              ) : (
+                <FormGroup>
+                  <Label>Category</Label>
+                  <Input type="select" value={category} onChange={(e) => setCategory(e.target.value)}>
+                    <option value="">Select category...</option>
+                    {expenseOptions.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </Input>
+                </FormGroup>
+              )}
               {isFuelTunnel && (
                 <>
                   <FormGroup>
