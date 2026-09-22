@@ -82,6 +82,7 @@
     "selectUserToView": "Select User to View:",
     "searchUser": "Search or select a user...",
     "editTransaction": "Edit Transaction",
+    "addTransactionSubtitle": "Record money in, money out, or what you owe.",
     "type": "Type",
     "receivedCash": "Received Cash",
     "recordedEarlierAsCurrentAssets": "Recorded earlier as current assets",

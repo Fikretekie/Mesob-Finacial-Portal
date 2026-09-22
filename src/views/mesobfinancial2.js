@@ -4324,6 +4324,9 @@ const MesobFinancial2 = () => {
             }}
           >
             {editingTransaction ? t('financialReport.editTransaction') : t('financialReport.addTransaction')}
+            <span className="mksv-modal-sub">
+              {t('financialReport.addTransactionSubtitle', 'Record money in, money out, or what you owe.')}
+            </span>
           </ModalHeader>
           <ModalBody>
             <FormGroup>
@@ -4342,6 +4345,7 @@ const MesobFinancial2 = () => {
                     setReceiveSaleAssetCost(0);
                   }}
                 >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v10" /><path d="m7 12 5 5 5-5" /><path d="M5 20h14" /></svg>
                   {t('financialReport.receivedCash')}
                 </Button>
                 <Button
@@ -4352,6 +4356,7 @@ const MesobFinancial2 = () => {
                     setPaymentMode(null);
                   }}
                 >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V9" /><path d="m7 12 5-5 5 5" /><path d="M5 4h14" /></svg>
                   {t('financialReport.paidCash')}
                 </Button>
                 <Button
@@ -4364,6 +4369,7 @@ const MesobFinancial2 = () => {
                     setPaymentMode(null);
                   }}
                 >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
                   {t('financialReport.haventYetPaid')}
                 </Button>
               </div>
@@ -4380,8 +4386,8 @@ const MesobFinancial2 = () => {
                   }}
                 >
                   <Button
-                    color="primary"
-                    className="transaction-action-btn"
+                    color="secondary"
+                    className={`transaction-action-btn${paymentMode === "recorded" ? " is-selected" : ""}`}
                     onClick={() => {
                       setsubType("Recorded");
                       setPaymentMode("recorded");
@@ -4391,8 +4397,8 @@ const MesobFinancial2 = () => {
                   </Button>
 
                   <Button
-                    color="primary"
-                    className="transaction-action-btn action-expense"
+                    color="secondary"
+                    className={`transaction-action-btn action-expense${paymentMode === "new" ? " is-selected" : ""}`}
                     onClick={() => {
                       setsubType("Expense");
                       setPaymentMode("new");
@@ -4401,8 +4407,8 @@ const MesobFinancial2 = () => {
                     {t('financialReport.newExpense')}
                   </Button>
                   <Button
-                    color="warning"
-                    className="transaction-action-btn action-new-item"
+                    color="secondary"
+                    className={`transaction-action-btn action-new-item${paymentMode === "boughtItem" ? " is-selected" : ""}`}
                     onClick={() => {
                       setsubType("New_Item");
                       setPaymentMode("boughtItem");
@@ -4492,8 +4498,8 @@ const MesobFinancial2 = () => {
                   style={{ display: "flex", gap: "5px", marginBottom: "15px" }}
                 >
                   <Button
-                    color="danger"
-                    className="transaction-action-btn action-expense"
+                    color="secondary"
+                    className={`transaction-action-btn action-expense${payableSubMode === "expense" ? " is-selected" : ""}`}
                     onClick={() => {
                       setPayableSubMode("expense");
                       setPaymentMode(null);
@@ -4502,8 +4508,8 @@ const MesobFinancial2 = () => {
                     {t('financialReport.expense')}
                   </Button>
                   <Button
-                    color="warning"
-                    className="transaction-action-btn action-new-item"
+                    color="secondary"
+                    className={`transaction-action-btn action-new-item${payableSubMode === "boughtItem" ? " is-selected" : ""}`}
                     onClick={() => {
                       setPayableSubMode("boughtItem");
                       setPaymentMode(null);
