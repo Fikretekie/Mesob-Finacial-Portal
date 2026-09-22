@@ -311,13 +311,13 @@ function QuickScanReceipt() {
                 <Label>Record as</Label>
                 <Input type="select" value={destination} onChange={(e) => setDestination(e.target.value)}>
                   <option value="expense">Operating expense</option>
-                  <option value="cogs">Cost of goods (expense now)</option>
+                  <option value="cogs">Goods for resale</option>
                   <option value="inventory">Inventory (keep as stock)</option>
                   <option value="fixed">Fixed asset</option>
                 </Input>
                 {destination === "cogs" && (
                   <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
-                    Recorded as Cost of Goods Sold right away — for resale goods you buy and sell quickly.
+                    Recorded as cost of items sold right away — for resale goods you buy and sell quickly.
                   </small>
                 )}
                 {isAssetDestination && (

@@ -4546,13 +4546,21 @@ const MesobFinancial2 = () => {
                         (t) => t.status !== "Paid" && t.transactionAmount !== 0
                       )
                       .map((t) => {
-                        // Use originalAmount for display (transactionAmount changes after partial payments)
-                        const displayAmount = t.originalAmount || t.transactionAmount;
+                        // Show what's LEFT to pay, not the original amount. After a
+                        // partial payment the remaining balance is what matters; if
+                        // some has been paid, also show the original for context.
+                        const original = parseFloat(t.originalAmount || t.transactionAmount) || 0;
+                        const remaining =
+                          parseFloat(t.remainingAmount != null ? t.remainingAmount : t.transactionAmount) || 0;
                         // Show assetName if available, otherwise transactionPurpose
                         const displayName = t.assetName || t.transactionPurpose;
+                        const label =
+                          remaining < original
+                            ? `${displayName} - $${remaining.toFixed(2)} left (of $${original.toFixed(2)})`
+                            : `${displayName} - $${original.toFixed(2)}`;
                         return (
                           <option key={t.id} value={t.id}>
-                            {displayName} - ${parseFloat(displayAmount).toFixed(2)}
+                            {label}
                           </option>
                         );
                       })}
