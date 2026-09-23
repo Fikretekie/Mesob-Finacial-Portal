@@ -4379,6 +4379,7 @@ const MesobFinancial2 = () => {
               <FormGroup>
                 <Label>{t('financialReport.selectAction')}:</Label>
                 <div
+                  className="mksv-actions mksv-actions--out"
                   style={{
                     display: "flex",
                     gap: "5px",
@@ -4423,7 +4424,7 @@ const MesobFinancial2 = () => {
             {transactionType === "receive" && (
               <FormGroup>
                 <Label>{t('financialReport.selectAction')}:</Label>
-                <div style={{ display: "flex", gap: "5px", marginBottom: "15px", flexWrap: "wrap" }}>
+                <div className="mksv-actions mksv-actions--in" style={{ display: "flex", gap: "5px", marginBottom: "15px", flexWrap: "wrap" }}>
                   {getCurrentAssetItems().length > 0 && (
                   <Button
                     color={receiveSubMode === "saleCurrent" ? "primary" : "secondary"}
@@ -4495,6 +4496,7 @@ const MesobFinancial2 = () => {
               <FormGroup>
                 <Label>{t('financialReport.selectAction')}:</Label>
                 <div
+                  className="mksv-actions mksv-actions--owed"
                   style={{ display: "flex", gap: "5px", marginBottom: "15px" }}
                 >
                   <Button

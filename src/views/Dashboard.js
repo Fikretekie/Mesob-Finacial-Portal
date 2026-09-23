@@ -400,6 +400,15 @@ function Dashboard() {
     return (initialvalueableItemsRef.current || 0).toFixed(2);
   };
 
+  // Tax set-aside is an estimate on PROFIT, not cash on hand. Cash includes money
+  // that isn't income (loans, owner deposits, asset sales), so taxing it overstated
+  // the set-aside. Base it on net profit (revenue - expenses); no tax on a loss.
+  const calculateEstimatedTax = () => {
+    const netProfit =
+      parseFloat(calculateTotalRevenue()) - parseFloat(calculateTotalExpenses());
+    return Math.max(0, netProfit) * 0.3;
+  };
+
   const fetchUsers = async () => {
     setLoadingUsers(true);
     try {
@@ -1478,7 +1487,7 @@ function Dashboard() {
                     {activeMetric.key === "cash" && (
                       <div>
                         <span className="hk">{t("dashboard.taxEstimation", "Tax set-aside")}</span>
-                        <span className="hv">${(parseFloat(calculateTotalCash()) * 0.3).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                        <span className="hv">${calculateEstimatedTax().toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                       </div>
                     )}
                   </div>
@@ -1775,7 +1784,7 @@ function Dashboard() {
                   {t("dashboard.taxEstimation", "Tax set-aside")}
                 </span>
                 <span className="mk-badge mk-badge--info">
-                  ${(parseFloat(calculateTotalCash()) * 0.3).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  ${calculateEstimatedTax().toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </span>
               </div>
               <div className="dash-status__row">

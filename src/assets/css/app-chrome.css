@@ -1136,6 +1136,57 @@ select option {
 /* Radio group (full / partial payment) reads as chips */
 .add-transaction-modal fieldset.form-group { margin-top: 4px; }
 
+/* Selected action pill inherits its parent Type's colour, so the whole flow
+   reads as one colour: green under Received, red under Paid, amber under Owed.
+   Higher specificity than the default blue .is-selected rule above. */
+.add-transaction-modal .mksv-actions--in .transaction-action-btn.btn-primary,
+.add-transaction-modal .mksv-actions--in .transaction-action-btn.is-selected {
+  background: color-mix(in srgb, var(--green) 14%, var(--surface-3)) !important;
+  border-color: var(--green) !important;
+  color: var(--green) !important;
+  box-shadow: inset 0 0 0 1px var(--green) !important;
+}
+.add-transaction-modal .mksv-actions--out .transaction-action-btn.btn-primary,
+.add-transaction-modal .mksv-actions--out .transaction-action-btn.is-selected {
+  background: color-mix(in srgb, var(--red) 14%, var(--surface-3)) !important;
+  border-color: var(--red) !important;
+  color: var(--red) !important;
+  box-shadow: inset 0 0 0 1px var(--red) !important;
+}
+.add-transaction-modal .mksv-actions--owed .transaction-action-btn.btn-primary,
+.add-transaction-modal .mksv-actions--owed .transaction-action-btn.is-selected {
+  background: color-mix(in srgb, var(--amber) 14%, var(--surface-3)) !important;
+  border-color: var(--amber) !important;
+  color: var(--amber) !important;
+  box-shadow: inset 0 0 0 1px var(--amber) !important;
+}
+.add-transaction-modal .mksv-actions .transaction-action-btn:hover {
+  border-color: currentColor !important;
+}
+
+/* Custom dropdowns: kill the native arrow, add our own chevron, roomier field.
+   Mid-grey chevron reads on both the dark and light input surfaces. */
+.add-transaction-modal select.form-control {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  height: 46px;
+  padding: 10px 40px 10px 14px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238a93a1' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px 16px;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.add-transaction-modal select.form-control:hover {
+  border-color: var(--accent) !important;
+}
+.add-transaction-modal select.form-control:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-ring) !important;
+}
+
 /* Mobile: full-bleed sheet feel */
 @media (max-width: 600px) {
   .add-transaction-modal { max-width: 100%; margin: 8px; }
