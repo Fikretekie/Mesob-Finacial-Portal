@@ -41,6 +41,23 @@ h1, h2, h3, h4, h5, h6,
   background: var(--bg) !important;
 }
 
+/* ---- Sidebar scrolling ----
+   The template sizes the nav wrapper as height: calc(100vh - 75px), assuming a
+   ~75px logo. Our logo block is taller (~112px), so the wrapper overran the
+   viewport bottom and the last nav items (e.g. Backup CSV / Subscribe) couldn't
+   be scrolled into view. Lay the sidebar out as a flex column instead: the logo
+   takes its natural height, and the nav wrapper takes whatever is left and
+   scrolls. Works with both PerfectScrollbar (Windows) and native overflow. */
+.sidebar { display: flex; flex-direction: column; }
+.sidebar .logo { flex: 0 0 auto; }
+.sidebar .sidebar-wrapper {
+  flex: 1 1 auto;
+  height: auto !important;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 /* Kill the Now UI coloured (blue) gradient overlays. */
 .sidebar:before,
 .sidebar:after,
