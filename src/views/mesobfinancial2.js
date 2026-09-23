@@ -4336,7 +4336,7 @@ const MesobFinancial2 = () => {
                   color={
                     transactionType === "receive" ? "primary" : "secondary"
                   }
-                  className="transaction-type-btn"
+                  className="transaction-type-btn type-in"
                   onClick={() => {
                     setTransactionType("receive");
                     setPaymentMode(null);
@@ -4350,7 +4350,7 @@ const MesobFinancial2 = () => {
                 </Button>
                 <Button
                   color={transactionType === "pay" ? "primary" : "secondary"}
-                  className="transaction-type-btn"
+                  className="transaction-type-btn type-out"
                   onClick={() => {
                     setTransactionType("pay");
                     setPaymentMode(null);
@@ -4363,7 +4363,7 @@ const MesobFinancial2 = () => {
                   color={
                     transactionType === "Payable" ? "primary" : "secondary"
                   }
-                  className="transaction-type-btn"
+                  className="transaction-type-btn type-owed"
                   onClick={() => {
                     setTransactionType("Payable");
                     setPaymentMode(null);
