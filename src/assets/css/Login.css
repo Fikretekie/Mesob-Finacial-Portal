@@ -294,3 +294,312 @@
   .login-box { padding: var(--sp-6) var(--sp-5); }
   .login-box h2 { font-size: 1.35rem; }
 }
+
+/* =========================================================================
+   Sign up — multi-step, on the shared .auth two-panel shell.
+   ========================================================================= */
+.signup-box {
+  max-width: 460px;
+  text-align: left;
+}
+
+/* Brand-panel benefits list (signup variant) */
+.auth__benefits {
+  list-style: none;
+  margin: var(--sp-6) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  max-width: 26rem;
+}
+.auth__benefits li {
+  position: relative;
+  padding-left: 28px;
+  color: var(--text-2);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+.auth__benefits li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  top: 1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+/* ---- Stepper -------------------------------------------------------------- */
+.signup-steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 var(--sp-6);
+}
+.signup-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.signup-step__dot {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-3);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  transition: all var(--dur) var(--ease);
+}
+.signup-step__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-3);
+  white-space: nowrap;
+  transition: color var(--dur) var(--ease);
+}
+.signup-step.is-active .signup-step__dot {
+  color: var(--accent-ink);
+  background: var(--accent-solid);
+  border-color: var(--accent-solid);
+  box-shadow: 0 0 0 4px var(--accent-ring);
+}
+.signup-step.is-active .signup-step__label { color: var(--text-1); }
+.signup-step.is-done .signup-step__dot {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.signup-step.is-done .signup-step__label { color: var(--text-2); }
+.signup-steps__line {
+  flex: 1 1 auto;
+  height: 2px;
+  min-width: 12px;
+  border-radius: 2px;
+  background: var(--border);
+  transition: background var(--dur) var(--ease);
+}
+.signup-steps__line.is-done { background: var(--accent); }
+
+/* Hide labels on the narrowest widths so the stepper never wraps */
+@media (max-width: 400px) {
+  .signup-step__label { display: none; }
+}
+
+/* ---- Titles + helper copy ------------------------------------------------ */
+.signup-title {
+  margin: 0 0 var(--sp-2);
+  color: var(--text-1);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.signup-sub {
+  margin: 0 0 var(--sp-5);
+  color: var(--text-2);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.signup-hint {
+  margin: var(--sp-2) 0 0;
+  color: var(--text-3);
+  font-size: 0.76rem;
+}
+.signup-error {
+  margin: var(--sp-2) 0 0;
+  color: var(--red);
+  font-size: 0.76rem;
+  font-weight: 500;
+}
+.signup-social-note {
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--accent-soft);
+  color: var(--text-2);
+  font-size: 0.86rem;
+}
+.signup-social-note strong { color: var(--accent); }
+.signup-trust {
+  margin: var(--sp-3) 0 0;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 0.74rem;
+}
+
+/* Field error ring */
+.login-input-group input.has-error,
+.login-input-group select.has-error,
+.signup-phone .form-control.has-error {
+  border-color: var(--red) !important;
+}
+
+/* ---- Native selects: match the inputs, add a chevron --------------------- */
+.login-input-group select {
+  width: 100%;
+  height: 46px;
+  padding: 0 40px 0 var(--sp-4);
+  font-size: 1rem;
+  color: var(--text-1);
+  background-color: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238a93a1' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px 16px;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.login-input-group select:hover { border-color: var(--border-strong); }
+.login-input-group select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+.login-input-group select option {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+
+/* ---- Phone input (react-phone-input-2) theming --------------------------- */
+.signup-phone-group .react-tel-input { margin: 0; }
+.signup-phone .form-control {
+  width: 100% !important;
+  height: 46px !important;
+  padding-left: 52px !important;
+  font-size: 1rem !important;
+  color: var(--text-1) !important;
+  background: var(--surface-3) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-md) !important;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.signup-phone .form-control:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-ring) !important;
+}
+.signup-phone .flag-dropdown,
+.signup-phone .flag-dropdown.open {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+  border-right: none !important;
+  border-radius: var(--r-md) 0 0 var(--r-md) !important;
+}
+.signup-phone .selected-flag { border-radius: var(--r-md) 0 0 var(--r-md) !important; }
+.signup-phone .selected-flag:hover,
+.signup-phone .selected-flag:focus,
+.signup-phone .flag-dropdown.open .selected-flag {
+  background: var(--surface-hover) !important;
+}
+.signup-phone .country-list {
+  margin: 6px 0 !important;
+  background: var(--surface-2) !important;
+  color: var(--text-1) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--r-md) !important;
+  box-shadow: var(--shadow-2) !important;
+}
+.signup-phone .country-list .country .country-name { color: var(--text-2); }
+.signup-phone .country-list .country .dial-code { color: var(--text-3); }
+.signup-phone .country-list .country:hover,
+.signup-phone .country-list .country.highlight {
+  background: var(--surface-hover) !important;
+}
+.signup-phone .country-list .search {
+  background: var(--surface-2) !important;
+  padding: 10px !important;
+}
+.signup-phone .country-list .search-box {
+  background: var(--surface-3) !important;
+  color: var(--text-1) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-sm) !important;
+}
+
+/* ---- Info card + terms + actions ---------------------------------------- */
+.signup-info-card {
+  margin: 0 0 var(--sp-5);
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+.signup-info-card a {
+  color: var(--accent);
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.signup-info-card a:hover { text-decoration: underline; }
+
+.signup-terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: var(--sp-4) 0 var(--sp-5);
+  color: var(--text-2);
+  font-size: 0.88rem;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.signup-terms input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  accent-color: var(--accent-solid);
+  cursor: pointer;
+}
+.signup-terms a { color: var(--accent); font-weight: 600; text-decoration: none; }
+.signup-terms a:hover { text-decoration: underline; }
+
+.signup-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+.signup-actions .login-btn { flex: 1 1 auto; }
+.signup-back {
+  flex: 0 0 auto;
+  min-height: 46px;
+  padding: 0 var(--sp-4);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-2);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    background var(--dur) var(--ease);
+}
+.signup-back:hover {
+  color: var(--text-1);
+  border-color: var(--border-strong);
+  background: var(--surface-hover);
+}

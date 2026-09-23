@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -11,14 +12,34 @@ import { apiUrl, ROUTES, STAGING_API_URL, CURRENT_ENV } from "../config/api";
 import { businessTypes } from "./BusinessTypes";
 import { currencies } from "utils/currencies";
 import TermsOfUse from "./Terms";
-import colors from "variables/colors";
 
 import { signInWithRedirect, signOut } from "aws-amplify/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faApple } from "@fortawesome/free-brands-svg-icons";
 import { Spinner } from "reactstrap";
+import "../assets/css/Login.css";
 
 const logo = "/transparent.png";
+
+const BUSINESS_TYPES = [
+  ["Trucking", "Trucking"],
+  ["RIDESHARE DRIVERS/PARTNERS", "Rideshare Drivers / Partners"],
+  ["Groceries", "Groceries"],
+  ["Individual/Households", "Individual / Households"],
+  ["Cafe", "Restaurant / Café"],
+  ["Cleaning Services", "Cleaning Services"],
+  ["⁠Beauty & Grooming", "Beauty & Grooming (Salons, Barbershops)"],
+  ["E-commerce Sellers", "E-commerce Sellers (Shopify, Amazon, Etsy)"],
+  ["Construction Trades", "Construction Trades (Plumbing, Electrical, etc.)"],
+  ["Content Creator", "Content Creator"],
+  ["Other", "Other Businesses"],
+];
+
+const STEP_META = [
+  { n: 1, label: "Account" },
+  { n: 2, label: "Business" },
+  { n: 3, label: "Finances" },
+];
 
 const SignupPage = () => {
   const [step, setStep] = useState(1);
@@ -29,17 +50,15 @@ const SignupPage = () => {
   const [name, setName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [businessType, setBusinessType] = useState("");
-  const [otherBusinessType, setOtherBusinessType] = useState(""); // new state
+  const [otherBusinessType, setOtherBusinessType] = useState("");
   const [cashBalance, setCashBalance] = useState("");
   const [outstandingDebt, setOutstandingDebt] = useState("");
   const [valueableItems, setValueableItems] = useState("");
-  // const [beginningCash, setBeginningCash] = useState("");
-  const [isHovered, setIsHovered] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSignupSuccessful, setIsSignupSuccessful] = useState(false);
   const notificationAlertRef = useRef(null);
   const navigate = useNavigate();
-  const [termsChecked, setTermsChecked] = useState(false); // New state for terms checkbox
+  const [termsChecked, setTermsChecked] = useState(false);
   const [incomePurposes, setIncomePurposes] = useState([]);
   const [expensePurposes, setExpensePurposes] = useState([]);
   const [payablePurposes, setPayablePurposes] = useState([]);
@@ -48,7 +67,7 @@ const SignupPage = () => {
   const [manualPayablePurposes, setManualPayablePurposes] = useState([]);
   const [selectedBusinessType, setSelectedBusinessType] = useState("");
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
-  const [loading, setLoading] = useState(true); // loading state
+  const [loading, setLoading] = useState(true);
 
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -56,37 +75,24 @@ const SignupPage = () => {
   const socialEmail = searchParams.get("email");
   const socialUserId = searchParams.get("userId");
   const socialName = searchParams.get("name");
-  const isSocialSignup =
-    provider === "Google" || provider === "Apple";
+  const isSocialSignup = provider === "Google" || provider === "Apple";
   const [isLoading, setIsLoading] = useState(false);
   const [socialAuth, setSocialAuth] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [startFromZeroConfirmed, setStartFromZeroConfirmed] = useState(false);
 
   const getBusinessPurposes = (businessType) => {
-    // If the business type is "Other", return empty arrays for manual entry
     if (businessType === "Other") {
-      return {
-        income: [],
-        expenses: [],
-        payables: [],
-      };
+      return { income: [], expenses: [], payables: [] };
     }
-
-    // Otherwise, return the predefined purposes for the business type
     return (
-      businessTypes[businessType] || {
-        income: [],
-        expenses: [],
-        payables: [],
-      }
+      businessTypes[businessType] || { income: [], expenses: [], payables: [] }
     );
   };
 
   useEffect(() => {
     if (selectedBusinessType) {
       if (selectedBusinessType === "Other") {
-        // For manual entry, do not call getBusinessPurposes
         setIncomePurposes(manualIncomePurposes);
         setExpensePurposes(manualExpensePurposes);
         setPayablePurposes(manualPayablePurposes);
@@ -135,7 +141,7 @@ const SignupPage = () => {
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumber = /\d/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password); // Define special characters
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
     if (password.length < minLength) {
       return "Password must be at least 8 characters long.";
@@ -152,37 +158,15 @@ const SignupPage = () => {
     if (!hasSpecialChar) {
       return "Password must contain at least one special character.";
     }
-    return ""; // No error
+    return "";
   };
 
-  // const validateStep1 = () => {
-  //   const newErrors = {};
-  //   if (!name) newErrors.name = "Name is required.";
-  //   if (!companyName) newErrors.companyName = "Company name is required.";
-  //   if (!email) newErrors.email = "Email is required.";
-  //   else if (!/\S+@\S+\.\S+/.test(email))
-  //     newErrors.email = "Please enter a valid email address.";
-  //   if (!phone) newErrors.phone = "Phone number is required.";
-  //   // Only validate password if not Google
-  //   if (provider !== "Google" && provider !== "Apple") {
-  //     if (!password) newErrors.password = "Password is required.";
-  //     else {
-  //       const passwordError = validatePassword(password);
-  //       if (passwordError) {
-  //         newErrors.password = passwordError;
-  //       }
-  //     }
-  //   }
-  //   setErrors(newErrors);
-  //   return Object.keys(newErrors).length === 0;
-  // };
   const validateStep1 = () => {
     const newErrors = {};
     if (!email) newErrors.email = "Email is required.";
     else if (!/\S+@\S+\.\S+/.test(email))
       newErrors.email = "Please enter a valid email address.";
 
-    // Only validate password for email signup
     if (!isSocialSignup) {
       if (!password) newErrors.password = "Password is required.";
       else {
@@ -195,23 +179,7 @@ const SignupPage = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  // const validateStep2 = () => {
-  //   const newErrors = {};
-  //   if (!selectedBusinessType) {
-  //     newErrors.businessType = "Business type is required.";
-  //   }
-  //   if (selectedBusinessType === "Other" && !otherBusinessType.trim()) {
-  //     newErrors.otherBusinessType = "Please specify your business type.";
-  //   }
-  //   if (!selectedCurrency) {
-  //     newErrors.currency = "Currency is required.";
-  //   }
-  //   {
-  //     errors.currency && <p style={styles.error}>{errors.currency}</p>;
-  //   }
-  //   setErrors(newErrors);
-  //   return Object.keys(newErrors).length === 0;
-  // };
+
   const validateStep2 = () => {
     const newErrors = {};
     if (!name) newErrors.name = "Name is required.";
@@ -229,6 +197,7 @@ const SignupPage = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
   const validateStep3 = () => {
     const newErrors = {};
     if (!cashBalance) newErrors.cashBalance = "Cash balance is required.";
@@ -236,10 +205,9 @@ const SignupPage = () => {
       newErrors.outstandingDebt = "Outstanding debt is required.";
     if (!valueableItems)
       newErrors.valueableItems = "Valuable items are required.";
+    setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-  // ADD these two functions BEFORE the handleSignup function
 
   const handleGoogleSignUp = async () => {
     try {
@@ -281,7 +249,6 @@ const SignupPage = () => {
     }
     e.preventDefault();
     setLoading(true);
-    // Prepare user data
     const creationDate = new Date().toISOString();
     const trialEndDate = new Date(
       Date.now() + 30 * 24 * 60 * 60 * 1000
@@ -310,16 +277,12 @@ const SignupPage = () => {
       scheduleCount: 1,
       createdAt: creationDate,
       currency: selectedCurrency,
-      provider: provider || "Email", // Add provider info
+      provider: provider || "Email",
     };
 
-    // Handle Google OAuth signup (skip Cognito signup)
     if (provider === "Google" || provider === "Apple") {
       try {
         console.log(`🔵 Processing OAuth signup... [env: ${CURRENT_ENV}]`, provider);
-
-        // For Google users, we don't need Cognito signup since they're already authenticated
-        // Just save to backend database
         console.log("socialUserId", socialUserId);
         const response = await axios.put(
           apiUrl(`${ROUTES.USERS}/${socialUserId}`),
@@ -329,7 +292,6 @@ const SignupPage = () => {
         console.log("Google signup response:", response);
 
         if (response.status === 200) {
-          // Set local storage for Google user
           localStorage.setItem("userId", socialUserId || "");
           localStorage.setItem("user_email", email);
           localStorage.setItem("user_name", name);
@@ -348,7 +310,6 @@ const SignupPage = () => {
 
           localStorage.setItem("authToken", "authenticated");
 
-          // Send welcome email for Google users
           const emailData = {
             email: email,
             subject: "Welcome to Meksova – You're All Set!",
@@ -383,28 +344,14 @@ const SignupPage = () => {
           };
 
           try {
-            await axios.post(
-              STAGING_API_URL,
-              emailData
-            );
+            await axios.post(STAGING_API_URL, emailData);
             console.log("Welcome email sent successfully");
           } catch (emailError) {
             console.warn("Failed to send welcome email:", emailError);
-            // Don't block signup if email fails
           }
-
-          // Create schedule for Google user
-          // try {
-          //   await createSchedule();
-          //   console.log("Schedule created successfully");
-          // } catch (scheduleError) {
-          //   console.warn("Failed to create schedule:", scheduleError);
-          //   // Don't block signup if schedule fails
-          // }
 
           showNotification("success", provider, "signup successful!");
 
-          // Redirect directly to dashboard (skip 2FA for Google users)
           setTimeout(() => {
             setLoading(false);
             navigate("/customer/dashboard", { replace: true });
@@ -416,29 +363,24 @@ const SignupPage = () => {
 
         if (dbError.response?.status === 409) {
           setLoading(false);
-
           showNotification(
             "danger",
             "User already exists in our system. Please login."
           );
         } else {
           setLoading(false);
-
-          showNotification(
-            "danger",
-            "Error saving user data. Please try again."
-          );
+          showNotification("danger", "Error saving user data. Please try again.");
         }
         return;
+      } finally {
+        setIsSubmitting(false);
       }
-      return; // Exit early for Google signup
+      return;
     }
 
-    // Handle regular email/password signup (existing Cognito flow)
     try {
       console.log(`🔵 Processing regular email/password signup... [env: ${CURRENT_ENV}]`);
 
-      // Cognito Signup for email/password users
       const res = await signUp({
         username: email,
         password: password,
@@ -451,11 +393,6 @@ const SignupPage = () => {
       });
       console.log(`✅ Cognito sign-up successful [env: ${CURRENT_ENV}]`, res);
 
-      // Do NOT write the user record here. A just-signed-up Cognito user is
-      // unconfirmed and has no session/token yet, and the API now requires a
-      // Cognito token (authorizer). Creating the record happens in Confirm.js
-      // after confirmSignUp + signIn, when a real token exists. Carry the
-      // payload and the Cognito sub (res.userId) forward.
       setLoading(false);
       showNotification("success", "Signup successful! Check your email for the code.");
 
@@ -475,20 +412,13 @@ const SignupPage = () => {
       }, 1000);
     } catch (cognitoError) {
       setLoading(false);
-
       console.error("Cognito signup error:", cognitoError);
 
-      // Handle existing user in Cognito
       if (cognitoError.name === "UsernameExistsException") {
         setLoading(false);
-
-        showNotification(
-          "danger",
-          "User already exists. Please login instead."
-        );
+        showNotification("danger", "User already exists. Please login instead.");
       } else {
         setLoading(false);
-
         showNotification(
           "danger",
           `Signup failed: ${cognitoError.message || "Unknown error"}`
@@ -496,6 +426,7 @@ const SignupPage = () => {
       }
     } finally {
       setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -505,61 +436,18 @@ const SignupPage = () => {
         apiUrl(`${ROUTES.EXISTING_USER_CHECK}?email=${encodeURIComponent(email)}`),
         {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         }
       );
 
       const result = await response.json();
       console.log("✅ Email check response:", result);
-
-      // return true/false directly
       return result.exists === true;
     } catch (error) {
       console.error("❌ Email check API error:", error);
-      return false; // fail-safe: assume not exists
+      return false;
     }
   };
-
-  // const handleNextStep = async () => {
-  //   if (isLoading) return;
-  //   setIsLoading(true);
-  //   if (step === 1) {
-  //     if (!validateStep1()) return;
-
-  //     try {
-  //       const exists = await checkEmailExists(email);
-
-  //       if (exists) {
-  //         setErrors((prev) => ({
-  //           ...prev,
-  //           email: "This email is already registered. Please login.",
-  //         }));
-  //         showNotification(
-  //           "warning",
-  //           "This email is already registered. Please use another."
-  //         );
-  //         setIsLoading(false);
-  //         return;
-  //       }
-
-  //       setStep(2); // Proceed to step 2
-  //     } catch (err) {
-  //       console.error("❌ Email check error:", err);
-  //       showNotification("danger", "An error occurred while checking email");
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   } else if (step === 2) {
-  //     if (!validateStep2()) {
-  //       setIsLoading(false);
-  //       return;
-  //     }
-  //     setStep(3);
-  //     setIsLoading(false);
-  //   }
-  // };
 
   const handleNextStep = async () => {
     if (isLoading) return;
@@ -590,7 +478,7 @@ const SignupPage = () => {
         setTimeout(() => {
           setStep(2);
           setIsLoading(false);
-        }, 500); // ✅ Shows loading for half a second
+        }, 500);
       } catch (err) {
         console.error("❌ Email check error:", err);
         showNotification("danger", "An error occurred while checking email");
@@ -602,11 +490,10 @@ const SignupPage = () => {
         return;
       }
 
-      // ✅ TEMPORARILY delay to trigger button loading
       setTimeout(() => {
         setStep(3);
         setIsLoading(false);
-      }, 500); // <- Forces visibility of spinner/loading for ~½ second
+      }, 500);
     }
   };
 
@@ -620,606 +507,291 @@ const SignupPage = () => {
     localStorage.setItem("businessType", type);
   };
 
+  const goBack = () => setStep((s) => Math.max(1, s - 1));
+
   const renderStepContent = () => {
     switch (step) {
-      // case 1:
-      //   return (
-      //     <div>
-      //       <h2>Create Your Account</h2>
-      //       <p style={styles.subtext}>
-      //         Already have an account?
-      //         <Link to="/login" style={styles.link}>
-      //           Login
-      //         </Link>
-      //       </p>
-      //         <div className="login-input-group">
-
-      //       <input
-      //         type="text"
-      //         placeholder="Enter Your Name"
-      //         value={name}
-      //         onChange={(e) => {
-      //           setName(e.target.value);
-      //           setErrors((prev) => ({ ...prev, name: "" }));
-      //         }}
-      //         style={{
-      //           ...styles.input,
-      //           borderColor: errors.name ? "red" : "#000",
-      //         }}
-      //       />
-      //       {errors.name && <p style={styles.error}>{errors.name}</p>}
-      //       <input
-      //         type="text"
-      //         placeholder="Enter Your Company Name"
-      //         value={companyName}
-      //         onChange={(e) => {
-      //           setCompanyName(e.target.value);
-      //           setErrors((prev) => ({ ...prev, companyName: "" }));
-      //         }}
-      //         style={{
-      //           ...styles.input,
-      //           borderColor: errors.companyName ? "red" : "#000",
-      //         }}
-      //       />
-      //       {errors.companyName && (
-      //         <p style={styles.error}>{errors.companyName}</p>
-      //       )}
-      //       <input
-      //         type="email"
-      //         placeholder="Enter Your Email"
-      //         value={email}
-      //         onChange={(e) => {
-      //           if (provider !== "Google" && provider !== "Apple")
-      //             setEmail(e.target.value);
-      //           setErrors((prev) => ({ ...prev, email: "" }));
-      //         }}
-      //         style={{
-      //           ...styles.input,
-      //           borderColor: errors.email ? "red" : "#000",
-      //           backgroundColor: provider === "Google" ? "#f0f0f0" : "#fff",
-      //         }}
-      //         readOnly={
-      //           provider === "Google" || provider === "Apple" ? true : false
-      //         }
-      //       />
-
-      //       {errors.email && <p style={styles.error}>{errors.email}</p>}
-
-      //       <PhoneInput
-      //         country={"us"}
-      //         value={phone}
-      //         onChange={handlePhoneChange}
-      //         inputStyle={{
-      //           ...styles.input,
-      //           width: "100%",
-      //           height: "40px",
-      //           backgroundColor:'#202a3a',
-      //           fontSize: "16px",
-      //           paddingLeft: "48px",
-      //           borderColor: errors.phone ? "red" : "#000",
-      //         }}
-      //         containerStyle={{
-      //           width: "100%",
-      //           marginBottom: "10px",
-      //         }}
-      //         buttonStyle={{
-      //           backgroundColor: "#202a3a",
-      //           border: "none",
-      //           padding: "0 5px",
-      //         }}
-      //       />
-
-      //       {errors.phone && <p style={styles.error}>{errors.phone}</p>}
-
-      //       {provider !== "Google" && provider !== "Apple" && (
-      //         <div style={styles.inputContainer}>
-      //           <input
-      //             type={showPassword ? "text" : "password"}
-      //             placeholder="Enter Your Password"
-      //             value={password}
-      //             onChange={(e) => {
-      //               setPassword(e.target.value);
-      //               setErrors((prev) => ({ ...prev, password: "" }));
-      //             }}
-      //             style={{
-      //               ...styles.input,
-      //               borderColor: errors.password ? "red" : "#000",
-      //             }}
-      //           />
-      //           <button
-      //             type="button"
-      //             onClick={() => setShowPassword(!showPassword)}
-      //             style={styles.eyeIcon}
-      //           >
-      //             {showPassword ? <FaEyeSlash color="white" /> : <FaEye color="white"/>}
-      //           </button>
-      //         </div>
-      //       )}
-      //       {provider !== "Google" &&
-      //         provider !== "Apple" &&
-      //         errors.password && <p style={styles.error}>{errors.password}</p>}
-
-      //       <button
-      //         onClick={handleNextStep}
-      //         style={{
-      //           ...styles.button,
-      //           backgroundColor: isHovered ? "blue" : "#3b82f6",
-      //         }}
-      //         onMouseOver={() => setIsHovered(true)}
-      //         onMouseLeave={() => setIsHovered(false)}
-      //         disabled={isLoading}
-      //       >
-
-      //         {isLoading ? "Loading..." : "Next"}
-      //       </button>
-      //           </div>
-      //     </div>
-      //   );
       case 1:
         return (
-          <div>
-            <div style={{ textAlign: "center", marginBottom: "20px" }}>
-              <img src={logo} alt="Meksova" style={{ height: "50px" }} />
-            </div>
-
-            <h2 style={{ fontSize: "28px", fontWeight: "600", marginBottom: "10px", textAlign: "center" }}>
-              Create Your Free Account
-            </h2>
-
-            <p style={{ ...styles.subtext, textAlign: "center", fontSize: "14px", marginBottom: "25px" }}>
-              Take control of your business finances in under 60 seconds.
+          <>
+            <h2 className="signup-title">Create your free account</h2>
+            <p className="signup-sub">
+              See your profit in minutes — no credit card required.
             </p>
 
-            <div className="login-input-group">
-              {/* Social Login Buttons FIRST */}
-              {!isSocialSignup && (
-                <>
-                  <button
-                    onClick={handleGoogleSignUp}
-                    className="social-login-btn google"
-                    style={{
-                      ...styles.socialButton,
-                      border: "1.5px solid #4285f4",
-                    }}
-                    disabled={socialAuth === "google"}
-                  >
-                    {socialAuth === "google" ? (
-                      <>
-                        <Spinner color="light" size="sm" /> Processing...
-                      </>
-                    ) : (
-                      <>
-                        <img src="/googlelogo.png" alt="Google" style={styles.socialIcon} />
-                        Continue with Google
-                      </>
-                    )}
-                  </button>
+            {!isSocialSignup && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleGoogleSignUp}
+                  className="social-login-btn google"
+                  disabled={socialAuth === "google"}
+                >
+                  {socialAuth === "google" ? (
+                    <>
+                      <Spinner color="light" size="sm" /> Processing…
+                    </>
+                  ) : (
+                    <>
+                      <img src="/googlelogo.png" alt="Google" className="social-icon" />
+                      Continue with Google
+                    </>
+                  )}
+                </button>
 
-                  <button
-                    onClick={handleAppleSignUp}
-                    className="social-login-btn apple"
-                    style={{
-                      ...styles.socialButton,
-                      border: "1.5px solid #fff",
-                    }}
-                    disabled={socialAuth === "apple"}
-                  >
-                    {socialAuth === "apple" ? (
-                      <>
-                        <Spinner color="light" size="sm" /> Processing...
-                      </>
-                    ) : (
-                      <>
-                        <FontAwesomeIcon
-                          icon={faApple}
-                          style={{ marginRight: "8px", fontSize: "18px", color: "#ffffff" }}
-                        />
-                        Continue with Apple
-                      </>
-                    )}
-                  </button>
-                </>
-              )}
+                <button
+                  type="button"
+                  onClick={handleAppleSignUp}
+                  className="social-login-btn apple"
+                  disabled={socialAuth === "apple"}
+                >
+                  {socialAuth === "apple" ? (
+                    <>
+                      <Spinner color="light" size="sm" /> Processing…
+                    </>
+                  ) : (
+                    <>
+                      <FontAwesomeIcon
+                        icon={faApple}
+                        className="social-icon"
+                        style={{ color: "var(--text-1)" }}
+                      />
+                      Continue with Apple
+                    </>
+                  )}
+                </button>
 
-              {!isSocialSignup && (
-                <div style={{
-                  display: "flex",
-                  alignItems: "center",
-                  margin: "20px 0",
-                }}>
-                  <div style={{ flex: 1, height: "1px", backgroundColor: "#4a5568" }}></div>
-                  <span style={{
-                    padding: "0 15px",
-                    color: "#9ca5b0",
-                    fontSize: "13px",
-                    fontWeight: "400"
-                  }}>
-                    OR CONTINUE WITH EMAIL
-                  </span>
-                  <div style={{ flex: 1, height: "1px", backgroundColor: "#4a5568" }}></div>
+                <div className="separator">
+                  <span>or sign up with email</span>
                 </div>
-              )}
+              </>
+            )}
 
-              {isSocialSignup && (
-                <p style={{
-                  textAlign: "center",
-                  color: "#9ca5b0",
-                  fontSize: "14px",
-                  marginBottom: "20px",
-                }}>
-                  Signed in with {provider}. Confirm your email to continue.
-                </p>
-              )}
+            {isSocialSignup && (
+              <p className="signup-social-note">
+                Signed in with <strong>{provider}</strong>. Confirm your details to
+                continue.
+              </p>
+            )}
 
-              {/* Email input */}
+            <div className="login-input-group">
+              <label>Email address</label>
               <input
                 type="email"
-                placeholder="Email Address"
+                placeholder="you@business.com"
                 value={email}
                 readOnly={isSocialSignup}
+                className={errors.email ? "has-error" : ""}
                 onChange={(e) => {
                   if (!isSocialSignup) setEmail(e.target.value);
                   setErrors((prev) => ({ ...prev, email: "" }));
                 }}
-                style={{
-                  ...styles.input,
-                  borderColor: errors.email ? "red" : "#4a5568",
-                  backgroundColor: isSocialSignup ? "#1a202c" : "#2d3748",
-                  cursor: isSocialSignup ? "not-allowed" : "text",
-                }}
               />
-              {errors.email && <p style={styles.error}>{errors.email}</p>}
-
-              {!isSocialSignup && (
-                <>
-                  <div style={styles.inputContainer}>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        setErrors((prev) => ({ ...prev, password: "" }));
-                      }}
-                      style={{
-                        ...styles.input,
-                        borderColor: errors.password ? "red" : "#4a5568",
-                        backgroundColor: "#2d3748",
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      style={styles.eyeIcon}
-                    >
-                      {showPassword ? <FaEyeSlash color="white" /> : <FaEye color="white" />}
-                    </button>
-                  </div>
-                  {errors.password && <p style={styles.error}>{errors.password}</p>}
-
-                  <p style={{
-                    fontSize: "12px",
-                    color: "#9ca5b0",
-                    marginTop: "-5px",
-                    marginBottom: "20px"
-                  }}>
-                    At least 8 characters
-                  </p>
-                </>
-              )}
-
-              <button
-                onClick={handleNextStep}
-                style={{
-                  ...styles.button,
-                  backgroundColor: "#3b82f6",
-                  fontWeight: "600",
-                  fontSize: "15px",
-                  padding: "12px",
-                }}
-                onMouseOver={(e) => e.target.style.backgroundColor = "#2563eb"}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "#3b82f6"}
-                disabled={isLoading}
-              >
-                {isLoading ? "Loading..." : isSocialSignup ? "Continue" : "Create Free Account"}
-              </button>
-
-              <p style={{
-                fontSize: "12px",
-                textAlign: "center",
-                color: "#9ca5b0",
-                marginBottom: "15px",
-                lineHeight: "1.4"
-              }}>
-                No credit card required • Secure & encrypted • Cancel anytime
-              </p>
-
-              <p style={{
-                textAlign: "center",
-                fontSize: "14px",
-                color: "#9ca5b0",
-                marginTop: "15px"
-              }}>
-                Already have an account?{" "}
-                <Link to="/login" style={styles.link}>
-                  Login
-                </Link>
-              </p>
+              {errors.email && <p className="signup-error">{errors.email}</p>}
             </div>
-          </div>
-        );
-      //       case 2:
-      //         return (
-      //           <div>
-      //             <div style={{ textAlign: "center", marginBottom: "16px" }}>
-      //   <img src={logo} alt="Meksova" style={{ height: "50px" }} />
-      // </div>
-      //             <h2>Select Business Type</h2>
-      //             <div className="login-input-group">
-      //             <select
-      //               value={selectedBusinessType}
-      //               onChange={(e) => {
-      //                 handleBusinessTypeChange(e.target.value);
-      //                 setErrors((prev) => ({ ...prev, businessType: "" }));
-      //               }}
-      //               style={{
-      //                 ...styles.input,
-      //                 borderColor: errors.businessType ? "red" : "#000",
-      //               }}
-      //             >
-      //               <option value="">Select Business Type</option>
-      //               <option value="Trucking">Trucking</option>
-      //               <option value="RIDESHARE DRIVERS/PARTNERS">
-      //                 RIDESHARE DRIVERS/PARTNERS
-      //               </option>
-      //               <option value="Groceries">Groceries</option>
-      //               <option value="Individual/Households">
-      //                 Individual/Households
-      //               </option>
-      //               <option value="Cafe">Restaurant / Café</option>
-      //               <option value="Cleaning Services">Cleaning Services</option>
-      //               <option value="⁠Beauty & Grooming">
-      //                 ⁠Beauty & Grooming (Salons, Barbershops)
-      //               </option>
-      //               <option value="E-commerce Sellers">
-      //                 E-commerce Sellers (Shopify, Amazon, Etsy)
-      //               </option>
-      //               <option value="Construction Trades">
-      //                 Construction Trades (Plumbing, Electrical, Painting, etc.)
-      //               </option>
-      //               <option value="Content Creator">Content Creator</option>
-      //               <option value="Other">Other Businesses</option>
-      //             </select>
-      //             {errors.businessType && (
-      //               <p style={styles.error}>{errors.businessType}</p>
-      //             )}
-      //             {selectedBusinessType === "Other" && (
-      //               <>
-      //                 <input
-      //                   type="text"
-      //                   placeholder="Specify your business type"
-      //                   value={otherBusinessType}
-      //                   onChange={(e) => {
-      //                     setOtherBusinessType(e.target.value);
-      //                     setErrors((prev) => ({ ...prev, otherBusinessType: "" }));
-      //                   }}
-      //                   style={{
-      //                     ...styles.input,
-      //                     borderColor: errors.otherBusinessType ? "red" : "#000",
-      //                   }}
-      //                 />
-      //                 {errors.otherBusinessType && (
-      //                   <p style={styles.error}>{errors.otherBusinessType}</p>
-      //                 )}
-      //               </>
-      //             )}
-      //             <select
-      //               value={selectedCurrency}
-      //               onChange={(e) => setSelectedCurrency(e.target.value)}
-      //               style={styles.input}
-      //             >
-      //               {Object.entries(currencies).map(([code, { symbol, name }]) => (
-      //                 <option key={code} value={code}>
-      //                   {symbol} {code} - {name}
-      //                 </option>
-      //               ))}
-      //             </select>
 
-      //             </div>
-      //             <button
-      //               onClick={handleNextStep}
-      //               style={{
-      //                 ...styles.button,
-      //                 backgroundColor: isHovered ? "blue" : "#3b82f6",
-      //               }}
-      //               onMouseOver={() => setIsHovered(true)}
-      //               onMouseLeave={() => setIsHovered(false)}
-      //               disabled={isLoading}
-      //             >
-      //               {isLoading ? "Loading..." : "Next"}
-      //             </button>
-      //           </div>
-      //         );
+            {!isSocialSignup && (
+              <div className="login-input-group">
+                <label>Password</label>
+                <div className="password-container">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Create a password"
+                    value={password}
+                    className={errors.password ? "has-error" : ""}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setErrors((prev) => ({ ...prev, password: "" }));
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="toggle-password"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+                {errors.password ? (
+                  <p className="signup-error">{errors.password}</p>
+                ) : (
+                  <p className="signup-hint">
+                    At least 8 characters, with a number &amp; symbol.
+                  </p>
+                )}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleNextStep}
+              className="login-btn"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Spinner color="light" size="sm" /> Please wait
+                </>
+              ) : isSocialSignup ? (
+                "Continue"
+              ) : (
+                "Create free account"
+              )}
+            </button>
+
+            <p className="signup-trust">
+              No credit card required · Secure &amp; encrypted · Cancel anytime
+            </p>
+            <p className="login-signup-prompt">
+              Already have an account? <Link to="/login">Log in</Link>
+            </p>
+          </>
+        );
       case 2:
         return (
-
-          <div>
-            <div style={{ textAlign: "center", marginBottom: "16px" }}>
-              <img src={logo} alt="Meksova" style={{ height: "50px" }} />
-            </div>
-            <h2>Select Business Type</h2>
-            <p style={styles.subtext}>
-              Already have an account?
-              <Link to="/login" style={styles.link}>
-                {" "}Login
-              </Link>
+          <>
+            <h2 className="signup-title">Tell us about your business</h2>
+            <p className="signup-sub">
+              This tailors your dashboard, categories and reports.
             </p>
 
             <div className="login-input-group">
+              <label>Your name</label>
               <input
                 type="text"
-                placeholder="Enter Your Name"
+                placeholder="Full name"
                 value={name}
+                className={errors.name ? "has-error" : ""}
                 onChange={(e) => {
                   setName(e.target.value);
                   setErrors((prev) => ({ ...prev, name: "" }));
                 }}
-                style={{
-                  ...styles.input,
-                  borderColor: errors.name ? "red" : "#000",
-                }}
               />
-              {errors.name && <p style={styles.error}>{errors.name}</p>}
+              {errors.name && <p className="signup-error">{errors.name}</p>}
+            </div>
 
+            <div className="login-input-group">
+              <label>Company name</label>
               <input
                 type="text"
-                placeholder="Enter Your Company Name"
+                placeholder="Business or company name"
                 value={companyName}
+                className={errors.companyName ? "has-error" : ""}
                 onChange={(e) => {
                   setCompanyName(e.target.value);
                   setErrors((prev) => ({ ...prev, companyName: "" }));
                 }}
-                style={{
-                  ...styles.input,
-                  borderColor: errors.companyName ? "red" : "#000",
-                }}
               />
               {errors.companyName && (
-                <p style={styles.error}>{errors.companyName}</p>
+                <p className="signup-error">{errors.companyName}</p>
               )}
+            </div>
 
+            <div className="login-input-group signup-phone-group">
+              <label>Phone number</label>
               <PhoneInput
                 country={"us"}
                 value={phone}
                 onChange={handlePhoneChange}
-                inputStyle={{
-                  ...styles.input,
-                  width: "100%",
-                  height: "40px",
-                  backgroundColor: '#202a3a',
-                  fontSize: "16px",
-                  paddingLeft: "48px",
-                  borderColor: errors.phone ? "red" : "#000",
-                }}
-                containerStyle={{
-                  width: "100%",
-                  marginBottom: "10px",
-                }}
-                buttonStyle={{
-                  backgroundColor: "#202a3a",
-                  border: "none",
-                  padding: "0 5px",
-                }}
+                containerClass="signup-phone"
+                inputClass={errors.phone ? "has-error" : ""}
               />
-              {errors.phone && <p style={styles.error}>{errors.phone}</p>}
+              {errors.phone && <p className="signup-error">{errors.phone}</p>}
+            </div>
 
+            <div className="login-input-group">
+              <label>Business type</label>
               <select
                 value={selectedBusinessType}
+                className={errors.businessType ? "has-error" : ""}
                 onChange={(e) => {
                   handleBusinessTypeChange(e.target.value);
                   setErrors((prev) => ({ ...prev, businessType: "" }));
                 }}
-                style={{
-                  ...styles.input,
-                  borderColor: errors.businessType ? "red" : "#000",
-                }}
               >
-                <option value="">Select Business Type</option>
-                <option value="Trucking">Trucking</option>
-                <option value="RIDESHARE DRIVERS/PARTNERS">
-                  RIDESHARE DRIVERS/PARTNERS
-                </option>
-                <option value="Groceries">Groceries</option>
-                <option value="Individual/Households">
-                  Individual/Households
-                </option>
-                <option value="Cafe">Restaurant / Café</option>
-                <option value="Cleaning Services">Cleaning Services</option>
-                <option value="⁠Beauty & Grooming">
-                  ⁠Beauty & Grooming (Salons, Barbershops)
-                </option>
-                <option value="E-commerce Sellers">
-                  E-commerce Sellers (Shopify, Amazon, Etsy)
-                </option>
-                <option value="Construction Trades">
-                  Construction Trades (Plumbing, Electrical, Painting, etc.)
-                </option>
-                <option value="Content Creator">Content Creator</option>
-                <option value="Other">Other Businesses</option>
+                <option value="">Select business type</option>
+                {BUSINESS_TYPES.map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
               </select>
               {errors.businessType && (
-                <p style={styles.error}>{errors.businessType}</p>
+                <p className="signup-error">{errors.businessType}</p>
               )}
+            </div>
 
-              {selectedBusinessType === "Other" && (
-                <>
-                  <input
-                    type="text"
-                    placeholder="Specify your business type"
-                    value={otherBusinessType}
-                    onChange={(e) => {
-                      setOtherBusinessType(e.target.value);
-                      setErrors((prev) => ({ ...prev, otherBusinessType: "" }));
-                    }}
-                    style={{
-                      ...styles.input,
-                      borderColor: errors.otherBusinessType ? "red" : "#000",
-                    }}
-                  />
-                  {errors.otherBusinessType && (
-                    <p style={styles.error}>{errors.otherBusinessType}</p>
-                  )}
-                </>
-              )}
+            {selectedBusinessType === "Other" && (
+              <div className="login-input-group">
+                <label>Specify business type</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Photography studio"
+                  value={otherBusinessType}
+                  className={errors.otherBusinessType ? "has-error" : ""}
+                  onChange={(e) => {
+                    setOtherBusinessType(e.target.value);
+                    setErrors((prev) => ({ ...prev, otherBusinessType: "" }));
+                  }}
+                />
+                {errors.otherBusinessType && (
+                  <p className="signup-error">{errors.otherBusinessType}</p>
+                )}
+              </div>
+            )}
 
+            <div className="login-input-group">
+              <label>Currency</label>
               <select
                 value={selectedCurrency}
                 onChange={(e) => setSelectedCurrency(e.target.value)}
-                style={styles.input}
               >
                 {Object.entries(currencies).map(([code, { symbol, name }]) => (
                   <option key={code} value={code}>
-                    {symbol} {code} - {name}
+                    {symbol} {code} — {name}
                   </option>
                 ))}
               </select>
             </div>
 
-            <button
-              onClick={handleNextStep}
-              style={{
-                ...styles.button,
-                backgroundColor: isHovered ? "blue" : "#3b82f6",
-              }}
-              onMouseOver={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              disabled={isLoading}
-            >
-              {isLoading ? "Loading..." : "Next"}
-            </button>
-          </div>
+            <div className="signup-actions">
+              <button type="button" className="signup-back" onClick={goBack}>
+                ← Back
+              </button>
+              <button
+                type="button"
+                onClick={handleNextStep}
+                className="login-btn"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Spinner color="light" size="sm" /> Please wait
+                  </>
+                ) : (
+                  "Continue"
+                )}
+              </button>
+            </div>
+          </>
         );
       case 3:
         return (
-          <div>
-            <div style={{ textAlign: "center", marginBottom: "16px" }}>
-              <img src={logo} alt="Meksova" style={{ height: "50px" }} />
-            </div>
-            <h2>Financial Information</h2>
-            <p style={styles.infoText}>
-              To get started, we need to know where your business stands
-              financially today. This includes how much cash you have, any money
-              owed to you, any debt you owe, and any valuable items (like
-              inventory) you own. This helps us build an accurate financial
-              picture of your business (recommended).
+          <>
+            <h2 className="signup-title">Your starting numbers</h2>
+            <p className="signup-sub">
+              Where does your business stand today? This builds an accurate
+              picture from day one.
             </p>
 
-            <div style={{ marginBottom: "10px", marginTop: "10px" }}>
+            <div className="signup-info-card">
+              Enter your current cash, any debt you owe, and the value of what you
+              own (inventory, equipment). Not ready?{" "}
               <a
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-
                   if (!termsChecked) {
                     showNotification(
                       "warning",
@@ -1227,104 +799,98 @@ const SignupPage = () => {
                     );
                     return;
                   }
-
                   if (!isSubmitting) handleSignup(e, 0);
                 }}
-                style={{
-                  color: "#3b82f6",
-                  textDecoration: "underline",
-                  cursor: "pointer",
-                  display: "inline-block",
-                  marginTop: "5px",
-                }}
               >
-                Proceed to start from zero
+                Start from zero →
               </a>
             </div>
 
-            <input
-              type="text"
-              placeholder="Cash Balance (e.g., $10,000)"
-              value={cashBalance}
-              onChange={(e) => {
-                setCashBalance(e.target.value);
-                setErrors((prev) => ({ ...prev, cashBalance: "" }));
-              }}
-              style={{
-                ...styles.input,
-                borderColor: errors.cashBalance ? "red" : "#000",
-              }}
-            />
-            {errors.cashBalance && (
-              <p style={styles.error}>{errors.cashBalance}</p>
-            )}
-            <input
-              type="text"
-              placeholder="Outstanding Debt (e.g., $5,000)"
-              value={outstandingDebt}
-              onChange={(e) => {
-                setOutstandingDebt(e.target.value);
-                setErrors((prev) => ({ ...prev, outstandingDebt: "" }));
-              }}
-              style={{
-                ...styles.input,
-                borderColor: errors.outstandingDebt ? "red" : "#000",
-              }}
-            />
-            {errors.outstandingDebt && (
-              <p style={styles.error}>{errors.outstandingDebt}</p>
-            )}
-            <input
-              type="text"
-              placeholder="Valuable Items (e.g., Truck worth $50,000)"
-              value={valueableItems}
-              onChange={(e) => {
-                setValueableItems(e.target.value);
-                setErrors((prev) => ({ ...prev, valueableItems: "" }));
-              }}
-              style={{
-                ...styles.input,
-                borderColor: errors.valueableItems ? "red" : "#000",
-              }}
-            />
-            {errors.valueableItems && (
-              <p style={styles.error}>{errors.valueableItems}</p>
-            )}
-            {/* Terms and Conditions Checkbox */}
-            <label style={styles.termsLabel}>
+            <div className="login-input-group">
+              <label>Cash balance</label>
+              <input
+                type="text"
+                placeholder="e.g. 10,000"
+                value={cashBalance}
+                className={errors.cashBalance ? "has-error" : ""}
+                onChange={(e) => {
+                  setCashBalance(e.target.value);
+                  setErrors((prev) => ({ ...prev, cashBalance: "" }));
+                }}
+              />
+              {errors.cashBalance && (
+                <p className="signup-error">{errors.cashBalance}</p>
+              )}
+            </div>
+
+            <div className="login-input-group">
+              <label>Outstanding debt</label>
+              <input
+                type="text"
+                placeholder="e.g. 5,000"
+                value={outstandingDebt}
+                className={errors.outstandingDebt ? "has-error" : ""}
+                onChange={(e) => {
+                  setOutstandingDebt(e.target.value);
+                  setErrors((prev) => ({ ...prev, outstandingDebt: "" }));
+                }}
+              />
+              {errors.outstandingDebt && (
+                <p className="signup-error">{errors.outstandingDebt}</p>
+              )}
+            </div>
+
+            <div className="login-input-group">
+              <label>Valuable items</label>
+              <input
+                type="text"
+                placeholder="e.g. Truck worth 50,000"
+                value={valueableItems}
+                className={errors.valueableItems ? "has-error" : ""}
+                onChange={(e) => {
+                  setValueableItems(e.target.value);
+                  setErrors((prev) => ({ ...prev, valueableItems: "" }));
+                }}
+              />
+              {errors.valueableItems && (
+                <p className="signup-error">{errors.valueableItems}</p>
+              )}
+            </div>
+
+            <label className="signup-terms">
               <input
                 type="checkbox"
                 checked={termsChecked}
                 onChange={(e) => setTermsChecked(e.target.checked)}
-                style={{ marginRight: "5px" }}
               />
-              I agree to the{" "}
-              <Link
-                to="/terms-of-use"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={styles.termsLink}
-              >
-                {" "}
-                Terms of Use
-              </Link>
+              <span>
+                I agree to the{" "}
+                <Link to="/terms-of-use" target="_blank" rel="noopener noreferrer">
+                  Terms of Use
+                </Link>
+              </span>
             </label>
 
-            <button
-              onClick={(e) => handleSignup(e, 1)}
-              style={{
-                ...styles.button,
-                backgroundColor: isHovered ? "blue" : "#3b82f6",
-                opacity: termsChecked ? 1 : 0.5,
-                cursor: termsChecked ? "pointer" : "not-allowed",
-              }}
-              onMouseOver={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              disabled={!termsChecked || isLoading}
-            >
-              {isSubmitting ? "Saving..." : "Save and Finish"}
-            </button>
-          </div>
+            <div className="signup-actions">
+              <button type="button" className="signup-back" onClick={goBack}>
+                ← Back
+              </button>
+              <button
+                type="button"
+                onClick={(e) => handleSignup(e, 1)}
+                className="login-btn"
+                disabled={!termsChecked || isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Spinner color="light" size="sm" /> Saving…
+                  </>
+                ) : (
+                  "Finish & go to dashboard"
+                )}
+              </button>
+            </div>
+          </>
         );
       default:
         return null;
@@ -1332,122 +898,71 @@ const SignupPage = () => {
   };
 
   return (
-    <div style={styles.container}>
+    <>
+      <Helmet>
+        <title>Sign up - Meksova</title>
+      </Helmet>
       <NotificationAlert ref={notificationAlertRef} />
-      <div style={styles.card}>{renderStepContent()}</div>
-    </div>
+      <div className="auth">
+        <aside className="auth__brand">
+          <div className="auth__logo">
+            <img src={logo} alt="Meksova Finance" />
+          </div>
+          <div className="auth__brand-body">
+            <p className="auth__eyebrow">Meksova Finance · Free 30-day trial</p>
+            <h1 className="auth__headline">
+              Start free.
+              <br />
+              <span>See your profit in minutes.</span>
+            </h1>
+            <p className="auth__sub">
+              Create your account, tell us about your business, and we'll build
+              your financial picture from day one.
+            </p>
+            <ul className="auth__benefits">
+              <li>Track revenue, expenses &amp; cash in one place</li>
+              <li>Tax-ready reports &amp; one-tap receipt scanning</li>
+              <li>No credit card · cancel anytime</li>
+            </ul>
+          </div>
+          <div className="auth__brand-foot">
+            <span>Bilingual</span>
+            <span>·</span>
+            <span>Trusted by hundreds of small businesses</span>
+          </div>
+        </aside>
+
+        <main className="auth__panel">
+          <div className="login-box signup-box">
+            <div className="signup-steps" aria-label={`Step ${step} of 3`}>
+              {STEP_META.map((s, i) => (
+                <React.Fragment key={s.n}>
+                  {i > 0 && (
+                    <span
+                      className={`signup-steps__line ${step > i ? "is-done" : ""}`}
+                      aria-hidden="true"
+                    />
+                  )}
+                  <div
+                    className={`signup-step ${step === s.n ? "is-active" : ""} ${
+                      step > s.n ? "is-done" : ""
+                    }`}
+                  >
+                    <span className="signup-step__dot">
+                      {step > s.n ? "✓" : s.n}
+                    </span>
+                    <span className="signup-step__label">{s.label}</span>
+                  </div>
+                </React.Fragment>
+              ))}
+            </div>
+
+            {renderStepContent()}
+          </div>
+        </main>
+      </div>
+    </>
   );
-};
-
-const styles = {
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100vh",
-    backgroundColor: "#1d212c",
-    color: "#000",
-  },
-  card: {
-    padding: "20px",
-    borderRadius: "10px",
-    backgroundColor: "#181b26",
-    boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.5)",
-    width: "400px",
-  },
-  input: {
-    width: "100%",
-    padding: "10px",
-    marginBottom: "10px",
-    borderRadius: "5px",
-    border: "0.5px solid #dedede",
-    backgroundColor: "#202a3a",
-    color: "#ffffff",
-  },
-  button: {
-    width: "100%",
-    padding: "10px",
-    borderRadius: "5px",
-    border: "none",
-    cursor: "pointer",
-    color: "#fff",
-    marginBottom: "10px",
-  },
-  subtext: {
-    marginBottom: "20px",
-    color: 'rgb(156, 165, 176)',
-
-
-  },
-  link: {
-    color: "#3b82f6",
-    textDecoration: "none",
-  },
-  error: {
-    color: "red",
-    fontSize: "12px",
-    marginTop: "-10px",
-    marginBottom: "10px",
-  },
-  infoText: {
-    backgroundColor: "#181b26",
-    color: "white",
-    padding: "10px",
-    marginBottom: "5px",
-  },
-  /* Style for terms and conditions checkbox and label */
-  termsLabel: {
-    display: "flex",
-    alignItems: "center",
-    marginBottom: "10px",
-    color: 'rgb(156, 165, 176)'
-  },
-  /* Style for the terms and conditions link */
-  termsLink: {
-    color: "#3b82f6",
-    textDecoration: "none",
-  },
-  inputContainer: {
-    position: "relative",
-    width: "100%",
-  },
-  eyeIcon: {
-    position: "absolute",
-    right: "10px",
-    top: "40%",
-    transform: "translateY(-50%)",
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-  },
-  socialButton: {
-    width: "100%",
-    padding: "10px",
-    borderRadius: "5px",
-    border: "1px solid #333",
-    cursor: "pointer",
-    color: "#fff",
-    marginBottom: "10px",
-    fontSize: "14px",
-    fontWeight: "500",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#202a3a",
-  },
-  socialIcon: {
-    width: "20px",
-    height: "20px",
-    marginRight: "8px",
-  },
-  separator: {
-    display: "flex",
-    alignItems: "center",
-    textAlign: "center",
-    margin: "15px 0",
-    color: "#9ca5b0",
-  },
-
 };
 
 export default SignupPage;
