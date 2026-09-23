@@ -29,6 +29,7 @@ import { faPlus, faDownload, faCircleInfo, faTimes } from "@fortawesome/free-sol
 import axios from "axios";
 import { apiUrl, ROUTES, S3_BUCKET_NAME, normalizeReceiptUrl } from "../config/api";
 import { authHeader } from "../utils/apiFetch";
+import * as acct from "../utils/accounting";
 import { Helmet } from "react-helmet";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
@@ -1432,66 +1433,8 @@ const MesobFinancial2 = () => {
   };
 
   // Get individual current asset transactions (not grouped) for the dropdown
-  const getCurrentAssetItems = () => {
-    const result = [];
-
-    // Sum the cost AND quantity already sold out of each lot, so a lot stays
-    // available (with a reduced remaining balance) until it is fully sold —
-    // instead of the whole lot disappearing after one partial sale.
-    const soldCostById = {};
-    const soldQtyById = {};
-    items.forEach((t) => {
-      if (t.transactionType === "Receive" && t.subType === "sale_inventory" && t.soldTransactionId != null) {
-        const id = t.soldTransactionId;
-        soldCostById[id] = (soldCostById[id] || 0) + (parseFloat(t.originalAmount) || 0);
-        soldQtyById[id] = (soldQtyById[id] || 0) + (parseFloat(t.quantitySold) || 0);
-      }
-    });
-
-    const pushLot = (t, name) => {
-      const originalCost = parseFloat(t.originalAmount || t.transactionAmount || 0);
-      const originalQty =
-        t.quantity != null && t.quantity !== "" ? parseFloat(t.quantity) : null;
-      const remainingCost = originalCost - (soldCostById[t.id] || 0);
-      if (remainingCost <= 0.005) return; // fully sold — hide it
-      const remainingQty =
-        originalQty != null ? originalQty - (soldQtyById[t.id] || 0) : null;
-      const unitCost = originalQty && originalQty > 0 ? originalCost / originalQty : null;
-      const qtyLabel =
-        remainingQty != null ? ` · ${remainingQty} left` : "";
-      result.push({
-        id: t.id,
-        name,
-        amount: remainingCost,       // REMAINING cost (partial-sale aware)
-        originalCost,
-        originalQty,
-        remainingQty,
-        unitCost,
-        purpose: t.transactionPurpose,
-        displayName: `${name} - $${remainingCost.toFixed(2)}${qtyLabel}`,
-      });
-    };
-
-    items.forEach((t) => {
-      const isNewItemCurrent = t.transactionType === "New_Item" && t.assetType === "current" && t.assetName;
-      const isPayableCurrent = t.transactionType === "Payable" && t.assetType === "current" && t.subType === "New_Item" && t.assetName;
-      const isNewItemDefault = t.transactionType === "New_Item" && !t.assetType && t.assetName;
-      if (isNewItemCurrent || isPayableCurrent || isNewItemDefault) {
-        pushLot(t, t.assetName);
-        return;
-      }
-      const isPayableDefaultCurrent = t.transactionType === "Payable" &&
-        t.subType === "New_Item" &&
-        t.assetType !== "fixed" &&
-        !t.assetName &&
-        t.transactionPurpose;
-      if (isPayableDefaultCurrent) {
-        pushLot(t, t.transactionPurpose);
-      }
-    });
-
-    return result;
-  };
+  // Inventory lots still in stock (partial-sale aware) — shared engine.
+  const getCurrentAssetItems = () => acct.getCurrentAssetItems(items);
 
   const getFixedAssetItems = () => {
     const result = [];
@@ -1582,134 +1525,18 @@ const MesobFinancial2 = () => {
     return Math.max(0, cost);
   };
 
-  // Other income / expense are now DISPOSAL gains/losses on FIXED assets only.
-  // Inventory (current-asset) sales are booked GROSS instead: full sale price in
-  // operating revenue, book value (cost) in COGS — so the income statement shows
-  // real Revenue / COGS / Gross Profit for merchandisers. Net income is unchanged
-  // either way (gain = sale price − cost).
-  const calculateOtherIncome = () => {
-    const filteredItems = getFilteredItems();
-    const total = filteredItems.reduce((sum, value) => {
-      if (value.transactionType === "Receive" && value.subType === "sale_fixed") {
-        const gain =
-          parseFloat(value.transactionAmount || 0) -
-          parseFloat(value.originalAmount || 0);
-        if (gain > 0) return sum + gain;
-      }
-      return sum;
-    }, 0);
-    return total.toFixed(2);
-  };
-
-  const calculateOtherExpense = () => {
-    const filteredItems = getFilteredItems();
-    const total = filteredItems.reduce((sum, value) => {
-      if (value.transactionType === "Receive" && value.subType === "sale_fixed") {
-        const gain =
-          parseFloat(value.transactionAmount || 0) -
-          parseFloat(value.originalAmount || 0);
-        if (gain < 0) return sum + Math.abs(gain);
-      }
-      return sum;
-    }, 0);
-    return total.toFixed(2);
-  };
-
-  const calculateOperatingRevenue = () => {
-    const filteredItems = getFilteredItems();
-    const total = filteredItems.reduce((sum, value) => {
-      if (value.transactionType === "Receive") {
-        // Fixed-asset disposals are not revenue (only their gain/loss is booked).
-        if (value.subType === "sale_fixed") return sum;
-        // Everything else — ordinary sales AND inventory sales — is gross revenue.
-        return sum + parseFloat(value.transactionAmount || 0);
-      }
-      return sum;
-    }, 0);
-    return total.toFixed(2);
-  };
-
-  // Is this a Pay/unpaid-Payable that counts as an outflow on the P&L?
-  // (excludes outstanding-debt settlement and asset purchases on credit/cash)
-  const isCountableOutflow = (value) => {
-    const isPayableNewItem =
-      value.transactionType === "Payable" && value.subType === "New_Item";
-    let isPaymentForNewItem = false;
-    if (
-      value.transactionType === "Pay" &&
-      value.payableId &&
-      value.payableId !== "outstanding-debt"
-    ) {
-      const originalPayable = items.find((item) => item.id === value.payableId);
-      if (originalPayable && originalPayable.subType === "New_Item") {
-        isPaymentForNewItem = true;
-      }
-    }
-    return (
-      (value.transactionType === "Pay" ||
-        (value.transactionType === "Payable" && value.status !== "Paid")) &&
-      value.payableId !== "outstanding-debt" &&
-      !value.transactionPurpose.includes("Outstanding Debt") &&
-      !isPayableNewItem &&
-      !isPaymentForNewItem
-    );
-  };
-
-  // Amount a Payable contributes: its REMAINING balance (installment Pay records
-  // supply the paid portion, so remaining + payments = the original once). Pays
-  // contribute their own amount. Mirrors the installment double-count fix.
-  const outflowAmount = (value) =>
-    value.transactionType === "Payable"
-      ? parseFloat(
-          value.remainingAmount != null
-            ? value.remainingAmount
-            : value.transactionAmount || 0
-        ) || 0
-      : parseFloat(value.transactionAmount || 0);
-
-  // Cost of Goods Sold = book value (cost) of inventory sold + purchases the user
-  // chose to expense at entry as cost-of-goods (subType "COGS").
-  const calculateCOGS = () => {
-    const filteredItems = getFilteredItems();
-    const soldInventoryCost = filteredItems.reduce((sum, value) => {
-      if (value.transactionType === "Receive" && value.subType === "sale_inventory") {
-        return sum + parseFloat(value.originalAmount || 0);
-      }
-      return sum;
-    }, 0);
-    const directCogs = filteredItems.reduce((sum, value) => {
-      if (value.subType === "COGS" && isCountableOutflow(value)) {
-        return sum + outflowAmount(value);
-      }
-      return sum;
-    }, 0);
-    return (soldInventoryCost + directCogs).toFixed(2);
-  };
-
-  const calculateGrossProfit = () => {
-    return (
-      parseFloat(calculateOperatingRevenue()) - parseFloat(calculateCOGS())
-    ).toFixed(2);
-  };
-
-  // Operating expenses = countable outflows that are NOT cost-of-goods and NOT
-  // asset purchases. (Fixed-asset disposal losses live in Other Expense.)
-  const calculateOperatingExpenses = () => {
-    const filteredItems = getFilteredItems();
-    const total = filteredItems.reduce((sum, value) => {
-      if (value.subType !== "COGS" && isCountableOutflow(value)) {
-        return sum + outflowAmount(value);
-      }
-      return sum;
-    }, 0);
-    return total.toFixed(2);
-  };
-
-  const calculateTotalRevenue = () => {
-    return (
-      parseFloat(calculateOperatingRevenue()) + parseFloat(calculateOtherIncome())
-    ).toFixed(2);
-  };
+  // ── Accounting engine ──────────────────────────────────────────────────────
+  // Thin delegates to the shared, pure engine in utils/accounting.js so the
+  // Financial Report and the Dashboard compute every figure identically. The
+  // logic (gross inventory sales, fixed-asset gain/loss, installment-remaining,
+  // capitalized asset purchases) lives there, tested in one place.
+  const calculateOtherIncome = () => acct.calculateOtherIncome(getFilteredItems());
+  const calculateOtherExpense = () => acct.calculateOtherExpense(getFilteredItems());
+  const calculateOperatingRevenue = () => acct.calculateOperatingRevenue(getFilteredItems());
+  const calculateCOGS = () => acct.calculateCOGS(getFilteredItems(), items);
+  const calculateGrossProfit = () => acct.calculateGrossProfit(getFilteredItems(), items);
+  const calculateOperatingExpenses = () => acct.calculateOperatingExpenses(getFilteredItems(), items);
+  const calculateTotalRevenue = () => acct.calculateTotalRevenue(getFilteredItems());
 
   const renderIncomeStatementRows = () => (
     <>
@@ -2079,63 +1906,11 @@ const MesobFinancial2 = () => {
     </>
   );
 
-  const calculateTotalInventory = () => {
-    const valueableItems = initialvalueableItems || 0;
-    const filteredItems = getFilteredItems();
+  const calculateTotalInventory = () =>
+    acct.calculateTotalInventory(getFilteredItems(), initialvalueableItems);
 
-    const newItemsTotal = filteredItems.reduce((sum, item) => {
-      // New_Item transactions with current asset type
-      const isNewItemCurrent = item.transactionType === "New_Item" && item.assetType === "current";
-      // Payable with current asset type and subType New_Item
-      const isPayableCurrent = item.transactionType === "Payable" && item.assetType === "current" && item.subType === "New_Item";
-      // Legacy/Default: New_Item without assetType (treat as inventory by default, unless explicitly fixed)
-      const isLegacyNewItem = item.transactionType === "New_Item" && item.subType === "New_Item" && item.assetType !== "fixed";
-      // Payable New_Item without assetType (treat as inventory by default)
-      const isLegacyPayableNewItem = item.transactionType === "Payable" && item.subType === "New_Item" && !item.assetType;
-
-      if (isNewItemCurrent || isPayableCurrent || isLegacyNewItem || isLegacyPayableNewItem) {
-        // Use originalAmount for Payable (transactionAmount changes after payment)
-        const amount = item.transactionType === "Payable"
-          ? parseFloat(item.originalAmount || item.transactionAmount || 0)
-          : parseFloat(item.transactionAmount || 0);
-        return sum + amount;
-      }
-      return sum;
-    }, 0);
-
-    const saleInventoryCost = filteredItems.reduce((sum, item) => {
-      if (item.transactionType === "Receive" && item.subType === "sale_inventory" && parseFloat(item.originalAmount || 0)) {
-        return sum + parseFloat(item.originalAmount);
-      }
-      return sum;
-    }, 0);
-
-    const totalInventory = Math.max(0, newItemsTotal - saleInventoryCost + valueableItems);
-    return totalInventory.toFixed(2);
-  };
-
-  const calculateTotalFixedAssets = () => {
-    const filteredItems = getFilteredItems();
-    const fixedAdded = filteredItems.reduce((sum, item) => {
-      const isNewItemFixed = item.transactionType === "New_Item" && item.assetType === "fixed";
-      const isPayableFixed = item.transactionType === "Payable" && item.assetType === "fixed" && item.subType === "New_Item";
-      if (isNewItemFixed || isPayableFixed) {
-        // Use originalAmount for Payable (transactionAmount changes after payment)
-        const amount = item.transactionType === "Payable"
-          ? parseFloat(item.originalAmount || item.transactionAmount || 0)
-          : parseFloat(item.transactionAmount || 0);
-        return sum + amount;
-      }
-      return sum;
-    }, 0);
-    const fixedSold = filteredItems.reduce((sum, item) => {
-      if (item.transactionType === "Receive" && item.subType === "sale_fixed" && parseFloat(item.originalAmount || 0)) {
-        return sum + parseFloat(item.originalAmount);
-      }
-      return sum;
-    }, 0);
-    return (fixedAdded - fixedSold).toFixed(2);
-  };
+  const calculateTotalFixedAssets = () =>
+    acct.calculateTotalFixedAssets(getFilteredItems());
 
   const getFixedAssetBreakdown = () => {
     const filteredItems = getFilteredItems();
@@ -2181,78 +1956,13 @@ const MesobFinancial2 = () => {
     return Object.entries(byName).map(([name, balance]) => ({ name, balance: Math.max(0, balance) })).filter((x) => x.balance > 0);
   };
 
-  // Authoritative total expenses driving net income (Revenue − Expenses).
-  // = Cost of Goods Sold + Operating Expenses + Other Expense (fixed-asset
-  // disposal losses). The installment-remaining and asset-purchase exclusions
-  // live in isCountableOutflow/outflowAmount, shared with the subtotals above.
-  const calculateTotalExpenses = () => {
-    return (
-      parseFloat(calculateCOGS()) +
-      parseFloat(calculateOperatingExpenses()) +
-      parseFloat(calculateOtherExpense())
-    ).toFixed(2);
-  };
+  // Authoritative total expenses driving net income (delegates to shared engine).
+  const calculateTotalExpenses = () => acct.calculateTotalExpenses(getFilteredItems(), items);
 
-  const calculateTotalCash = () => {
-    const filteredItems = getFilteredItems();
+  const calculateTotalCash = () => acct.calculateTotalCash(getFilteredItems(), initialBalance);
 
-    const totalReceived = filteredItems.reduce((sum, value) => {
-      if (value.transactionType === "Receive") {
-        return sum + parseFloat(value.transactionAmount || 0);
-      }
-      return sum;
-    }, 0);
-
-    const New_ItemReceived = filteredItems.reduce((sum, value) => {
-      if (value.transactionType === "New_Item") {
-        return sum + parseFloat(value.transactionAmount || 0);
-      }
-      return sum;
-    }, 0);
-
-    // Include ALL Pay transactions (including outstanding debt payments)
-    const totalExpenses = filteredItems.reduce((sum, value) => {
-      if (value.transactionType === "Pay") {
-        return sum + parseFloat(value.transactionAmount || 0);
-      }
-      return sum;
-    }, 0);
-
-    const totalCash =
-      initialBalance + totalReceived - totalExpenses - New_ItemReceived;
-    return totalCash.toFixed(2);
-  };
-
-  const calculateTotalPayable = () => {
-    const filteredItems = getFilteredItems();
-
-    // Count unpaid regular Payables
-    const totalPayable = filteredItems.reduce((sum, value) => {
-      if (value.transactionType === "Payable" && value.status !== "Paid") {
-        return sum + parseFloat(value.transactionAmount || 0);
-      }
-      return sum;
-    }, 0);
-
-    // *** FIX: Use 'items' instead of 'filteredItems' for complete payment history ***
-    const outstandingDebtPayments = items.reduce((sum, value) => {
-      if (
-        value.payableId === "outstanding-debt" &&
-        value.transactionType === "Pay"
-      ) {
-        return sum + parseFloat(value.transactionAmount || 0);
-      }
-      return sum;
-    }, 0);
-
-    // Calculate remaining outstanding debt
-    const remainingOutstandingDebt = Math.max(
-      0,
-      initialoutstandingDebt - outstandingDebtPayments
-    );
-
-    return (totalPayable + remainingOutstandingDebt).toFixed(2);
-  };
+  const calculateTotalPayable = () =>
+    acct.calculateTotalPayable(getFilteredItems(), items, initialoutstandingDebt);
 
   const fetchTransactions = (uid = null) => {
     setLoadingTransactions(true);

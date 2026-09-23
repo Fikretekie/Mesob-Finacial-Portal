@@ -28,6 +28,7 @@ import {
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import axios from "axios";
 import { apiUrl, ROUTES } from "../config/api";
+import * as acct from "../utils/accounting";
 import Select from "react-select";
 import { Helmet } from "react-helmet";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -706,23 +707,34 @@ function Dashboard() {
       dashboardDateRange,
       dashboardSearchTerm
     );
-    setTotalCashOnHand(result.totalCashOnHand);
-    setTotalExpenses(result.totalExpenses);
-    settotalRevenue(result.totalrevenue);
-    setTotalPayable(result.totalPayable);
+    // Headline totals come from the SHARED accounting engine (identical to the
+    // Financial Report), so the two screens can never disagree. computeDashboardMetrics
+    // still provides the daily chart series + the filtered list for the PDF.
+    const summary = acct.computeSummary(allTransactions, {
+      range: dashboardDateRange,
+      searchTerm: dashboardSearchTerm,
+      initialBalance,
+      initialOutstandingDebt: initialoutstandingDebt,
+      initialValueableItems: initialvalueableItems,
+    });
+    setTotalCashOnHand(summary.totalCash);
+    setTotalExpenses(summary.totalExpenses);
+    settotalRevenue(summary.totalRevenue);
+    setTotalPayable(summary.totalPayable);
     setMonthlySales(result.monthlySales);
     setItems(result.filteredTransactions);
     itemsRef.current = result.filteredTransactions;
-    totalrevenueRef.current = result.totalrevenue;
-    totalExpensesRef.current = result.totalExpenses;
-    totalPayableRef.current = result.totalPayable;
-    totalCashOnHandRef.current = result.totalCashOnHand;
+    totalrevenueRef.current = summary.totalRevenue;
+    totalExpensesRef.current = summary.totalExpenses;
+    totalPayableRef.current = summary.totalPayable;
+    totalCashOnHandRef.current = summary.totalCash;
   }, [
     allTransactions,
     dashboardDateRange,
     dashboardSearchTerm,
     initialBalance,
     initialoutstandingDebt,
+    initialvalueableItems,
   ]);
 
   const isTrialActive = () =>
