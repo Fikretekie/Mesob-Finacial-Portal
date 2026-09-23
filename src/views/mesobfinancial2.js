@@ -266,9 +266,12 @@ const MesobFinancial2 = () => {
   const [receiveSaleAssetName, setReceiveSaleAssetName] = useState("");
   const [receiveSaleAssetCost, setReceiveSaleAssetCost] = useState(0);  // cost for display/validation
   const [selectedSaleItem, setSelectedSaleItem] = useState(null);  // full transaction object for sale
+  const [saleQty, setSaleQty] = useState("");                    // qty sold (quantity-tracked lots)
+  const [saleCostPortion, setSaleCostPortion] = useState("");    // cost of portion sold (legacy lots w/o qty)
   const [assetType, setAssetType] = useState("");                // "fixed" | "current"
   const [assetName, setAssetName] = useState("");                // selected or manual name
   const [assetNameManual, setAssetNameManual] = useState("");    // when "Enter manually" for asset
+  const [purchaseQty, setPurchaseQty] = useState("");            // qty bought (inventory purchases)
   const [boughtNewItemPurposes, setBoughtNewItemPurposes] = useState([]);
   // Add method to save new purposes
   const handleAddPurpose = () => {
@@ -634,17 +637,37 @@ const MesobFinancial2 = () => {
       let newTransaction;
 
       if (transactionType === "receive" && (receiveSubMode === "saleCurrent" || receiveSubMode === "saleFixed")) {
-        const cost = selectedSaleItem ? parseFloat(selectedSaleItem.amount) : parseFloat(receiveSaleAssetCost) || 0;
-        const assetName = selectedSaleItem ? selectedSaleItem.name : receiveSaleAssetName;
+        const saleAssetName = selectedSaleItem ? selectedSaleItem.name : receiveSaleAssetName;
+        const isInventory = receiveSubMode === "saleCurrent";
+        // Cost of goods sold for THIS sale = only the portion sold, not the whole
+        // lot. Quantity-tracked lots multiply qty × unit cost; legacy lots take
+        // the cost-of-portion the user entered; otherwise the whole remaining.
+        let cost;
+        let quantitySold;
+        if (isInventory && selectedSaleItem) {
+          const remaining = parseFloat(selectedSaleItem.amount) || 0;
+          if (selectedSaleItem.unitCost != null && saleQty !== "" && !isNaN(parseFloat(saleQty))) {
+            quantitySold = parseFloat(saleQty);
+            cost = quantitySold * selectedSaleItem.unitCost;
+          } else if (saleCostPortion !== "" && !isNaN(parseFloat(saleCostPortion))) {
+            cost = parseFloat(saleCostPortion);
+          } else {
+            cost = remaining;
+          }
+          cost = Math.min(cost, remaining); // never cost more than what's left
+        } else {
+          cost = selectedSaleItem ? parseFloat(selectedSaleItem.amount) : parseFloat(receiveSaleAssetCost) || 0;
+        }
         newTransaction = {
           userId: localStorage.getItem("userId"),
           transactionType: "Receive",
-          subType: receiveSubMode === "saleCurrent" ? "sale_inventory" : "sale_fixed",
-          transactionPurpose: assetName,
+          subType: isInventory ? "sale_inventory" : "sale_fixed",
+          transactionPurpose: saleAssetName,
           transactionAmount: parseFloat(transactionAmount),
           originalAmount: cost,
-          assetType: receiveSubMode === "saleCurrent" ? "current" : "fixed",
-          assetName: assetName,
+          ...(quantitySold != null ? { quantitySold } : {}),
+          assetType: isInventory ? "current" : "fixed",
+          assetName: saleAssetName,
           soldTransactionId: selectedSaleItem ? selectedSaleItem.id : null,
           receiptUrl: Url || "",
         };
@@ -675,6 +698,9 @@ const MesobFinancial2 = () => {
                 originalAmount: parseFloat(transactionAmount),
                 assetType: assetType || null,
                 assetName: resolvedAssetName || null,
+                ...(assetType === "current" && purchaseQty !== "" && !isNaN(parseFloat(purchaseQty))
+                  ? { quantity: parseFloat(purchaseQty) }
+                  : {}),
                 receiptUrl: Url || "",
               };
       } else if (isPayBoughtItem) {
@@ -703,6 +729,9 @@ const MesobFinancial2 = () => {
                 originalAmount: parseFloat(transactionAmount),
                 assetType: assetType || null,
                 assetName: resolvedAssetName || null,
+                ...(assetType === "current" && purchaseQty !== "" && !isNaN(parseFloat(purchaseQty))
+                  ? { quantity: parseFloat(purchaseQty) }
+                  : {}),
                 receiptUrl: Url || "",
               };
       } else {
@@ -773,6 +802,9 @@ const MesobFinancial2 = () => {
     setReceiveSaleAssetName("");
     setReceiveSaleAssetCost(0);
     setSelectedSaleItem(null);
+    setSaleQty("");
+    setSaleCostPortion("");
+    setPurchaseQty("");
     setAssetType("");
     setAssetName("");
     setAssetNameManual("");
@@ -1402,54 +1434,59 @@ const MesobFinancial2 = () => {
   // Get individual current asset transactions (not grouped) for the dropdown
   const getCurrentAssetItems = () => {
     const result = [];
-    const soldIds = new Set();
 
-    // Track which transactions have been sold
+    // Sum the cost AND quantity already sold out of each lot, so a lot stays
+    // available (with a reduced remaining balance) until it is fully sold —
+    // instead of the whole lot disappearing after one partial sale.
+    const soldCostById = {};
+    const soldQtyById = {};
     items.forEach((t) => {
-      if (t.transactionType === "Receive" && t.subType === "sale_inventory" && t.soldTransactionId) {
-        soldIds.add(t.soldTransactionId);
+      if (t.transactionType === "Receive" && t.subType === "sale_inventory" && t.soldTransactionId != null) {
+        const id = t.soldTransactionId;
+        soldCostById[id] = (soldCostById[id] || 0) + (parseFloat(t.originalAmount) || 0);
+        soldQtyById[id] = (soldQtyById[id] || 0) + (parseFloat(t.quantitySold) || 0);
       }
     });
 
-    items.forEach((t) => {
-      // Skip if already sold
-      if (soldIds.has(t.id)) return;
+    const pushLot = (t, name) => {
+      const originalCost = parseFloat(t.originalAmount || t.transactionAmount || 0);
+      const originalQty =
+        t.quantity != null && t.quantity !== "" ? parseFloat(t.quantity) : null;
+      const remainingCost = originalCost - (soldCostById[t.id] || 0);
+      if (remainingCost <= 0.005) return; // fully sold — hide it
+      const remainingQty =
+        originalQty != null ? originalQty - (soldQtyById[t.id] || 0) : null;
+      const unitCost = originalQty && originalQty > 0 ? originalCost / originalQty : null;
+      const qtyLabel =
+        remainingQty != null ? ` · ${remainingQty} left` : "";
+      result.push({
+        id: t.id,
+        name,
+        amount: remainingCost,       // REMAINING cost (partial-sale aware)
+        originalCost,
+        originalQty,
+        remainingQty,
+        unitCost,
+        purpose: t.transactionPurpose,
+        displayName: `${name} - $${remainingCost.toFixed(2)}${qtyLabel}`,
+      });
+    };
 
-      // Explicit current assets with assetName
+    items.forEach((t) => {
       const isNewItemCurrent = t.transactionType === "New_Item" && t.assetType === "current" && t.assetName;
       const isPayableCurrent = t.transactionType === "Payable" && t.assetType === "current" && t.subType === "New_Item" && t.assetName;
-      // Include New_Item without assetType (default to current assets / inventory)
       const isNewItemDefault = t.transactionType === "New_Item" && !t.assetType && t.assetName;
-
       if (isNewItemCurrent || isPayableCurrent || isNewItemDefault) {
-        // Use originalAmount for Payable (transactionAmount changes after payment)
-        const amount = t.transactionType === "Payable"
-          ? parseFloat(t.originalAmount || t.transactionAmount || 0)
-          : parseFloat(t.transactionAmount || 0);
-        result.push({
-          id: t.id,
-          name: t.assetName,
-          amount: amount,
-          purpose: t.transactionPurpose,
-          displayName: `${t.assetName} - $${amount.toFixed(2)}`
-        });
+        pushLot(t, t.assetName);
+        return;
       }
-
-      // Fallback: Payable+New_Item without assetType OR with assetType not fixed (default to current)
       const isPayableDefaultCurrent = t.transactionType === "Payable" &&
         t.subType === "New_Item" &&
         t.assetType !== "fixed" &&
         !t.assetName &&
         t.transactionPurpose;
       if (isPayableDefaultCurrent) {
-        const amount = parseFloat(t.originalAmount || t.transactionAmount || 0);
-        result.push({
-          id: t.id,
-          name: t.transactionPurpose,
-          amount: amount,
-          purpose: t.transactionPurpose,
-          displayName: `${t.transactionPurpose} - $${amount.toFixed(2)}`
-        });
+        pushLot(t, t.transactionPurpose);
       }
     });
 
@@ -4740,6 +4777,23 @@ const MesobFinancial2 = () => {
                     />
                   </FormGroup>
                 )}
+                {assetType === "current" && (
+                  <FormGroup>
+                    <Label>{t('financialReport.quantity', 'Quantity (optional)')}:</Label>
+                    <Input
+                      className="no-number-spinner"
+                      type="number"
+                      step="1"
+                      min="0"
+                      placeholder={t('financialReport.quantityPlaceholder', 'e.g. 100 units')}
+                      value={purchaseQty}
+                      onChange={(e) => setPurchaseQty(e.target.value)}
+                    />
+                    <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                      {t('financialReport.quantityHint', "Add a count so you can sell part of it later and only the sold portion counts as cost.")}
+                    </small>
+                  </FormGroup>
+                )}
 
                 <FormGroup>
                   <Label>{t('financialReport.amount')}:</Label>
@@ -4827,6 +4881,23 @@ const MesobFinancial2 = () => {
                     />
                   </FormGroup>
                 )}
+                {assetType === "current" && (
+                  <FormGroup>
+                    <Label>{t('financialReport.quantity', 'Quantity (optional)')}:</Label>
+                    <Input
+                      className="no-number-spinner"
+                      type="number"
+                      step="1"
+                      min="0"
+                      placeholder={t('financialReport.quantityPlaceholder', 'e.g. 100 units')}
+                      value={purchaseQty}
+                      onChange={(e) => setPurchaseQty(e.target.value)}
+                    />
+                    <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                      {t('financialReport.quantityHint', "Add a count so you can sell part of it later and only the sold portion counts as cost.")}
+                    </small>
+                  </FormGroup>
+                )}
                 <FormGroup>
                   <Label>{t('financialReport.amount')}:</Label>
                   <Input className="no-number-spinner" type="number" step="0.01" value={transactionAmount} onChange={(e) => setTransactionAmount(limitToTwoDecimals(e.target.value))} />
@@ -4847,6 +4918,8 @@ const MesobFinancial2 = () => {
                     onChange={(e) => {
                       const selectedId = e.target.value;
                       const item = getCurrentAssetItems().find(i => String(i.id) === selectedId);
+                      setSaleQty("");
+                      setSaleCostPortion("");
                       if (item) {
                         setSelectedSaleItem(item);
                         setReceiveSaleAssetName(item.name);
@@ -4864,13 +4937,80 @@ const MesobFinancial2 = () => {
                     ))}
                   </Input>
                   {selectedSaleItem && (
-                    <small style={{ color: "#aaa" }}>Cost (book value): ${parseFloat(selectedSaleItem.amount).toFixed(2)}</small>
+                    <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)" }}>
+                      {selectedSaleItem.unitCost != null
+                        ? `${t('financialReport.inStock', 'In stock')}: ${selectedSaleItem.remainingQty} @ $${selectedSaleItem.unitCost.toFixed(2)} ${t('financialReport.each', 'each')} · $${parseFloat(selectedSaleItem.amount).toFixed(2)} ${t('financialReport.left', 'left')}`
+                        : `${t('financialReport.costInStock', 'Cost still in stock')}: $${parseFloat(selectedSaleItem.amount).toFixed(2)}`}
+                    </small>
                   )}
                 </FormGroup>
+
+                {selectedSaleItem && selectedSaleItem.unitCost != null && (
+                  <FormGroup>
+                    <Label>{t('financialReport.quantitySold', 'Quantity sold')}:</Label>
+                    <Input
+                      className="no-number-spinner"
+                      type="number"
+                      step="1"
+                      min="0"
+                      max={selectedSaleItem.remainingQty}
+                      value={saleQty}
+                      onChange={(e) => setSaleQty(e.target.value)}
+                      placeholder={`${t('financialReport.upTo', 'up to')} ${selectedSaleItem.remainingQty}`}
+                    />
+                  </FormGroup>
+                )}
+
+                {selectedSaleItem && selectedSaleItem.unitCost == null && (
+                  <FormGroup>
+                    <Label>{t('financialReport.costOfPortionSold', 'Cost of the portion you sold')}:</Label>
+                    <Input
+                      className="no-number-spinner"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max={selectedSaleItem.amount}
+                      value={saleCostPortion}
+                      onChange={(e) => setSaleCostPortion(limitToTwoDecimals(e.target.value))}
+                      placeholder={`${t('financialReport.upTo', 'up to')} $${parseFloat(selectedSaleItem.amount).toFixed(2)}`}
+                    />
+                    <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                      {t('financialReport.costOfPortionHint', 'Leave blank to sell the whole remaining stock.')}
+                    </small>
+                  </FormGroup>
+                )}
+
                 <FormGroup>
-                  <Label>{t('financialReport.amount')}:</Label>
+                  <Label>{t('financialReport.amount')} ({t('financialReport.cashReceived', 'cash received')}):</Label>
                   <Input className="no-number-spinner" type="number" step="0.01" value={transactionAmount} onChange={(e) => setTransactionAmount(limitToTwoDecimals(e.target.value))} placeholder="e.g. 1500" />
                 </FormGroup>
+
+                {selectedSaleItem && transactionAmount && (() => {
+                  const remaining = parseFloat(selectedSaleItem.amount) || 0;
+                  let cogs;
+                  if (selectedSaleItem.unitCost != null && saleQty !== "" && !isNaN(parseFloat(saleQty))) {
+                    cogs = Math.min(parseFloat(saleQty) * selectedSaleItem.unitCost, remaining);
+                  } else if (saleCostPortion !== "" && !isNaN(parseFloat(saleCostPortion))) {
+                    cogs = Math.min(parseFloat(saleCostPortion), remaining);
+                  } else {
+                    cogs = remaining;
+                  }
+                  const profit = parseFloat(transactionAmount) - cogs;
+                  const money = (n) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                  return (
+                    <div style={{ background: "var(--surface-3)", border: "1px solid var(--border)", borderRadius: "8px", padding: "10px 12px", marginBottom: "14px", fontSize: "13px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-2)" }}>
+                        <span>{t('financialReport.costOfGoodsSold', 'Cost of items sold')}</span>
+                        <span>${money(cogs)}</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, marginTop: "4px", color: profit >= 0 ? "var(--green)" : "var(--red)" }}>
+                        <span>{profit >= 0 ? t('financialReport.profitOnThisSale', 'Profit on this sale') : t('financialReport.lossOnThisSale', 'Loss on this sale')}</span>
+                        <span>{profit < 0 ? "-" : ""}${money(Math.abs(profit))}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !selectedSaleItem || !transactionAmount}>
                   {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
                 </Button>
