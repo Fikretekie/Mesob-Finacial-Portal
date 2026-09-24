@@ -7,6 +7,7 @@ import { Spinner } from "reactstrap";
 import { Helmet } from "react-helmet";
 import { resetPassword, confirmResetPassword } from "aws-amplify/auth";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
+import "../assets/css/Login.css";
 
 const logo = "/transparent.png";
 
@@ -172,206 +173,128 @@ const ForgotPassword = () => {
       <Helmet>
         <title>Reset Password - Meksova</title>
       </Helmet>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          backgroundColor: "#1d212c",
-        }}
-      >
-        <NotificationAlert ref={notificationAlertRef} />
-        <div
-          style={{
-            backgroundColor: "#181b26",
-            padding: "2rem",
-            borderRadius: "8px",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            width: "100%",
-            maxWidth: "400px",
-          }}
-        >
-          <img
-            src={logo}
-            alt="Logo"
-            style={{
-              display: "block",
-              margin: "0 auto 1rem",
-              maxWidth: "150px",
-            }}
-          />
-          <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>
-            Reset Password
-          </h2>
-          <p style={{ textAlign: "center", color:'rgb(156, 165, 176)', marginBottom: "1.5rem" }}>
-            {codeSent
-              ? "Enter the verification code and new password"
-              : "Enter your email to receive a verification code"}
-          </p>
-          <form onSubmit={codeSent ? handleResetPassword : handleSendCode}>
-            {/* <div style={{ marginBottom: "1rem" }}> */}
-            <div className="login-input-group">
+      <NotificationAlert ref={notificationAlertRef} />
+      <div className="auth">
+        <aside className="auth__brand">
+          <div className="auth__logo">
+            <img src={logo} alt="Meksova Finance" />
+          </div>
+          <div className="auth__brand-body">
+            <p className="auth__eyebrow">Meksova Finance · Account recovery</p>
+            <h1 className="auth__headline">
+              Forgot your password?
+              <br />
+              <span>Let's get you back in.</span>
+            </h1>
+            <p className="auth__sub">
+              We'll email you a verification code so you can set a new password
+              and pick up right where you left off.
+            </p>
+            <ul className="auth__benefits">
+              <li>Secure, code-verified reset</li>
+              <li>Your data stays exactly as you left it</li>
+              <li>Back to your dashboard in a minute</li>
+            </ul>
+          </div>
+          <div className="auth__brand-foot">
+            <span>Bilingual</span>
+            <span>·</span>
+            <span>Trusted by hundreds of small businesses</span>
+          </div>
+        </aside>
 
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "0.5rem",
-                  color: "rgb(255, 255, 255)",
-                  fontWeight: "bold",
-                }}
-              >
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={codeSent}
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #ccc",
-                  borderRadius: "4px",
-                  marginBottom:12
-                }}
-              />
-               
-            </div>
-            {codeSent && (
-              <>
-                <div style={{ marginBottom: "1rem" }}>
-                 <div className="login-input-group">
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: "0.5rem",
-                      color: "rgb(255, 255, 255)",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Verification Code
-                  </label>
-                  <input
-                    type="text"
-                    value={confirmationCode}
-                    onChange={(e) => setConfirmationCode(e.target.value)}
-                    required
-                    style={{
-                      width: "100%",
-                      padding: "0.5rem",
-                      border: "1px solid #ccc",
-                      borderRadius: "4px",
-                    }}
-                  />
-                </div>
-                <div style={{ marginBottom: "1rem" }}>
-                 <div className="login-input-group">
+        <main className="auth__panel">
+          <div className="login-box">
+            <img src={logo} alt="Meksova" className="logo_img" />
+            <h2>Reset password</h2>
+            <p className="login-welcome">
+              {codeSent
+                ? "Enter the code we emailed you and choose a new password."
+                : "Enter your email and we'll send you a reset code."}
+            </p>
 
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: "0.5rem",
-                      color: "rgb(255, 255, 255)",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    New Password
-                  </label>
-                  <div style={{ position: "relative" }}>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      required
-                      style={{
-                        width: "100%",
-                        padding: "0.5rem",
-                        paddingRight: "2.5rem", // Make space for the eye icon
-                        border: "1px solid #ccc",
-                        borderRadius: "4px",
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={togglePasswordVisibility}
-                      style={{
-                        position: "absolute",
-                        right: "0.5rem",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {showPassword ? <FaEyeSlash color="white" /> : <FaEye color="white" />}
-                    </button>
-                  </div>
-                  </div>
-                  </div>
-                </div>
-              </>
-            )}
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                backgroundColor: "#007bff",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "1rem",
-              }}
-            >
-              {loading ? (
+            <form onSubmit={codeSent ? handleResetPassword : handleSendCode}>
+              <div className="login-input-group">
+                <label>Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={codeSent}
+                  autoComplete="email"
+                  placeholder="you@business.com"
+                />
+              </div>
+
+              {codeSent && (
                 <>
-                  <Spinner color="light" size="sm" />{" "}
-                  {codeSent ? "Resetting..." : "Sending..."}
+                  <div className="login-input-group">
+                    <label>Verification code</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={confirmationCode}
+                      onChange={(e) => setConfirmationCode(e.target.value)}
+                      required
+                      placeholder="6-digit code"
+                    />
+                  </div>
+
+                  <div className="login-input-group">
+                    <label>New password</label>
+                    <div className="password-container">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                        autoComplete="new-password"
+                        placeholder="Create a new password"
+                      />
+                      <button
+                        type="button"
+                        className="toggle-password"
+                        onClick={togglePasswordVisibility}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
                 </>
-              ) : codeSent ? (
-                "Reset Password"
-              ) : (
-                "Send Verification Code"
               )}
-            </button>
-            {codeSent && (
-              <button
-                type="button"
-                onClick={handleResendCode}
-                disabled={resendDisabled || loading}
-                style={{
-                  width: "100%",
-                  padding: "0.75rem",
-                  backgroundColor: resendDisabled ? "#ccc" : "#6c757d",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: resendDisabled ? "not-allowed" : "pointer",
-                  fontSize: "1rem",
-                  marginTop: "0.5rem",
-                }}
-              >
-                {resendDisabled
-                  ? `Resend Code (${resendTimer}s)`
-                  : "Resend Code"}
+
+              <button type="submit" className="login-btn" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Spinner color="light" size="sm" />{" "}
+                    {codeSent ? "Resetting…" : "Sending…"}
+                  </>
+                ) : codeSent ? (
+                  "Reset password"
+                ) : (
+                  "Send reset code"
+                )}
               </button>
-            )}
-          </form>
-          <p style={{ textAlign: "center", color:'rgb(156, 165, 176)', marginTop: "1rem" }}>
-            Remember your password?{" "}
-            <Link
-              to="/login"
-              style={{ color: "#007bff", textDecoration: "none" }}
-            >
-              Login
-            </Link>
-          </p>
-        </div>
+
+              {codeSent && (
+                <button
+                  type="button"
+                  className="social-login-btn"
+                  onClick={handleResendCode}
+                  disabled={resendDisabled || loading}
+                >
+                  {resendDisabled ? `Resend code (${resendTimer}s)` : "Resend code"}
+                </button>
+              )}
+            </form>
+
+            <p className="login-signup-prompt">
+              Remember your password? <Link to="/login">Log in</Link>
+            </p>
+          </div>
+        </main>
       </div>
     </>
   );
