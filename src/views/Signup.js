@@ -41,6 +41,23 @@ const STEP_META = [
   { n: 3, label: "Finances" },
 ];
 
+// Country (ISO-2 from the phone picker) -> default currency code. Anything not
+// listed keeps the current selection. All codes exist in utils/currencies.
+const COUNTRY_CURRENCY = {
+  US: "USD", CA: "CAD", GB: "GBP", AU: "AUD", NZ: "NZD",
+  ET: "ETB", KE: "KES", NG: "NGN", GH: "GHS", ZA: "ZAR", TZ: "TZS", UG: "UGX", RW: "RWF",
+  IN: "INR", PK: "PKR", BD: "BDT", LK: "LKR", NP: "NPR",
+  AE: "AED", SA: "SAR", QA: "QAR", KW: "KWD", BH: "BHD", OM: "OMR", JO: "JOD",
+  EG: "EGP", IL: "ILS", TR: "TRY",
+  CN: "CNY", JP: "JPY", KR: "KRW", HK: "HKD", SG: "SGD", MY: "MYR", TH: "THB",
+  ID: "IDR", PH: "PHP", VN: "VND", TW: "TWD",
+  MX: "MXN", BR: "BRL", AR: "ARS", CL: "CLP", CO: "COP", PE: "PEN",
+  RU: "RUB", UA: "UAH",
+  DE: "EUR", FR: "EUR", ES: "EUR", IT: "EUR", NL: "EUR", IE: "EUR", PT: "EUR",
+  BE: "EUR", AT: "EUR", FI: "EUR", GR: "EUR",
+  CH: "CHF", SE: "SEK", NO: "NOK", DK: "DKK", PL: "PLN", CZ: "CZK", HU: "HUF", RO: "RON",
+};
+
 const SignupPage = () => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
@@ -68,6 +85,8 @@ const SignupPage = () => {
   const [selectedBusinessType, setSelectedBusinessType] = useState("");
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
   const [loading, setLoading] = useState(true);
+  const [personalizing, setPersonalizing] = useState(false);
+  const [personalizeIdx, setPersonalizeIdx] = useState(0);
 
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -489,17 +508,20 @@ const SignupPage = () => {
         setIsLoading(false);
         return;
       }
-
-      setTimeout(() => {
-        setStep(3);
-        setIsLoading(false);
-      }, 500);
+      setIsLoading(false);
+      // Show the industry personalization sequence, then advance to step 3.
+      await runPersonalization();
     }
   };
 
-  const handlePhoneChange = (value) => {
+  const handlePhoneChange = (value, data) => {
     const formattedPhone = "+" + value.replace(/[^\d]/g, "");
     setPhone(formattedPhone);
+    // Match the currency to the country picked in the phone selector.
+    // react-phone-input-2 passes the ISO-2 code in data.countryCode.
+    const iso2 = data?.countryCode ? data.countryCode.toUpperCase() : "";
+    const mapped = COUNTRY_CURRENCY[iso2];
+    if (mapped && currencies[mapped]) setSelectedCurrency(mapped);
   };
 
   const handleBusinessTypeChange = (type) => {
@@ -508,6 +530,42 @@ const SignupPage = () => {
   };
 
   const goBack = () => setStep((s) => Math.max(1, s - 1));
+
+  // ── Industry personalization ────────────────────────────────────────────
+  const industryLabel = (() => {
+    if (selectedBusinessType === "Other") return otherBusinessType.trim() || "your business";
+    const found = BUSINESS_TYPES.find(([value]) => value === selectedBusinessType);
+    return found ? found[1] : selectedBusinessType || "your business";
+  })();
+
+  const industryData = businessTypes[selectedBusinessType] || null;
+  const tailoredSamples = industryData
+    ? [...(industryData.income || []).slice(0, 2), ...(industryData.expenses || []).slice(0, 3)]
+    : [];
+  const tailoredCount = industryData
+    ? (industryData.income?.length || 0) + (industryData.expenses?.length || 0)
+    : 0;
+
+  const personalizeItems = [
+    industryData
+      ? `Loading ${tailoredCount} ${industryLabel} categories`
+      : `Setting up ${industryLabel} categories`,
+    "Configuring income & expense tracking",
+    "Tailoring your reports & dashboard",
+    "Finishing your workspace",
+  ];
+
+  const runPersonalization = async () => {
+    setPersonalizeIdx(0);
+    setPersonalizing(true);
+    for (let i = 0; i < personalizeItems.length; i++) {
+      await new Promise((r) => setTimeout(r, 620));
+      setPersonalizeIdx(i + 1);
+    }
+    await new Promise((r) => setTimeout(r, 480));
+    setPersonalizing(false);
+    setStep(3);
+  };
 
   const renderStepContent = () => {
     switch (step) {
@@ -722,6 +780,21 @@ const SignupPage = () => {
               )}
             </div>
 
+            {industryData && tailoredSamples.length > 0 && (
+              <div className="signup-preview">
+                <span className="signup-preview__eyebrow">
+                  ✨ Tailored for {industryLabel} · {tailoredCount} categories ready
+                </span>
+                <div className="signup-preview__chips">
+                  {tailoredSamples.map((c) => (
+                    <span className="signup-chip" key={c}>
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {selectedBusinessType === "Other" && (
               <div className="login-input-group">
                 <label>Specify business type</label>
@@ -934,30 +1007,86 @@ const SignupPage = () => {
 
         <main className="auth__panel">
           <div className="login-box signup-box">
-            <div className="signup-steps" aria-label={`Step ${step} of 3`}>
-              {STEP_META.map((s, i) => (
-                <React.Fragment key={s.n}>
-                  {i > 0 && (
-                    <span
-                      className={`signup-steps__line ${step > i ? "is-done" : ""}`}
-                      aria-hidden="true"
-                    />
-                  )}
-                  <div
-                    className={`signup-step ${step === s.n ? "is-active" : ""} ${
-                      step > s.n ? "is-done" : ""
-                    }`}
-                  >
-                    <span className="signup-step__dot">
-                      {step > s.n ? "✓" : s.n}
-                    </span>
-                    <span className="signup-step__label">{s.label}</span>
+            {personalizing ? (
+              <div className="signup-personalize">
+                <div className="signup-personalize__ring" aria-hidden="true">
+                  <img src={logo} alt="" />
+                </div>
+                <h2 className="signup-title">
+                  Personalizing your {industryLabel} account…
+                </h2>
+                <p className="signup-sub">
+                  Setting up categories, reports and your dashboard — just a
+                  moment.
+                </p>
+                <ul className="signup-personalize__list">
+                  {personalizeItems.map((label, i) => (
+                    <li
+                      key={i}
+                      className={
+                        i < personalizeIdx
+                          ? "is-done"
+                          : i === personalizeIdx
+                          ? "is-active"
+                          : ""
+                      }
+                    >
+                      <span className="signup-personalize__tick">
+                        {i < personalizeIdx ? (
+                          "✓"
+                        ) : i === personalizeIdx ? (
+                          <Spinner size="sm" />
+                        ) : (
+                          ""
+                        )}
+                      </span>
+                      <span>{label}</span>
+                    </li>
+                  ))}
+                </ul>
+                {tailoredSamples.length > 0 && (
+                  <div className="signup-preview__chips signup-personalize__chips">
+                    {tailoredSamples.map((c) => (
+                      <span className="signup-chip" key={c}>
+                        {c}
+                      </span>
+                    ))}
                   </div>
-                </React.Fragment>
-              ))}
-            </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <div
+                  className="signup-steps"
+                  aria-label={`Step ${step} of 3`}
+                >
+                  {STEP_META.map((s, i) => (
+                    <React.Fragment key={s.n}>
+                      {i > 0 && (
+                        <span
+                          className={`signup-steps__line ${
+                            step > i ? "is-done" : ""
+                          }`}
+                          aria-hidden="true"
+                        />
+                      )}
+                      <div
+                        className={`signup-step ${
+                          step === s.n ? "is-active" : ""
+                        } ${step > s.n ? "is-done" : ""}`}
+                      >
+                        <span className="signup-step__dot">
+                          {step > s.n ? "✓" : s.n}
+                        </span>
+                        <span className="signup-step__label">{s.label}</span>
+                      </div>
+                    </React.Fragment>
+                  ))}
+                </div>
 
-            {renderStepContent()}
+                {renderStepContent()}
+              </>
+            )}
           </div>
         </main>
       </div>

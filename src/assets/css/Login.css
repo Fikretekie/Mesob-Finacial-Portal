@@ -603,3 +603,113 @@
   border-color: var(--border-strong);
   background: var(--surface-hover);
 }
+
+/* ---- Industry tailoring preview (step 2) --------------------------------- */
+.signup-preview {
+  margin: calc(var(--sp-2) * -1) 0 var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--accent-soft);
+  border: 1px solid var(--glass-border);
+  animation: auth-rise var(--dur) var(--ease) both;
+}
+.signup-preview__eyebrow {
+  display: block;
+  margin-bottom: var(--sp-2);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.signup-preview__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.signup-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: 0.72rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ---- Personalizing loader ------------------------------------------------ */
+.signup-personalize {
+  text-align: center;
+  padding: var(--sp-4) 0 var(--sp-3);
+  animation: auth-rise var(--dur) var(--ease) both;
+}
+.signup-personalize__ring {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin: var(--sp-2) auto var(--sp-5);
+  display: grid;
+  place-items: center;
+}
+.signup-personalize__ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  animation: signup-spin 0.9s linear infinite;
+}
+.signup-personalize__ring img { width: 38px; height: auto; }
+.signup-personalize .signup-title,
+.signup-personalize .signup-sub { text-align: center; }
+
+.signup-personalize__list {
+  list-style: none;
+  margin: var(--sp-5) auto var(--sp-2);
+  padding: 0;
+  max-width: 330px;
+  text-align: left;
+}
+.signup-personalize__list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 0.9rem;
+  color: var(--text-3);
+  opacity: 0.5;
+  transition: opacity var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.signup-personalize__list li.is-active { opacity: 1; color: var(--text-1); }
+.signup-personalize__list li.is-done { opacity: 1; color: var(--text-2); }
+.signup-personalize__tick {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-3);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+}
+.signup-personalize__list li.is-done .signup-personalize__tick {
+  color: var(--accent-ink);
+  background: var(--green);
+  border-color: var(--green);
+}
+.signup-personalize__list li.is-active .signup-personalize__tick {
+  background: transparent;
+  border-color: transparent;
+}
+.signup-personalize__chips { justify-content: center; margin-top: var(--sp-4); }
+
+@keyframes signup-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .signup-personalize__ring::before { animation: none; }
+}
