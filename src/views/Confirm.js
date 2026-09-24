@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { confirmSignUp, resendSignUpCode, signIn, signOut } from "aws-amplify/auth";
 import { Helmet } from "react-helmet";
+import { useTranslation } from "react-i18next";
 import { Spinner } from "reactstrap";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
@@ -14,6 +15,7 @@ const logo = "/transparent.png";
 const CODE_LENGTH = 6;
 
 const Confirm = () => {
+  const { t } = useTranslation();
   const [digits, setDigits] = useState(Array(CODE_LENGTH).fill(""));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -255,26 +257,23 @@ const Confirm = () => {
             <img src={logo} alt="Meksova Finance" />
           </div>
           <div className="auth__brand-body">
-            <p className="auth__eyebrow">Meksova Finance · One last step</p>
+            <p className="auth__eyebrow">{t("auth.confirm.eyebrow")}</p>
             <h1 className="auth__headline">
-              Almost there.
+              {t("auth.confirm.headline1")}
               <br />
-              <span>Check your inbox.</span>
+              <span>{t("auth.confirm.headline2")}</span>
             </h1>
-            <p className="auth__sub">
-              We emailed you a 6-digit code to confirm it's really you. Enter it
-              and your tailored workspace is ready.
-            </p>
+            <p className="auth__sub">{t("auth.confirm.sub")}</p>
             <ul className="auth__benefits">
-              <li>Your industry categories are set up</li>
-              <li>30-day free trial, no credit card</li>
-              <li>Jump straight into your dashboard</li>
+              <li>{t("auth.confirm.benefit1")}</li>
+              <li>{t("auth.confirm.benefit2")}</li>
+              <li>{t("auth.confirm.benefit3")}</li>
             </ul>
           </div>
           <div className="auth__brand-foot">
-            <span>Bilingual</span>
+            <span>{t("auth.common.bilingual")}</span>
             <span>·</span>
-            <span>Trusted by hundreds of small businesses</span>
+            <span>{t("auth.common.trusted")}</span>
           </div>
         </aside>
 
@@ -282,10 +281,10 @@ const Confirm = () => {
           <div className="login-box signup-box">
             <img src={logo} alt="Meksova" className="logo_img" />
             <h2 className="signup-title" style={{ textAlign: "center" }}>
-              Confirm your email
+              {t("auth.confirm.title")}
             </h2>
             <p className="signup-sub" style={{ textAlign: "center" }}>
-              Enter the 6-digit code we sent to{" "}
+              {t("auth.confirm.codeSentTo")}{" "}
               <strong style={{ color: "var(--text-1)" }}>{maskedEmail}</strong>
             </p>
 
@@ -317,27 +316,28 @@ const Confirm = () => {
             >
               {isLoading ? (
                 <>
-                  <Spinner color="light" size="sm" /> Confirming…
+                  <Spinner color="light" size="sm" /> {t("auth.confirm.confirming")}
                 </>
               ) : (
-                "Confirm & continue"
+                t("auth.confirm.confirm")
               )}
             </button>
 
             <p className="signup-trust">
-              Didn't get it? Check spam, or{" "}
+              {t("auth.confirm.resendPrompt")}{" "}
               <button
                 type="button"
                 className="otp__resend"
                 onClick={handleResendCode}
                 disabled={resending}
               >
-                {resending ? "sending…" : "resend code"}
+                {resending ? t("auth.confirm.resending") : t("auth.confirm.resend")}
               </button>
             </p>
 
             <p className="login-signup-prompt">
-              Wrong email? <Link to="/signup">Back to sign up</Link>
+              {t("auth.confirm.wrongEmail")}{" "}
+              <Link to="/signup">{t("auth.confirm.backToSignup")}</Link>
             </p>
           </div>
         </main>

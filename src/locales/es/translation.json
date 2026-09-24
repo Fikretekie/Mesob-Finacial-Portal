@@ -527,6 +527,24 @@
       "resend": "Reenviar código",
       "resendIn": "Reenviar código ({{s}}s)",
       "remember": "¿Recuerdas tu contraseña?"
+    },
+    "confirm": {
+      "eyebrow": "Meksova Finance · Último paso",
+      "headline1": "Ya casi estás.",
+      "headline2": "Revisa tu correo.",
+      "sub": "Te enviamos un código de 6 dígitos para confirmar que eres tú. Ingrésalo y tu espacio personalizado estará listo.",
+      "benefit1": "Tus categorías por sector ya están listas",
+      "benefit2": "Prueba gratis de 30 días, sin tarjeta",
+      "benefit3": "Entra directo a tu panel",
+      "title": "Confirma tu correo",
+      "codeSentTo": "Ingresa el código de 6 dígitos que enviamos a",
+      "confirm": "Confirmar y continuar",
+      "confirming": "Confirmando…",
+      "resendPrompt": "¿No llegó? Revisa spam, o",
+      "resend": "reenviar código",
+      "resending": "enviando…",
+      "wrongEmail": "¿Correo incorrecto?",
+      "backToSignup": "Volver al registro"
     }
   },
   "landing": {

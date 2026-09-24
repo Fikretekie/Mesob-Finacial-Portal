@@ -714,6 +714,24 @@
       "resend": "Resend code",
       "resendIn": "Resend code ({{s}}s)",
       "remember": "Remember your password?"
+    },
+    "confirm": {
+      "eyebrow": "Meksova Finance · One last step",
+      "headline1": "Almost there.",
+      "headline2": "Check your inbox.",
+      "sub": "We emailed you a 6-digit code to confirm it's really you. Enter it and your tailored workspace is ready.",
+      "benefit1": "Your industry categories are set up",
+      "benefit2": "30-day free trial, no credit card",
+      "benefit3": "Jump straight into your dashboard",
+      "title": "Confirm your email",
+      "codeSentTo": "Enter the 6-digit code we sent to",
+      "confirm": "Confirm & continue",
+      "confirming": "Confirming…",
+      "resendPrompt": "Didn't get it? Check spam, or",
+      "resend": "resend code",
+      "resending": "sending…",
+      "wrongEmail": "Wrong email?",
+      "backToSignup": "Back to sign up"
     }
   },
   "landing": {

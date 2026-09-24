@@ -512,6 +512,24 @@
       "resend": "Dib u dir koodhka",
       "resendIn": "Dib u dir koodhka ({{s}}s)",
       "remember": "Ma xasuusataa furahaaga?"
+    },
+    "confirm": {
+      "eyebrow": "Meksova Finance · Tallaabada u dambaysa",
+      "headline1": "Waad ku dhowdahay.",
+      "headline2": "Fiiri sanduuqaaga iimaylka.",
+      "sub": "Waxaan kuu soo dirnay koodh 6 lambar ah si aan u xaqiijino inaad tahay adiga. Geli oo booskaaga shaqo ee gaarka ah wuu diyaar yahay.",
+      "benefit1": "Qaybaha warshaddaada waa la dejiyay",
+      "benefit2": "Tijaabo bilaash ah 30 maalmood, kaadh ma loo baahna",
+      "benefit3": "Si toos ah u gal dashboard-kaaga",
+      "title": "Xaqiiji iimaylkaaga",
+      "codeSentTo": "Geli koodhka 6 lambar ah ee aan u dirnay",
+      "confirm": "Xaqiiji oo sii wad",
+      "confirming": "Waa la xaqiijinayaa…",
+      "resendPrompt": "Miyaadan helin? Fiiri spam-ka, ama",
+      "resend": "dib u dir koodhka",
+      "resending": "waa la dirayaa…",
+      "wrongEmail": "Iimayl khaldan?",
+      "backToSignup": "Ku noqo diiwaangelinta"
     }
   },
   "landing": {

@@ -522,6 +522,24 @@
       "resend": "Renvoyer le code",
       "resendIn": "Renvoyer le code ({{s}}s)",
       "remember": "Vous vous souvenez de votre mot de passe ?"
+    },
+    "confirm": {
+      "eyebrow": "Meksova Finance · Dernière étape",
+      "headline1": "Presque terminé.",
+      "headline2": "Consultez votre boîte mail.",
+      "sub": "Nous vous avons envoyé un code à 6 chiffres pour confirmer que c'est bien vous. Saisissez-le et votre espace personnalisé est prêt.",
+      "benefit1": "Vos catégories par secteur sont prêtes",
+      "benefit2": "Essai gratuit de 30 jours, sans carte",
+      "benefit3": "Accédez directement à votre tableau de bord",
+      "title": "Confirmez votre e-mail",
+      "codeSentTo": "Saisissez le code à 6 chiffres envoyé à",
+      "confirm": "Confirmer et continuer",
+      "confirming": "Confirmation…",
+      "resendPrompt": "Rien reçu ? Vérifiez les spams, ou",
+      "resend": "renvoyer le code",
+      "resending": "envoi…",
+      "wrongEmail": "Mauvais e-mail ?",
+      "backToSignup": "Retour à l'inscription"
     }
   },
   "landing": {
