@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Helmet } from "react-helmet";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
@@ -21,24 +22,26 @@ import "../assets/css/Login.css";
 
 const logo = "/transparent.png";
 
+// [storedValue, fallbackLabel, i18nKey under auth.signup.types]
 const BUSINESS_TYPES = [
-  ["Trucking", "Trucking"],
-  ["RIDESHARE DRIVERS/PARTNERS", "Rideshare Drivers / Partners"],
-  ["Groceries", "Groceries"],
-  ["Individual/Households", "Individual / Households"],
-  ["Cafe", "Restaurant / Café"],
-  ["Cleaning Services", "Cleaning Services"],
-  ["⁠Beauty & Grooming", "Beauty & Grooming (Salons, Barbershops)"],
-  ["E-commerce Sellers", "E-commerce Sellers (Shopify, Amazon, Etsy)"],
-  ["Construction Trades", "Construction Trades (Plumbing, Electrical, etc.)"],
-  ["Content Creator", "Content Creator"],
-  ["Other", "Other Businesses"],
+  ["Trucking", "Trucking", "truck"],
+  ["RIDESHARE DRIVERS/PARTNERS", "Rideshare Drivers / Partners", "rideshare"],
+  ["Groceries", "Groceries", "groceries"],
+  ["Individual/Households", "Individual / Households", "individual"],
+  ["Cafe", "Restaurant / Café", "cafe"],
+  ["Cleaning Services", "Cleaning Services", "cleaning"],
+  ["⁠Beauty & Grooming", "Beauty & Grooming (Salons, Barbershops)", "beauty"],
+  ["E-commerce Sellers", "E-commerce Sellers (Shopify, Amazon, Etsy)", "ecommerce"],
+  ["Construction Trades", "Construction Trades (Plumbing, Electrical, etc.)", "construction"],
+  ["Content Creator", "Content Creator", "creator"],
+  ["Other", "Other Businesses", "other"],
 ];
 
+// [stepNumber, i18nKey under auth.signup]
 const STEP_META = [
-  { n: 1, label: "Account" },
-  { n: 2, label: "Business" },
-  { n: 3, label: "Finances" },
+  { n: 1, key: "stepAccount" },
+  { n: 2, key: "stepBusiness" },
+  { n: 3, key: "stepFinances" },
 ];
 
 // Country (ISO-2 from the phone picker) -> default currency code. Anything not
@@ -59,6 +62,7 @@ const COUNTRY_CURRENCY = {
 };
 
 const SignupPage = () => {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -534,9 +538,10 @@ const SignupPage = () => {
 
   // ── Industry personalization ────────────────────────────────────────────
   const industryLabel = (() => {
-    if (selectedBusinessType === "Other") return otherBusinessType.trim() || "your business";
+    if (selectedBusinessType === "Other")
+      return otherBusinessType.trim() || t("auth.signup.types.other");
     const found = BUSINESS_TYPES.find(([value]) => value === selectedBusinessType);
-    return found ? found[1] : selectedBusinessType || "your business";
+    return found ? t(`auth.signup.types.${found[2]}`) : selectedBusinessType || "";
   })();
 
   const industryData = businessTypes[selectedBusinessType] || null;
@@ -549,11 +554,11 @@ const SignupPage = () => {
 
   const personalizeItems = [
     industryData
-      ? `Loading ${tailoredCount} ${industryLabel} categories`
-      : `Setting up ${industryLabel} categories`,
-    "Configuring income & expense tracking",
-    "Tailoring your reports & dashboard",
-    "Finishing your workspace",
+      ? t("auth.signup.pLoadCats", { count: tailoredCount, industry: industryLabel })
+      : t("auth.signup.pSetupCats", { industry: industryLabel }),
+    t("auth.signup.pConfigure"),
+    t("auth.signup.pTailor"),
+    t("auth.signup.pFinish"),
   ];
 
   const runPersonalization = async () => {
@@ -573,10 +578,8 @@ const SignupPage = () => {
       case 1:
         return (
           <>
-            <h2 className="signup-title">Create your free account</h2>
-            <p className="signup-sub">
-              See your profit in minutes — no credit card required.
-            </p>
+            <h2 className="signup-title">{t("auth.signup.title1")}</h2>
+            <p className="signup-sub">{t("auth.signup.sub1")}</p>
 
             {!isSocialSignup && (
               <>
@@ -588,12 +591,12 @@ const SignupPage = () => {
                 >
                   {socialAuth === "google" ? (
                     <>
-                      <Spinner color="light" size="sm" /> Processing…
+                      <Spinner color="light" size="sm" /> {t("auth.signup.processing")}
                     </>
                   ) : (
                     <>
                       <img src="/googlelogo.png" alt="Google" className="social-icon" />
-                      Continue with Google
+                      {t("auth.signup.google")}
                     </>
                   )}
                 </button>
@@ -606,7 +609,7 @@ const SignupPage = () => {
                 >
                   {socialAuth === "apple" ? (
                     <>
-                      <Spinner color="light" size="sm" /> Processing…
+                      <Spinner color="light" size="sm" /> {t("auth.signup.processing")}
                     </>
                   ) : (
                     <>
@@ -615,29 +618,28 @@ const SignupPage = () => {
                         className="social-icon"
                         style={{ color: "var(--text-1)" }}
                       />
-                      Continue with Apple
+                      {t("auth.signup.apple")}
                     </>
                   )}
                 </button>
 
                 <div className="separator">
-                  <span>or sign up with email</span>
+                  <span>{t("auth.signup.orEmail")}</span>
                 </div>
               </>
             )}
 
             {isSocialSignup && (
               <p className="signup-social-note">
-                Signed in with <strong>{provider}</strong>. Confirm your details to
-                continue.
+                {t("auth.signup.socialNote", { provider })}
               </p>
             )}
 
             <div className="login-input-group">
-              <label>Email address</label>
+              <label>{t("auth.signup.email")}</label>
               <input
                 type="email"
-                placeholder="you@business.com"
+                placeholder={t("auth.signup.emailPlaceholder")}
                 value={email}
                 readOnly={isSocialSignup}
                 className={errors.email ? "has-error" : ""}
@@ -651,11 +653,11 @@ const SignupPage = () => {
 
             {!isSocialSignup && (
               <div className="login-input-group">
-                <label>Password</label>
+                <label>{t("auth.signup.password")}</label>
                 <div className="password-container">
                   <input
                     type={showPassword ? "text" : "password"}
-                    placeholder="Create a password"
+                    placeholder={t("auth.signup.passwordPlaceholder")}
                     value={password}
                     className={errors.password ? "has-error" : ""}
                     onChange={(e) => {
@@ -675,9 +677,7 @@ const SignupPage = () => {
                 {errors.password ? (
                   <p className="signup-error">{errors.password}</p>
                 ) : (
-                  <p className="signup-hint">
-                    At least 8 characters, with a number &amp; symbol.
-                  </p>
+                  <p className="signup-hint">{t("auth.signup.passwordHint")}</p>
                 )}
               </div>
             )}
@@ -690,36 +690,33 @@ const SignupPage = () => {
             >
               {isLoading ? (
                 <>
-                  <Spinner color="light" size="sm" /> Please wait
+                  <Spinner color="light" size="sm" /> {t("auth.signup.pleaseWait")}
                 </>
               ) : isSocialSignup ? (
-                "Continue"
+                t("auth.signup.continue")
               ) : (
-                "Create free account"
+                t("auth.signup.createAccount")
               )}
             </button>
 
-            <p className="signup-trust">
-              No credit card required · Secure &amp; encrypted · Cancel anytime
-            </p>
+            <p className="signup-trust">{t("auth.signup.trust")}</p>
             <p className="login-signup-prompt">
-              Already have an account? <Link to="/login">Log in</Link>
+              {t("auth.signup.haveAccount")}{" "}
+              <Link to="/login">{t("auth.common.login")}</Link>
             </p>
           </>
         );
       case 2:
         return (
           <>
-            <h2 className="signup-title">Tell us about your business</h2>
-            <p className="signup-sub">
-              This tailors your dashboard, categories and reports.
-            </p>
+            <h2 className="signup-title">{t("auth.signup.title2")}</h2>
+            <p className="signup-sub">{t("auth.signup.sub2")}</p>
 
             <div className="login-input-group">
-              <label>Your name</label>
+              <label>{t("auth.signup.yourName")}</label>
               <input
                 type="text"
-                placeholder="Full name"
+                placeholder={t("auth.signup.yourNamePlaceholder")}
                 value={name}
                 className={errors.name ? "has-error" : ""}
                 onChange={(e) => {
@@ -731,10 +728,10 @@ const SignupPage = () => {
             </div>
 
             <div className="login-input-group">
-              <label>Company name</label>
+              <label>{t("auth.signup.companyName")}</label>
               <input
                 type="text"
-                placeholder="Business or company name"
+                placeholder={t("auth.signup.companyPlaceholder")}
                 value={companyName}
                 className={errors.companyName ? "has-error" : ""}
                 onChange={(e) => {
@@ -748,7 +745,7 @@ const SignupPage = () => {
             </div>
 
             <div className="login-input-group signup-phone-group">
-              <label>Phone number</label>
+              <label>{t("auth.signup.phone")}</label>
               <PhoneInput
                 country={"us"}
                 value={phone}
@@ -760,7 +757,7 @@ const SignupPage = () => {
             </div>
 
             <div className="login-input-group">
-              <label>Business type</label>
+              <label>{t("auth.signup.businessType")}</label>
               <select
                 value={selectedBusinessType}
                 className={errors.businessType ? "has-error" : ""}
@@ -769,10 +766,10 @@ const SignupPage = () => {
                   setErrors((prev) => ({ ...prev, businessType: "" }));
                 }}
               >
-                <option value="">Select business type</option>
-                {BUSINESS_TYPES.map(([value, label]) => (
+                <option value="">{t("auth.signup.selectType")}</option>
+                {BUSINESS_TYPES.map(([value, label, key]) => (
                   <option key={value} value={value}>
-                    {label}
+                    {t(`auth.signup.types.${key}`, label)}
                   </option>
                 ))}
               </select>
@@ -797,7 +794,7 @@ const SignupPage = () => {
                       <line x1="17" y1="16" x2="23" y2="16" />
                     </svg>
                   </span>
-                  Tailored for {industryLabel} · {tailoredCount} categories ready
+                  {t("auth.signup.tailored", { industry: industryLabel, count: tailoredCount })}
                 </span>
                 <div className="signup-preview__chips">
                   {tailoredSamples.map((c) => (
@@ -811,10 +808,10 @@ const SignupPage = () => {
 
             {selectedBusinessType === "Other" && (
               <div className="login-input-group">
-                <label>Specify business type</label>
+                <label>{t("auth.signup.specifyType")}</label>
                 <input
                   type="text"
-                  placeholder="e.g. Photography studio"
+                  placeholder={t("auth.signup.specifyPlaceholder")}
                   value={otherBusinessType}
                   className={errors.otherBusinessType ? "has-error" : ""}
                   onChange={(e) => {
@@ -829,7 +826,7 @@ const SignupPage = () => {
             )}
 
             <div className="login-input-group">
-              <label>Currency</label>
+              <label>{t("auth.signup.currency")}</label>
               <select
                 value={selectedCurrency}
                 onChange={(e) => setSelectedCurrency(e.target.value)}
@@ -844,7 +841,7 @@ const SignupPage = () => {
 
             <div className="signup-actions">
               <button type="button" className="signup-back" onClick={goBack}>
-                ← Back
+                ← {t("auth.common.back")}
               </button>
               <button
                 type="button"
@@ -854,10 +851,10 @@ const SignupPage = () => {
               >
                 {isLoading ? (
                   <>
-                    <Spinner color="light" size="sm" /> Please wait
+                    <Spinner color="light" size="sm" /> {t("auth.signup.pleaseWait")}
                   </>
                 ) : (
-                  "Continue"
+                  t("auth.signup.continue")
                 )}
               </button>
             </div>
@@ -866,15 +863,11 @@ const SignupPage = () => {
       case 3:
         return (
           <>
-            <h2 className="signup-title">Your starting numbers</h2>
-            <p className="signup-sub">
-              Where does your business stand today? This builds an accurate
-              picture from day one.
-            </p>
+            <h2 className="signup-title">{t("auth.signup.title3")}</h2>
+            <p className="signup-sub">{t("auth.signup.sub3")}</p>
 
             <div className="signup-info-card">
-              Enter your current cash, any debt you owe, and the value of what you
-              own (inventory, equipment). Not ready?{" "}
+              {t("auth.signup.infoCard")}{" "}
               <a
                 href="#"
                 onClick={(e) => {
@@ -889,15 +882,15 @@ const SignupPage = () => {
                   if (!isSubmitting) handleSignup(e, 0);
                 }}
               >
-                Start from zero →
+                {t("auth.signup.startFromZero")}
               </a>
             </div>
 
             <div className="login-input-group">
-              <label>Cash balance</label>
+              <label>{t("auth.signup.cashBalance")}</label>
               <input
                 type="text"
-                placeholder="e.g. 10,000"
+                placeholder={t("auth.signup.cashPlaceholder")}
                 value={cashBalance}
                 className={errors.cashBalance ? "has-error" : ""}
                 onChange={(e) => {
@@ -911,10 +904,10 @@ const SignupPage = () => {
             </div>
 
             <div className="login-input-group">
-              <label>Outstanding debt</label>
+              <label>{t("auth.signup.debt")}</label>
               <input
                 type="text"
-                placeholder="e.g. 5,000"
+                placeholder={t("auth.signup.debtPlaceholder")}
                 value={outstandingDebt}
                 className={errors.outstandingDebt ? "has-error" : ""}
                 onChange={(e) => {
@@ -928,10 +921,10 @@ const SignupPage = () => {
             </div>
 
             <div className="login-input-group">
-              <label>Valuable items</label>
+              <label>{t("auth.signup.valuable")}</label>
               <input
                 type="text"
-                placeholder="e.g. Truck worth 50,000"
+                placeholder={t("auth.signup.valuablePlaceholder")}
                 value={valueableItems}
                 className={errors.valueableItems ? "has-error" : ""}
                 onChange={(e) => {
@@ -951,16 +944,16 @@ const SignupPage = () => {
                 onChange={(e) => setTermsChecked(e.target.checked)}
               />
               <span>
-                I agree to the{" "}
+                {t("auth.signup.agree")}{" "}
                 <Link to="/terms-of-use" target="_blank" rel="noopener noreferrer">
-                  Terms of Use
+                  {t("auth.signup.terms")}
                 </Link>
               </span>
             </label>
 
             <div className="signup-actions">
               <button type="button" className="signup-back" onClick={goBack}>
-                ← Back
+                ← {t("auth.common.back")}
               </button>
               <button
                 type="button"
@@ -970,10 +963,10 @@ const SignupPage = () => {
               >
                 {isSubmitting ? (
                   <>
-                    <Spinner color="light" size="sm" /> Saving…
+                    <Spinner color="light" size="sm" /> {t("auth.signup.saving")}
                   </>
                 ) : (
-                  "Finish & go to dashboard"
+                  t("auth.signup.finish")
                 )}
               </button>
             </div>
@@ -996,26 +989,23 @@ const SignupPage = () => {
             <img src={logo} alt="Meksova Finance" />
           </div>
           <div className="auth__brand-body">
-            <p className="auth__eyebrow">Meksova Finance · Free 30-day trial</p>
+            <p className="auth__eyebrow">{t("auth.signup.eyebrow")}</p>
             <h1 className="auth__headline">
-              Start free.
+              {t("auth.signup.headline1")}
               <br />
-              <span>See your profit in minutes.</span>
+              <span>{t("auth.signup.headline2")}</span>
             </h1>
-            <p className="auth__sub">
-              Create your account, tell us about your business, and we'll build
-              your financial picture from day one.
-            </p>
+            <p className="auth__sub">{t("auth.signup.brandSub")}</p>
             <ul className="auth__benefits">
-              <li>Track revenue, expenses &amp; cash in one place</li>
-              <li>Tax-ready reports &amp; one-tap receipt scanning</li>
-              <li>No credit card · cancel anytime</li>
+              <li>{t("auth.signup.benefit1")}</li>
+              <li>{t("auth.signup.benefit2")}</li>
+              <li>{t("auth.signup.benefit3")}</li>
             </ul>
           </div>
           <div className="auth__brand-foot">
-            <span>Bilingual</span>
+            <span>{t("auth.common.bilingual")}</span>
             <span>·</span>
-            <span>Trusted by hundreds of small businesses</span>
+            <span>{t("auth.common.trusted")}</span>
           </div>
         </aside>
 
@@ -1027,12 +1017,9 @@ const SignupPage = () => {
                   <img src={logo} alt="" />
                 </div>
                 <h2 className="signup-title">
-                  Personalizing your {industryLabel} account…
+                  {t("auth.signup.pTitle", { industry: industryLabel })}
                 </h2>
-                <p className="signup-sub">
-                  Setting up categories, reports and your dashboard — just a
-                  moment.
-                </p>
+                <p className="signup-sub">{t("auth.signup.pSub")}</p>
                 <ul className="signup-personalize__list">
                   {personalizeItems.map((label, i) => (
                     <li
@@ -1092,7 +1079,9 @@ const SignupPage = () => {
                         <span className="signup-step__dot">
                           {step > s.n ? "✓" : s.n}
                         </span>
-                        <span className="signup-step__label">{s.label}</span>
+                        <span className="signup-step__label">
+                          {t(`auth.signup.${s.key}`)}
+                        </span>
                       </div>
                     </React.Fragment>
                   ))}
