@@ -30,6 +30,7 @@ import axios from "axios";
 import { apiUrl, ROUTES, S3_BUCKET_NAME, normalizeReceiptUrl } from "../config/api";
 import { authHeader } from "../utils/apiFetch";
 import * as acct from "../utils/accounting";
+import { currencySymbol, setCurrencyFromUser } from "../utils/currency";
 import { Helmet } from "react-helmet";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
@@ -515,7 +516,7 @@ const MesobFinancial2 = () => {
           if (vendor || totalNum) {
             notify(
               "tr",
-              `Receipt scanned${vendor ? `: ${vendor}` : ""}${totalNum ? ` — $${totalNum}` : ""}. Please review before saving.`,
+              `Receipt scanned${vendor ? `: ${vendor}` : ""}${totalNum ? ` — ${CUR}${totalNum}` : ""}. Please review before saving.`,
               "success"
             );
           }
@@ -572,6 +573,7 @@ const MesobFinancial2 = () => {
   };
 
   const userId = localStorage.getItem("userId");
+  const CUR = currencySymbol();
 
   const notify = (place, message, type) => {
     notificationAlertRef.current.notificationAlert({
@@ -1207,6 +1209,7 @@ const MesobFinancial2 = () => {
         apiUrl(`${ROUTES.USERS}/${targetUserId}`)
       );
       if (response.data?.user) {
+        setCurrencyFromUser(response.data.user);
         if (response.data.user.businessType) {
           const bizType = response.data.user.businessType || "";
           setSelectedBusinessType(bizType);
@@ -1465,7 +1468,7 @@ const MesobFinancial2 = () => {
           name: t.assetName,
           amount: amount,
           purpose: t.transactionPurpose,
-          displayName: `${t.assetName} - $${amount.toFixed(2)}`
+          displayName: `${t.assetName} - ${CUR}${amount.toFixed(2)}`
         });
       }
 
@@ -1488,7 +1491,7 @@ const MesobFinancial2 = () => {
           name: t.transactionPurpose,
           amount: amount,
           purpose: t.transactionPurpose,
-          displayName: `${t.transactionPurpose} - $${amount.toFixed(2)}`
+          displayName: `${t.transactionPurpose} - ${CUR}${amount.toFixed(2)}`
         });
       }
     });
@@ -1620,7 +1623,7 @@ const MesobFinancial2 = () => {
             textAlign: "right",
           }}
         >
-          $
+          {CUR}
           {parseFloat(calculateOperatingRevenue()).toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
@@ -1635,7 +1638,7 @@ const MesobFinancial2 = () => {
               <strong>{t("financialReport.costOfGoodsSold")}</strong>
             </td>
             <td style={{ color: FINANCIAL_COLORS.expense, fontWeight: "bold", padding: "8px", border: "1px solid var(--border)", textAlign: "right" }}>
-              $
+              {CUR}
               {parseFloat(calculateCOGS()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </td>
           </tr>
@@ -1648,7 +1651,7 @@ const MesobFinancial2 = () => {
               </strong>
             </td>
             <td style={{ color: getNetIncomeColor(parseFloat(calculateGrossProfit())), fontWeight: "bold", padding: "8px", border: "1px solid var(--border)", textAlign: "right" }}>
-              $
+              {CUR}
               {parseFloat(calculateGrossProfit()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </td>
           </tr>
@@ -1684,7 +1687,7 @@ const MesobFinancial2 = () => {
                   textAlign: "right",
                 }}
               >
-                $
+                {CUR}
                 {parseFloat(amount || 0).toLocaleString("en-US", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
@@ -1713,7 +1716,7 @@ const MesobFinancial2 = () => {
             textAlign: "right",
           }}
         >
-          $
+          {CUR}
           {parseFloat(calculateOtherIncome()).toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
@@ -1801,7 +1804,7 @@ const MesobFinancial2 = () => {
             textAlign: "right",
           }}
         >
-          $
+          {CUR}
           {parseFloat(calculateOperatingExpenses()).toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
@@ -1838,7 +1841,7 @@ const MesobFinancial2 = () => {
                   textAlign: "right",
                 }}
               >
-                $
+                {CUR}
                 {parseFloat(amount || 0).toLocaleString("en-US", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
@@ -1867,7 +1870,7 @@ const MesobFinancial2 = () => {
             textAlign: "right",
           }}
         >
-          $
+          {CUR}
           {parseFloat(calculateOtherExpense()).toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
@@ -1894,7 +1897,7 @@ const MesobFinancial2 = () => {
             textAlign: "right",
           }}
         >
-          $
+          {CUR}
           {(
             parseFloat(calculateTotalRevenue()) - parseFloat(calculateTotalExpenses())
           ).toLocaleString("en-US", {
@@ -2855,7 +2858,7 @@ const MesobFinancial2 = () => {
                       <div className="mksv-stat-main">
                         <div className="mksv-stat-label">{t('financialReport.totalCashOnHand')}</div>
                         <BalanceValue value={parseFloat(calculateTotalCash())} tooltip={t('financialReport.cashDeficitTooltip')} style={{ fontSize: "1.15rem", fontWeight: 800 }}>
-                          ${parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {CUR}{parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </BalanceValue>
                       </div>
                       <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><path d="M2 26 12 24 22 25 32 18 42 20 52 10 64 6 64 34 2 34Z" fill="#34d39922" /><polyline points="2,26 12,24 22,25 32,18 42,20 52,10 64,6" fill="none" stroke="#34d399" strokeWidth="2" /></svg>
@@ -2865,7 +2868,7 @@ const MesobFinancial2 = () => {
                       <div className="mksv-ico mksv-ico--payable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 3h9l5 5v13H6z" /><path d="M9 12h7M9 16h7" /></svg></div>
                       <div className="mksv-stat-main">
                         <div className="mksv-stat-label">{t('financialReport.totalPayable')}</div>
-                        <div className="mksv-stat-val" style={{ color: FINANCIAL_COLORS.payable }}>${parseFloat(calculateTotalPayable()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        <div className="mksv-stat-val" style={{ color: FINANCIAL_COLORS.payable }}>{CUR}{parseFloat(calculateTotalPayable()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       </div>
                       <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><polyline points="2,20 12,18 22,22 32,16 42,19 52,14 64,12" fill="none" stroke="#e6b25f" strokeWidth="2" /></svg>
                     </div>
@@ -2874,7 +2877,7 @@ const MesobFinancial2 = () => {
                       <div className="mksv-ico mksv-ico--accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-7" /></svg></div>
                       <div className="mksv-stat-main">
                         <div className="mksv-stat-label">{t('financialReport.totalRevenue')}</div>
-                        <div className="mksv-stat-val" style={{ color: "#3b82f6" }}>${parseFloat(calculateTotalRevenue()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        <div className="mksv-stat-val" style={{ color: "#3b82f6" }}>{CUR}{parseFloat(calculateTotalRevenue()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       </div>
                       <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><path d="M2 28 12 22 22 24 32 15 42 17 52 9 64 4 64 34 2 34Z" fill="#3b82f622" /><polyline points="2,28 12,22 22,24 32,15 42,17 52,9 64,4" fill="none" stroke="#3b82f6" strokeWidth="2" /></svg>
                     </div>
@@ -2883,7 +2886,7 @@ const MesobFinancial2 = () => {
                       <div className="mksv-ico mksv-ico--expense"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 12a9 9 0 11-9-9v9z" /></svg></div>
                       <div className="mksv-stat-main">
                         <div className="mksv-stat-label">{t('financialReport.totalExpense')}</div>
-                        <div className="mksv-stat-val" style={{ color: FINANCIAL_COLORS.expense }}>${parseFloat(calculateTotalExpenses(true)).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        <div className="mksv-stat-val" style={{ color: FINANCIAL_COLORS.expense }}>{CUR}{parseFloat(calculateTotalExpenses(true)).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       </div>
                       <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><polyline points="2,14 12,16 22,13 32,17 42,15 52,19 64,17" fill="none" stroke="#a855f7" strokeWidth="2" /></svg>
                     </div>
@@ -3175,7 +3178,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {parseFloat(calculateTotalPayable()).toLocaleString(
                               "en-US",
                               {
@@ -3202,7 +3205,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {(
                               initialBalance +
                               initialvalueableItems -
@@ -3233,7 +3236,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {(
                               parseFloat(calculateTotalRevenue()) -
                               parseFloat(calculateTotalExpenses())
@@ -3261,7 +3264,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {(
                               parseFloat(calculateTotalPayable()) +
                               (initialBalance + initialvalueableItems - initialoutstandingDebt) +
@@ -3286,7 +3289,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            ${(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {CUR}{(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td
                             style={{
@@ -3295,7 +3298,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {(
                               parseFloat(calculateTotalPayable()) +
                               initialBalance +
@@ -3345,7 +3348,7 @@ const MesobFinancial2 = () => {
                         tooltip={t("financialReport.cashDeficitTooltip")}
                         style={{ fontSize: "1.1rem" }}
                       >
-                        $
+                        {CUR}
                         {parseFloat(calculateTotalCash()).toLocaleString("en-US", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
@@ -3372,7 +3375,7 @@ const MesobFinancial2 = () => {
                           fontSize: "1.1rem",
                         }}
                       >
-                        $
+                        {CUR}
                         {parseFloat(calculateTotalPayable()).toLocaleString(
                           "en-US",
                           {
@@ -3435,7 +3438,7 @@ const MesobFinancial2 = () => {
                               fontSize: "1.1rem",
                             }}
                           >
-                            $
+                            {CUR}
                             {parseFloat(calculateTotalRevenue()).toLocaleString(
                               "en-US",
                               {
@@ -3530,7 +3533,7 @@ const MesobFinancial2 = () => {
                               fontSize: "1.1rem",
                             }}
                           >
-                            $
+                            {CUR}
                             {parseFloat(
                               calculateTotalExpenses(true)
                             ).toLocaleString("en-US", {
@@ -3866,7 +3869,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {parseFloat(calculateTotalPayable()).toLocaleString(
                               "en-US",
                               {
@@ -3893,7 +3896,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {(
                               initialBalance +
                               initialvalueableItems -
@@ -3924,7 +3927,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {(
                               parseFloat(calculateTotalRevenue()) -
                               parseFloat(calculateTotalExpenses())
@@ -3952,7 +3955,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {(
                               parseFloat(calculateTotalPayable()) +
                               (initialBalance + initialvalueableItems - initialoutstandingDebt) +
@@ -4311,8 +4314,8 @@ const MesobFinancial2 = () => {
                         const displayName = t.assetName || t.transactionPurpose;
                         const label =
                           remaining < original
-                            ? `${displayName} - $${remaining.toFixed(2)} left (of $${original.toFixed(2)})`
-                            : `${displayName} - $${original.toFixed(2)}`;
+                            ? `${displayName} - ${CUR}${remaining.toFixed(2)} left (of ${CUR}${original.toFixed(2)})`
+                            : `${displayName} - ${CUR}${original.toFixed(2)}`;
                         return (
                           <option key={t.id} value={t.id}>
                             {label}
@@ -4370,7 +4373,7 @@ const MesobFinancial2 = () => {
                         // Validate that partial payment is less than or equal to remaining amount
                         if (value > currentRemaining) {
                           setPartialPaymentError(
-                            `Partial payment cannot exceed $${currentRemaining.toFixed(2)}`
+                            `Partial payment cannot exceed ${CUR}${currentRemaining.toFixed(2)}`
                           );
                         } else if (value <= 0) {
                           setPartialPaymentError(
@@ -4649,8 +4652,8 @@ const MesobFinancial2 = () => {
                   {selectedSaleItem && (
                     <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)" }}>
                       {selectedSaleItem.unitCost != null
-                        ? `${t('financialReport.inStock', 'In stock')}: ${selectedSaleItem.remainingQty} @ $${selectedSaleItem.unitCost.toFixed(2)} ${t('financialReport.each', 'each')} · $${parseFloat(selectedSaleItem.amount).toFixed(2)} ${t('financialReport.left', 'left')}`
-                        : `${t('financialReport.costInStock', 'Cost still in stock')}: $${parseFloat(selectedSaleItem.amount).toFixed(2)}`}
+                        ? `${t('financialReport.inStock', 'In stock')}: ${selectedSaleItem.remainingQty} @ ${CUR}${selectedSaleItem.unitCost.toFixed(2)} ${t('financialReport.each', 'each')} · ${CUR}${parseFloat(selectedSaleItem.amount).toFixed(2)} ${t('financialReport.left', 'left')}`
+                        : `${t('financialReport.costInStock', 'Cost still in stock')}: ${CUR}${parseFloat(selectedSaleItem.amount).toFixed(2)}`}
                     </small>
                   )}
                 </FormGroup>
@@ -4682,7 +4685,7 @@ const MesobFinancial2 = () => {
                       max={selectedSaleItem.amount}
                       value={saleCostPortion}
                       onChange={(e) => setSaleCostPortion(limitToTwoDecimals(e.target.value))}
-                      placeholder={`${t('financialReport.upTo', 'up to')} $${parseFloat(selectedSaleItem.amount).toFixed(2)}`}
+                      placeholder={`${t('financialReport.upTo', 'up to')} ${CUR}${parseFloat(selectedSaleItem.amount).toFixed(2)}`}
                     />
                     <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
                       {t('financialReport.costOfPortionHint', 'Leave blank to sell the whole remaining stock.')}
@@ -4711,11 +4714,11 @@ const MesobFinancial2 = () => {
                     <div style={{ background: "var(--surface-3)", border: "1px solid var(--border)", borderRadius: "8px", padding: "10px 12px", marginBottom: "14px", fontSize: "13px" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-2)" }}>
                         <span>{t('financialReport.costOfGoodsSold', 'Cost of items sold')}</span>
-                        <span>${money(cogs)}</span>
+                        <span>{CUR}{money(cogs)}</span>
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, marginTop: "4px", color: profit >= 0 ? "var(--green)" : "var(--red)" }}>
                         <span>{profit >= 0 ? t('financialReport.profitOnThisSale', 'Profit on this sale') : t('financialReport.lossOnThisSale', 'Loss on this sale')}</span>
-                        <span>{profit < 0 ? "-" : ""}${money(Math.abs(profit))}</span>
+                        <span>{profit < 0 ? "-" : ""}{CUR}{money(Math.abs(profit))}</span>
                       </div>
                     </div>
                   );
@@ -4754,7 +4757,7 @@ const MesobFinancial2 = () => {
                     ))}
                   </Input>
                   {selectedSaleItem && (
-                    <small style={{ color: "#aaa" }}>Book value: ${parseFloat(selectedSaleItem.amount).toFixed(2)}</small>
+                    <small style={{ color: "#aaa" }}>Book value: {CUR}{parseFloat(selectedSaleItem.amount).toFixed(2)}</small>
                   )}
                 </FormGroup>
                 <FormGroup>

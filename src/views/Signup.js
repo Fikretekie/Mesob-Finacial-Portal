@@ -317,6 +317,7 @@ const SignupPage = () => {
           localStorage.setItem("role", "2");
           localStorage.setItem("businessType", businessTypeValue);
           localStorage.setItem("cashBalance", type === 0 ? "0" : cashBalance);
+          localStorage.setItem("currency", selectedCurrency || "USD");
           localStorage.setItem(
             "outstandingDebt",
             type === 0 ? "0" : outstandingDebt

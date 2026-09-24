@@ -170,6 +170,7 @@ const Confirm = () => {
         localStorage.setItem("outstandingDebt", result.user?.outstandingDebt || "0");
         localStorage.setItem("valueableItems", result.user?.valueableItems || "0");
         localStorage.setItem("cashBalance", result.user?.cashBalance || "0");
+        localStorage.setItem("currency", result.user?.currency || "USD");
         localStorage.setItem("authToken", "authenticated");
 
         try {

@@ -15,6 +15,8 @@
 // sites, which do parseFloat(...)); item helpers return arrays.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { currencySymbol } from "./currency";
+
 const num = (x) => parseFloat(x) || 0;
 
 /**
@@ -298,10 +300,10 @@ export function getCurrentAssetItems(allItems) {
       amount: remainingCost,
       originalCost,
       originalQty,
-      remainingQty,
       unitCost,
+      remainingQty,
       purpose: t.transactionPurpose,
-      displayName: `${name} - $${remainingCost.toFixed(2)}${qtyLabel}`,
+      displayName: `${name} - ${currencySymbol()}${remainingCost.toFixed(2)}${qtyLabel}`,
     });
   };
   (allItems || []).forEach((t) => {

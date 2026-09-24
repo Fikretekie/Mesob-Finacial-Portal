@@ -29,6 +29,7 @@ import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import axios from "axios";
 import { apiUrl, ROUTES } from "../config/api";
 import * as acct from "../utils/accounting";
+import { currencySymbol, setCurrencyFromUser } from "../utils/currency";
 import Select from "react-select";
 import { Helmet } from "react-helmet";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -382,6 +383,8 @@ function Dashboard() {
   // stale closure issues. All return plain "0.00" decimal strings — same format
   // as meksova.com2 — so DownloadReportModal's parseFloat() always works.
 
+  const CUR = currencySymbol();
+
   const calculateTotalCash = () =>
     (totalCashOnHandRef.current || 0).toFixed(2);
 
@@ -449,7 +452,7 @@ function Dashboard() {
                     radius: 2,
                   },
                   label: {
-                    text: `$${lastVal.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                    text: `${CUR}${lastVal.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
                     borderColor: color,
                     borderWidth: 1,
                     offsetY: -2,
@@ -518,7 +521,7 @@ function Dashboard() {
           formatter: function (value) {
             if (!value) return "$0";
             return (
-              "$" +
+              CUR +
               value.toLocaleString(undefined, {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0,
@@ -588,7 +591,7 @@ function Dashboard() {
         y: {
           formatter: function (value) {
             return (
-              "$" +
+              CUR +
               value.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
@@ -671,6 +674,8 @@ function Dashboard() {
         parseFloat(userResponse.data?.user?.outstandingDebt) || 0;
       const valuableItems =
         parseFloat(userResponse.data?.user?.valueableItems) || 0;
+
+      setCurrencyFromUser(userResponse.data?.user);
 
       setInitialBalance(initialCashBalance);
       setoutstandingDebt(outstandingDebt);
@@ -1434,11 +1439,11 @@ function Dashboard() {
                         value={activeMetric.value}
                         tooltip={t("financialReport.cashDeficitTooltip")}
                       >
-                        {`$${activeMetric.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                        {`${CUR}${activeMetric.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                       </BalanceValue>
                     ) : (
                       <span style={{ color: activeMetric.color }}>
-                        {`$${activeMetric.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                        {`${CUR}${activeMetric.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                       </span>
                     )}
                   </CardTitle>
@@ -1456,7 +1461,7 @@ function Dashboard() {
                   const outPct = total > 0 ? (outflow / total) * 100 : 50;
                   const net = income - outflow;
                   const fmt = (n) =>
-                    `$${Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+                    `${CUR}${Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
                   return (
                     <div className="hero-flow">
                       <div className="hero-flow__row">
@@ -1494,12 +1499,12 @@ function Dashboard() {
                   <div className="hero-subline">
                     <div>
                       <span className="hk">{t("dashboard.previousMonth", "Prev. month")}</span>
-                      <span className="hv">${Number(activeMetric.prev || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                      <span className="hv">{CUR}{Number(activeMetric.prev || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                     </div>
                     {activeMetric.key === "cash" && (
                       <div>
                         <span className="hk">{t("dashboard.taxEstimation", "Tax set-aside")}</span>
-                        <span className="hv">${calculateEstimatedTax().toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                        <span className="hv">{CUR}{calculateEstimatedTax().toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                       </div>
                     )}
                   </div>
@@ -1520,7 +1525,7 @@ function Dashboard() {
                     <span className="chart-card__title" style={{ display: "block", margin: 0 }}>{activeMetric.chartTitle}</span>
                     {!loadingFinancialData && (
                       <span className="chart-card__sub">
-                        ${activeMetric.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        {CUR}{activeMetric.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                         {" · "}
                         {calculatePercentageChange(activeMetric.value, activeMetric.prev).text}
                       </span>
@@ -1570,7 +1575,7 @@ function Dashboard() {
                       {loadingFinancialData ? (
                         <Spinner size="sm" />
                       ) : (
-                        `$${m.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        `${CUR}${m.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                       )}
                     </CardTitle>
                     {!loadingFinancialData && (
@@ -1716,7 +1721,7 @@ function Dashboard() {
                     theme: "dark",
                     y: {
                       formatter: (v) =>
-                        `$${Number(v).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                        `${CUR}${Number(v).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
                     },
                   },
                   plotOptions: {
@@ -1732,7 +1737,7 @@ function Dashboard() {
                             fontWeight: 700,
                             offsetY: 2,
                             formatter: (v) =>
-                              `$${Number(v).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                              `${CUR}${Number(v).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
                           },
                           total: {
                             show: true,
@@ -1741,7 +1746,7 @@ function Dashboard() {
                             color: "var(--text-3)",
                             fontSize: "10px",
                             formatter: () =>
-                              `$${totalExp.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                              `${CUR}${totalExp.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
                           },
                         },
                       },
@@ -1788,7 +1793,7 @@ function Dashboard() {
                   {t("dashboard.totalPayable", "Payable outstanding")}
                 </span>
                 <span className="mk-badge mk-badge--warn">
-                  ${totalPayable.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  {CUR}{totalPayable.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </span>
               </div>
               <div className="dash-status__row">
@@ -1796,7 +1801,7 @@ function Dashboard() {
                   {t("dashboard.taxEstimation", "Tax set-aside")}
                 </span>
                 <span className="mk-badge mk-badge--info">
-                  ${calculateEstimatedTax().toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  {CUR}{calculateEstimatedTax().toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </span>
               </div>
               <div className="dash-status__row">
