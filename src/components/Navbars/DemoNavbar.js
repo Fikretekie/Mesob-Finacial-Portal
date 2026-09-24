@@ -86,7 +86,7 @@ function DemoNavbar(props) {
     userRole === 1 ? false : !userSubscription && !isTrialActive();
 
   const SUBSCRIPTION_ROUTE = "/customer/subscription";
-  const SUBSCRIPTION_UPDATE_HINT = "Subscription update needed";
+  const SUBSCRIPTION_UPDATE_HINT = t("navbar.subscriptionUpdateNeeded");
 
   // ── Resize handler ──
   useEffect(() => {
@@ -196,11 +196,13 @@ function DemoNavbar(props) {
 
   const allRoutes = [...adminRoutes, ...customerRoutes];
   const getBrand = () => {
-    let name;
+    let brand;
     allRoutes.forEach((prop) => {
-      if (prop.path === location.pathname) name = prop.name;
+      if (prop.layout + prop.path === location.pathname) {
+        brand = prop.nameKey ? t(prop.nameKey, prop.name) : prop.name;
+      }
     });
-    return name;
+    return brand;
   };
 
   const openSidebar = () => {
@@ -309,8 +311,8 @@ function DemoNavbar(props) {
             <button
               type="button"
               onClick={toggleTheme}
-              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-              title={theme === "dark" ? "Light mode" : "Dark mode"}
+              aria-label={theme === "dark" ? t("navbar.switchToLight") : t("navbar.switchToDark")}
+              title={theme === "dark" ? t("navbar.lightMode") : t("navbar.darkMode")}
               style={{
                 marginLeft: 8,
                 width: 38,
@@ -471,12 +473,12 @@ function DemoNavbar(props) {
                 <DropdownMenu right style={{ backgroundColor: "white" }}>
                   <DropdownItem onClick={toggleHelpModal}>
                     <i className="now-ui-icons ui-2_settings-90 mr-2" />
-                    Help & Support
+                    {t("navbar.helpSupport")}
                   </DropdownItem>
                   <DropdownItem divider />
                   <DropdownItem onClick={handleLogout}>
                     <i className="now-ui-icons ui-1_simple-remove mr-2" />
-                    Logout
+                    {t("navbar.logout")}
                   </DropdownItem>
                 </DropdownMenu>
               </Dropdown>
@@ -523,13 +525,13 @@ function DemoNavbar(props) {
           }}
         >
           <span style={{ color: "#ffffff", fontWeight: 700, fontSize: "1.1rem" }}>
-            Help & Support
+            {t("navbar.helpSupport")}
           </span>
         </ModalHeader>
 
         <ModalBody style={{ background: "#0d1117", padding: "2rem 1.75rem" }}>
           <p style={{ color: "#64748b", textAlign: "center", marginBottom: "2rem", fontSize: "0.9rem" }}>
-            We're here to help! Reach out via any method below.
+            {t("navbar.helpIntro")}
           </p>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1.75rem" }}>
@@ -544,7 +546,7 @@ function DemoNavbar(props) {
                   <i className="now-ui-icons tech_mobile" style={{ color: "#fff", fontSize: "18px" }} />
                 </div>
                 <div>
-                  <p style={{ color: "#94a3b8", fontSize: "0.72rem", margin: 0, letterSpacing: "0.06em", textTransform: "uppercase" }}>Phone</p>
+                  <p style={{ color: "#94a3b8", fontSize: "0.72rem", margin: 0, letterSpacing: "0.06em", textTransform: "uppercase" }}>{t("navbar.phone")}</p>
                   <p style={{ color: "#e2e8f0", fontWeight: 600, margin: 0, fontSize: "0.95rem" }}>+1 (614) 966-5005</p>
                 </div>
               </div>
@@ -561,7 +563,7 @@ function DemoNavbar(props) {
                   <i className="now-ui-icons ui-1_email-85" style={{ color: "#fff", fontSize: "18px" }} />
                 </div>
                 <div>
-                  <p style={{ color: "#94a3b8", fontSize: "0.72rem", margin: 0, letterSpacing: "0.06em", textTransform: "uppercase" }}>Email</p>
+                  <p style={{ color: "#94a3b8", fontSize: "0.72rem", margin: 0, letterSpacing: "0.06em", textTransform: "uppercase" }}>{t("navbar.email")}</p>
                   <p style={{ color: "#e2e8f0", fontWeight: 600, margin: 0, fontSize: "0.95rem" }}>info@meksova.com</p>
                 </div>
               </div>
@@ -571,7 +573,7 @@ function DemoNavbar(props) {
           <div style={{ borderTop: "1px solid #1e293b", marginBottom: "1.5rem" }} />
 
           <p style={{ color: "#64748b", fontSize: "0.75rem", textAlign: "center", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "1rem" }}>
-            Follow us on
+            {t("navbar.followUs")}
           </p>
 
           <div style={{ display: "flex", justifyContent: "center", gap: "1rem" }}>
@@ -598,7 +600,7 @@ function DemoNavbar(props) {
             onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "#334155"; }}
             onMouseLeave={e => { e.currentTarget.style.color = "#94a3b8"; e.currentTarget.style.background = "#1e293b"; }}
           >
-            Close
+            {t("navbar.close")}
           </button>
         </ModalFooter>
       </Modal>

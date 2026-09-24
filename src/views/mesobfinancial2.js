@@ -2530,7 +2530,7 @@ const MesobFinancial2 = () => {
                 />
                 <button
                   type="button"
-                  aria-label="Close search"
+                  aria-label={t('financialReport.closeSearch')}
                   className="dash-filter__searchclose"
                   onClick={() => { setSearchTerm(""); setShowSearchInput(false); }}
                 >
@@ -2714,7 +2714,7 @@ const MesobFinancial2 = () => {
               <p className="mksv-hero-sub">{t('financialReport.subtitle', 'Track, analyze, and grow your business.')}</p>
               <QuickScanReceipt />
             </div>
-            <div className="mksv-hero-tag">SIMPLE TOOLS.<br />REAL GROWTH.</div>
+            <div className="mksv-hero-tag">{t('financialReport.heroTag1')}<br />{t('financialReport.heroTag2')}</div>
             <svg className="mksv-hero-mtn" viewBox="0 0 300 80" fill="none" preserveAspectRatio="none">
               <path d="M0 80 L0 64 L52 36 L92 52 L132 20 L172 48 L216 24 L258 44 L300 28 L300 80 Z" fill="#3b82f6" fillOpacity="0.10" />
               <path d="M0 64 L52 36 L92 52 L132 20 L172 48 L216 24 L258 44 L300 28" stroke="#3b82f6" strokeOpacity="0.55" strokeWidth="1.5" />
@@ -3664,7 +3664,7 @@ const MesobFinancial2 = () => {
                   {loadingTransactions ? (
                     <div className="d-flex flex-column align-items-center justify-content-center" style={{ height: "100%", minHeight: "300px" }}>
                       <Spinner color="primary" />
-                      <p style={{ color: "var(--text-1)", marginTop: "1rem" }}>Loading transactions...</p>
+                      <p style={{ color: "var(--text-1)", marginTop: "1rem" }}>{t('financialReport.loadingTransactions')}</p>
                     </div>
                   ) : (
                     <div style={{ width: "100%" }}>
@@ -3980,7 +3980,7 @@ const MesobFinancial2 = () => {
           </ModalHeader>
           <ModalBody>
             <FormGroup>
-              <Label>Type</Label>
+              <Label>{t('financialReport.type')}</Label>
               <Input
                 type="select"
                 value={editType}
@@ -3989,21 +3989,21 @@ const MesobFinancial2 = () => {
                 {!["Receive", "Pay"].includes(editType) && (
                   <option value={editType}>{editType}</option>
                 )}
-                <option value="Receive">Receive</option>
-                <option value="Pay">Pay</option>
+                <option value="Receive">{t('financialReport.receive')}</option>
+                <option value="Pay">{t('financialReport.pay')}</option>
               </Input>
             </FormGroup>
             <FormGroup>
-              <Label>Purpose</Label>
+              <Label>{t('financialReport.purpose')}</Label>
               <Input
                 type="text"
                 value={editPurpose}
                 onChange={(e) => setEditPurpose(e.target.value)}
-                placeholder="Transaction purpose"
+                placeholder={t('financialReport.transactionPurpose')}
               />
             </FormGroup>
             <FormGroup>
-              <Label>Amount</Label>
+              <Label>{t('financialReport.amount')}</Label>
               <Input
                 type="number"
                 min="0"
@@ -4020,10 +4020,10 @@ const MesobFinancial2 = () => {
               onClick={() => setEditModalOpen(false)}
               disabled={savingEdit}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button color="primary" onClick={handleSaveEdit} disabled={savingEdit}>
-              {savingEdit ? <Spinner size="sm" /> : "Save"}
+              {savingEdit ? <Spinner size="sm" /> : t('financialReport.save')}
             </Button>
           </ModalFooter>
         </Modal>
@@ -4695,7 +4695,7 @@ const MesobFinancial2 = () => {
 
                 <FormGroup>
                   <Label>{t('financialReport.amount')} ({t('financialReport.cashReceived', 'cash received')}):</Label>
-                  <Input className="no-number-spinner" type="number" step="0.01" value={transactionAmount} onChange={(e) => setTransactionAmount(limitToTwoDecimals(e.target.value))} placeholder="e.g. 1500" />
+                  <Input className="no-number-spinner" type="number" step="0.01" value={transactionAmount} onChange={(e) => setTransactionAmount(limitToTwoDecimals(e.target.value))} placeholder={t('financialReport.amountExample')} />
                 </FormGroup>
 
                 {selectedSaleItem && transactionAmount && (() => {
@@ -4762,7 +4762,7 @@ const MesobFinancial2 = () => {
                 </FormGroup>
                 <FormGroup>
                   <Label>{t('financialReport.amount')}:</Label>
-                  <Input className="no-number-spinner" type="number" step="0.01" value={transactionAmount} onChange={(e) => setTransactionAmount(limitToTwoDecimals(e.target.value))} placeholder="Sale amount" />
+                  <Input className="no-number-spinner" type="number" step="0.01" value={transactionAmount} onChange={(e) => setTransactionAmount(limitToTwoDecimals(e.target.value))} placeholder={t('financialReport.saleAmount')} />
                 </FormGroup>
                 <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !selectedSaleItem || !transactionAmount}>
                   {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
@@ -4830,7 +4830,7 @@ const MesobFinancial2 = () => {
                         <FormGroup>
                           <Input
                             type="text"
-                            placeholder="Enter purpose manually"
+                            placeholder={t('financialReport.enterPurposeManually')}
                             value={manualPurpose}
                             onChange={(e) => {
                               setManualPurpose(e.target.value);
@@ -4860,7 +4860,7 @@ const MesobFinancial2 = () => {
                   </FormGroup>
                   {transactionType === "pay" && paymentMode === "new" && (
                     <FormGroup>
-                      <Label>Receipt:</Label>
+                      <Label>{t('financialReport.receipt')}:</Label>
                       <div
                         style={{
                           display: "flex",

@@ -760,17 +760,17 @@ function Dashboard() {
 
   const calculatePercentageChange = (currentValue, previousValue) => {
     if (!previousValue || previousValue === 0) {
-      if (currentValue === 0) return { text: "— No change", value: 0, isPositive: null };
-      return { text: "+100% vs last month", value: 100, isPositive: true };
+      if (currentValue === 0) return { text: t("dashboard.noChange"), value: 0, isPositive: null };
+      return { text: t("dashboard.changeVsLastMonth", { change: "+100%" }), value: 100, isPositive: true };
     }
     const change = ((currentValue - previousValue) / previousValue) * 100;
     const roundedChange = Math.round(change);
     if (roundedChange === 0) {
-      return { text: "— No change", value: 0, isPositive: null };
+      return { text: t("dashboard.noChange"), value: 0, isPositive: null };
     }
     const sign = roundedChange > 0 ? "+" : "";
     return {
-      text: `${sign}${roundedChange}% vs last month`,
+      text: t("dashboard.changeVsLastMonth", { change: `${sign}${roundedChange}%` }),
       value: roundedChange,
       isPositive: roundedChange > 0,
     };
@@ -1192,14 +1192,14 @@ function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardBody style={{ position: "relative" }}>
-                  <LoadingOverlay loading={loadingUsers} text="Loading users..." />
+                  <LoadingOverlay loading={loadingUsers} text={t('dashboard.loadingUsers')} />
                   <FormGroup>
                     <Label>{t('dashboard.selectUserToView')}</Label>
                     <Select
                       options={userOptions}
                       value={userOptions.find((option) => option.value === selectedUserId)}
                       onChange={handleUserSelect}
-                      placeholder="Search or select a user..."
+                      placeholder={t('dashboard.searchUser')}
                       isClearable
                       isSearchable
                       styles={{
@@ -1238,7 +1238,7 @@ function Dashboard() {
       )}
 
       <div className="content" style={{ position: "relative", marginTop: isMobile ? 0 : 80 }}>
-        <LoadingOverlay loading={loadingFinancialData} text="Loading financial data..." />
+        <LoadingOverlay loading={loadingFinancialData} text={t('dashboard.loadingFinancialData')} />
 
 
         <div className="dash-overview">
@@ -1347,7 +1347,7 @@ function Dashboard() {
                     />
                     <button
                       type="button"
-                      aria-label="Close search"
+                      aria-label={t("dashboard.closeSearch")}
                       className="dash-filter__searchclose"
                       onClick={() => {
                         setDashboardSearchTerm("");
@@ -1427,7 +1427,7 @@ function Dashboard() {
                 ...getBalanceCardStyle(activeMetric.value),
               }}
             >
-              <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
+              <LoadingOverlay loading={loadingFinancialData} text={t('dashboard.loading')} />
               <CardBody className="hero-body">
                 <p className="card-category" style={{ marginBottom: "0.5rem" }}>{activeMetric.label}</p>
                 <div className="hero-figure">
@@ -1515,7 +1515,7 @@ function Dashboard() {
 
           <Col lg="7" md="12" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
             <Card className="chart-card" style={{ height: "100%" }}>
-              <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
+              <LoadingOverlay loading={loadingFinancialData} text={t('dashboard.loadingChart')} />
               <CardBody style={{ border: "none", display: "flex", flexDirection: "column", height: "100%" }}>
                 <div className="dash-panel-head" style={{ marginBottom: 8 }}>
                   <span className="mk-chip mk-chip--sm" style={{ backgroundColor: `${activeMetric.color}26`, color: activeMetric.color }}>
@@ -1563,7 +1563,7 @@ function Dashboard() {
                     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setHeroMetric(key); }
                   }}
                 >
-                  <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
+                  <LoadingOverlay loading={loadingFinancialData} text={t('dashboard.loading')} />
                   <CardBody>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                       <span className="mk-chip" style={{ backgroundColor: `${m.color}26`, color: m.color }}>
@@ -1601,7 +1601,7 @@ function Dashboard() {
         <Row style={{ marginTop: 12 }}>
           <Col lg="7" style={{ paddingInline: 3, marginBottom: 5 }}>
             <div className="mk-card dash-recent" style={{ position: "relative" }}>
-              <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
+              <LoadingOverlay loading={loadingFinancialData} text={t('dashboard.loading')} />
               <div className="dash-panel-head">
                 <span className="mk-chip mk-chip--sm" style={{ backgroundColor: "var(--accent-soft)", color: "var(--accent)" }}>
                   <i className="fas fa-clock" />

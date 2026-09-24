@@ -1,6 +1,7 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Nav } from "reactstrap";
+import { useTranslation } from "react-i18next";
 import PerfectScrollbar from "perfect-scrollbar";
 
 const logo = "/thlogo.png";
@@ -9,6 +10,7 @@ var ps;
 function Sidebar(props) {
   const sidebar = React.useRef();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const activeRoute = (routeName) => {
     return location.pathname.indexOf(routeName) > -1 ? "active" : "";
@@ -83,7 +85,7 @@ function Sidebar(props) {
                 >
                   <NavLink to={prop.layout + prop.path} className="nav-link">
                     <i className={"now-ui-icons " + prop.icon} />
-                    <p>{prop.name}</p>
+                    <p>{prop.nameKey ? t(prop.nameKey, prop.name) : prop.name}</p>
                   </NavLink>
                 </li>
               );

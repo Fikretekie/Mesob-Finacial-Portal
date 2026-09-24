@@ -20,6 +20,7 @@ const adminRoutes = [
   {
     path: "/dashboard",
     name: "Dashboard",
+    nameKey: "nav.dashboard",
     icon: "design_app",
     component: <Dashboard />,
     layout: "/admin",
@@ -27,6 +28,7 @@ const adminRoutes = [
   {
     path: "/users",
     name: "Users",
+    nameKey: "nav.users",
     icon: "users_single-02",
     component: <Users />,
     layout: "/admin",
@@ -36,6 +38,7 @@ const adminRoutes = [
   {
     path: "/MesobFinancial2",
     name: "Financial Report",
+    nameKey: "nav.financialReport",
     icon: "business_money-coins",
     component: <MesobFinancial2 />,
     layout: "/admin",
@@ -43,6 +46,7 @@ const adminRoutes = [
   {
     path: "/receipts",
     name: "Receipts",
+    nameKey: "nav.receipts",
     icon: "files_paper",
     component: <Receipts />,
     layout: "/admin",
@@ -50,6 +54,7 @@ const adminRoutes = [
   {
     path: "/documents",
     name: "Documents",
+    nameKey: "nav.documents",
     icon: "files_box",
     component: <Documents />,
     layout: "/admin",
@@ -57,6 +62,7 @@ const adminRoutes = [
   {
     path: "/profile",
     name: "Account",
+    nameKey: "nav.account",
     icon: "users_single-02",
     component: <UserPage />,
     layout: "/admin",
@@ -64,6 +70,7 @@ const adminRoutes = [
   {
     path: "/subscriptions",
     name: "Subscriptions",
+    nameKey: "nav.subscriptions",
     icon: "business_money-coins",
     component: <AdminSubscriptions />,
     layout: "/admin",
@@ -74,6 +81,7 @@ const customerRoutes = [
   {
     path: "/dashboard",
     name: "Dashboard",
+    nameKey: "nav.dashboard",
     icon: "design_app",
     component: <Dashboard />,
     layout: "/customer",
@@ -81,6 +89,7 @@ const customerRoutes = [
   {
     path: "/financial-report",
     name: "Financial Report",
+    nameKey: "nav.financialReport",
     icon: "business_money-coins",
     component: <MesobFinancial2 />,
     layout: "/customer",
@@ -89,6 +98,7 @@ const customerRoutes = [
   {
     path: "/receipts",
     name: "Receipts",
+    nameKey: "nav.receipts",
     icon: "files_paper",
     component: <Receipts />,
     layout: "/customer",
@@ -96,6 +106,7 @@ const customerRoutes = [
   {
     path: "/documents",
     name: "Documents",
+    nameKey: "nav.documents",
     icon: "files_box",
     component: <Documents />,
     layout: "/customer",
@@ -103,6 +114,7 @@ const customerRoutes = [
   {
     path: "/mileage-tracker",
     name: "Mileage Tracker",
+    nameKey: "nav.mileageTracker",
     icon: "location_pin",
     component: <MileageTracker />,
     layout: "/customer",
@@ -110,6 +122,7 @@ const customerRoutes = [
   {
     path: "/trip-history",
     name: "Trip History",
+    nameKey: "nav.tripHistory",
     icon: "location_map-big",
     component: <TripHistory />,
     layout: "/customer",
@@ -119,6 +132,7 @@ const customerRoutes = [
         {
           path: "/fuel-purchase",
           name: "Fuel Purchase",
+          nameKey: "nav.fuelPurchase",
           icon: "shopping_cart-simple",
           component: <FuelPurchase />,
           layout: "/customer",
@@ -126,6 +140,7 @@ const customerRoutes = [
         {
           path: "/ifta-report",
           name: "IFTA Report",
+          nameKey: "nav.iftaReport",
           icon: "business_chart-bar-32",
           component: <IftaReport />,
           layout: "/customer",
@@ -135,6 +150,7 @@ const customerRoutes = [
   {
     path: "/profile",
     name: "Account",
+    nameKey: "nav.account",
     icon: "users_single-02",
     component: <UserPage />,
     layout: "/customer",
@@ -142,6 +158,7 @@ const customerRoutes = [
   {
     path: "/csv",
     name: "Backup CSV",
+    nameKey: "nav.backupCsv",
     icon: "files_single-copy-04",
     component: <CSVReports />,
     layout: "/customer",
@@ -151,6 +168,7 @@ const customerRoutes = [
         {
           path: "/subscription",
           name: "Subscribe",
+          nameKey: "nav.subscribe",
           icon: "business_money-coins",
           component: <SubscriptionPlans />,
           layout: "/customer",
