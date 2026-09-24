@@ -614,12 +614,27 @@
   animation: auth-rise var(--dur) var(--ease) both;
 }
 .signup-preview__eyebrow {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: var(--sp-2);
   font-size: 0.74rem;
   font-weight: 700;
   color: var(--accent);
 }
+.signup-preview__ic {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-sm);
+  background: var(--accent-solid);
+  color: var(--accent-ink);
+  box-shadow: 0 2px 8px var(--accent-ring);
+}
+.signup-preview__ic svg { width: 13px; height: 13px; }
 .signup-preview__chips {
   display: flex;
   flex-wrap: wrap;
@@ -712,4 +727,50 @@
 @keyframes signup-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {
   .signup-personalize__ring::before { animation: none; }
+}
+
+/* ---- Email confirmation code (OTP) --------------------------------------- */
+.otp {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: var(--sp-5) 0 var(--sp-5);
+}
+.otp__box {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-1);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  outline: none;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+    background var(--dur) var(--ease);
+}
+.otp__box:hover { border-color: var(--border-strong); }
+.otp__box:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+  background: var(--surface-2);
+}
+.otp__resend {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+}
+.otp__resend:hover { text-decoration: underline; }
+.otp__resend:disabled { opacity: 0.6; cursor: default; text-decoration: none; }
+
+@media (max-width: 400px) {
+  .otp { gap: 7px; }
+  .otp__box { width: 42px; height: 50px; font-size: 1.3rem; }
 }

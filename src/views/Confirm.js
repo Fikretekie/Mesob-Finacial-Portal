@@ -1,79 +1,114 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { confirmSignUp, resendSignUpCode, signIn, signOut } from "aws-amplify/auth";
+import { Helmet } from "react-helmet";
+import { Spinner } from "reactstrap";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
 import axios from "axios";
 import { apiUrl, ROUTES, STAGING_API_URL, CURRENT_ENV } from "../config/api";
 import { authHeader } from "../utils/apiFetch";
+import "../assets/css/Login.css";
+
+const logo = "/transparent.png";
+const CODE_LENGTH = 6;
 
 const Confirm = () => {
-  const [code, setCode] = useState("");
+  const [digits, setDigits] = useState(Array(CODE_LENGTH).fill(""));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [isHovered, setIsHovered] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const notificationAlertRef = useRef(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const inputsRef = useRef([]);
+
+  const code = digits.join("");
+
   useEffect(() => {
-    if (location.state && location.state.email) {
-      setEmail(location.state.email);
+    // Reached directly (no signup state) — send them back to sign up.
+    if (!location.state || !location.state.email) {
+      navigate("/signup", { replace: true });
+      return;
     }
+    setEmail(location.state.email);
     if (location.state.name) setName(location.state.name);
     if (location.state.password) setPassword(location.state.password);
-  }, [location.state]);
+    // Focus the first code box.
+    setTimeout(() => inputsRef.current[0]?.focus(), 60);
+  }, [location.state, navigate]);
 
   const showNotification = (type, message) => {
-    const options = {
+    notificationAlertRef.current?.notificationAlert({
       place: "tr",
       message: <div>{message}</div>,
-      type: type,
+      type,
       icon: "now-ui-icons ui-1_bell-53",
       autoDismiss: 5,
-    };
-    notificationAlertRef.current.notificationAlert(options);
+    });
+  };
+
+  const setDigit = (i, val) => {
+    const v = val.replace(/\D/g, "").slice(-1);
+    setDigits((prev) => {
+      const next = [...prev];
+      next[i] = v;
+      return next;
+    });
+    if (v && i < CODE_LENGTH - 1) inputsRef.current[i + 1]?.focus();
+  };
+
+  const handleKeyDown = (i, e) => {
+    if (e.key === "Backspace" && !digits[i] && i > 0) {
+      inputsRef.current[i - 1]?.focus();
+    } else if (e.key === "ArrowLeft" && i > 0) {
+      inputsRef.current[i - 1]?.focus();
+    } else if (e.key === "ArrowRight" && i < CODE_LENGTH - 1) {
+      inputsRef.current[i + 1]?.focus();
+    } else if (e.key === "Enter") {
+      handleConfirm(e);
+    }
+  };
+
+  const handlePaste = (e) => {
+    const text = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, CODE_LENGTH);
+    if (!text) return;
+    e.preventDefault();
+    const next = Array(CODE_LENGTH).fill("");
+    for (let k = 0; k < text.length; k++) next[k] = text[k];
+    setDigits(next);
+    inputsRef.current[Math.min(text.length, CODE_LENGTH - 1)]?.focus();
   };
 
   const handleConfirm = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     if (!email) {
-      showNotification(
-        "danger",
-        "Email is missing. Please try signing up again."
-      );
+      showNotification("danger", "Email is missing. Please try signing up again.");
       return;
     }
-    if (!code) {
-      showNotification("warning", "Please enter the confirmation code.");
+    if (code.length < CODE_LENGTH) {
+      showNotification("warning", "Please enter the 6-digit confirmation code.");
       return;
     }
 
     setIsLoading(true);
     try {
-      // Confirm user sign up with AWS Amplify
       await confirmSignUp({ username: email, confirmationCode: code });
       console.log(`✅ Cognito sign-up confirmed (email) [env: ${CURRENT_ENV}]`);
 
-      // Establish a REAL Cognito session now that the account is confirmed. The
-      // API is behind a Cognito authorizer, so every backend call below needs a
-      // token; before this the signup flow made token-less calls that 401'd.
       const signupPassword = location.state?.password || password;
       if (signupPassword) {
         try {
           await signOut();
-        } catch (e) {
+        } catch (err) {
           // no existing session to clear — fine
         }
         await signIn({ username: email, password: signupPassword });
         console.log(`✅ Signed in after confirmation [env: ${CURRENT_ENV}]`);
       }
 
-      // Create the user's DB record now that we hold a token (moved out of
-      // Signup.js, which ran before the user was ever authenticated). The record
-      // id is the Cognito sub, so the backend's identity guard (sub === userId)
-      // passes on every subsequent call. The axios interceptor attaches the token.
       const newUserId = location.state?.userId || location.state?.id;
       const signupData = location.state?.data;
       if (signupData && newUserId) {
@@ -83,7 +118,6 @@ const Confirm = () => {
 
       showNotification("success", "Account confirmed successfully!");
 
-      // Prepare welcome email content
       const emailData = {
         email,
         subject: "Welcome to Meksova – You're All Set!",
@@ -110,26 +144,18 @@ const Confirm = () => {
 `,
       };
 
-      // Send welcome email (handle failure gracefully)
       try {
-        await axios.post(
-          STAGING_API_URL,
-          emailData
-        );
+        await axios.post(STAGING_API_URL, emailData);
         console.log("Welcome email sent successfully");
-        console.log("location id on confirm", location.state.id);
 
-        const response = await fetch(
-          apiUrl(`${ROUTES.USERS}/${location.state.id}`),
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-              ...(await authHeader()),
-            },
-          }
-        );
+        const response = await fetch(apiUrl(`${ROUTES.USERS}/${location.state.id}`), {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            ...(await authHeader()),
+          },
+        });
 
         const result = await response.json();
         console.log("🔍 User data:", result);
@@ -141,165 +167,182 @@ const Confirm = () => {
         localStorage.setItem("user_name", result.user?.name || "");
         localStorage.setItem("role", result.user?.role?.toString() || "2");
         localStorage.setItem("businessType", result.user?.businessType || "");
-        localStorage.setItem(
-          "outstandingDebt",
-          result.user?.outstandingDebt || "0"
-        );
-        localStorage.setItem(
-          "valueableItems",
-          result.user?.valueableItems || "0"
-        );
+        localStorage.setItem("outstandingDebt", result.user?.outstandingDebt || "0");
+        localStorage.setItem("valueableItems", result.user?.valueableItems || "0");
         localStorage.setItem("cashBalance", result.user?.cashBalance || "0");
         localStorage.setItem("authToken", "authenticated");
 
         try {
-          const response = await fetch(
-            apiUrl(ROUTES.CREATE_EVENT),
-
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-                ...(await authHeader()),
-              },
-              body: JSON.stringify({
-                id: location.state.id,
-                email: email,
-                name: name,
-              }),
-            }
-          );
-          console.log(
-            "📅 EventBridge scheduling triggered successfully.",
-            response
-          );
+          const evtResponse = await fetch(apiUrl(ROUTES.CREATE_EVENT), {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+              ...(await authHeader()),
+            },
+            body: JSON.stringify({
+              id: location.state.id,
+              email: email,
+              name: name,
+            }),
+          });
+          console.log("📅 EventBridge scheduling triggered successfully.", evtResponse);
         } catch (scheduleError) {
-          console.warn(
-            "⚠️ Failed to trigger EventBridge scheduling:",
-            scheduleError
-          );
+          console.warn("⚠️ Failed to trigger EventBridge scheduling:", scheduleError);
         }
 
         const path =
-          result.user?.role === 2 ? "/customer/dashboard" : result.user?.role === 0 ? "/admin/dashboard" : "/customer/dashboard";
+          result.user?.role === 2
+            ? "/customer/dashboard"
+            : result.user?.role === 0
+              ? "/admin/dashboard"
+              : "/customer/dashboard";
         navigate(path, { replace: true });
       } catch (emailError) {
         console.warn("Failed to send welcome email:", emailError);
       }
 
-      // Check if password is available for automatic sign-in
       if (!password) {
         showNotification(
           "warning",
           "Please login manually. Password not available for automatic sign-in."
         );
         setTimeout(() => navigate("/login"), 2000);
-        return; // Exit so signIn does not run without password
+        return;
       }
-
-      // Attempt to sign in the user automatically
     } catch (error) {
       console.error("Error confirming sign up", error);
       showNotification("danger", "Error confirming account. Please try again.");
-    }
-  };
-
-  const handleResendCode = async () => {
-    try {
-      const { codeDeliveryDetails } = await resendSignUpCode({
-        username: email,
-      });
-      console.log(">>>>>>>", codeDeliveryDetails);
-      showNotification("success", "Code resent successfully");
-    } catch (error) {
-      console.error("Error resending code", error);
-      showNotification("danger", "Failed to resend code. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  return (
-    <div style={styles.container}>
-      <NotificationAlert ref={notificationAlertRef} />
-      <div style={styles.card}>
-        <h2>Confirm Your Account</h2>
-        <div className="login-input-group">
-        <input
-          type="text"
-          placeholder="Enter confirmation code"
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          style={styles.input}
-          disabled={isLoading}
-        />
-        <button
-          onClick={handleConfirm}
-          style={{
-            ...styles.button,
-            backgroundColor: isHovered ? "blue" : "#3b82f6",
-            opacity: isLoading ? 0.6 : 1,
-            cursor: isLoading ? "not-allowed" : "pointer",
-          }}
-          onMouseOver={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          disabled={isLoading}
-        >
-          {isLoading ? "Confirming..." : "Confirm"}
-        </button>
-        </div>
-        <button onClick={handleResendCode} style={styles.resendButton}>
-          Resend Code
-        </button>
-      </div>
-    </div>
-  );
-};
+  const handleResendCode = async () => {
+    if (resending) return;
+    setResending(true);
+    try {
+      const { codeDeliveryDetails } = await resendSignUpCode({ username: email });
+      console.log(">>>>>>>", codeDeliveryDetails);
+      showNotification("success", "A fresh code is on its way to your inbox.");
+      setDigits(Array(CODE_LENGTH).fill(""));
+      inputsRef.current[0]?.focus();
+    } catch (error) {
+      console.error("Error resending code", error);
+      showNotification("danger", "Failed to resend code. Please try again.");
+    } finally {
+      setResending(false);
+    }
+  };
 
-const styles = {
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100vh",
-    backgroundColor: "#1d212c",
-    color: "#000",
-  },
-  card: {
-    padding: "20px",
-    borderRadius: "10px",
-    backgroundColor: "#181b26",
-    boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.5)",
-    width: "400px",
-  },
-  input: {
-    width: "100%",
-    padding: "10px",
-    marginBottom: "10px",
-    borderRadius: "5px",
-    border: "0.5px solid #dedede",
-    backgroundColor: "#fff",
-    color: "#000",
-  },
-  button: {
-    width: "100%",
-    padding: "10px",
-    borderRadius: "5px",
-    border: "none",
-    cursor: "pointer",
-    color: "#fff",
-    marginBottom: "10px",
-  },
-  resendButton: {
-    width: "100%",
-    padding: "10px",
-    borderRadius: "5px",
-    border: "1px solid #3b82f6",
-    backgroundColor: "#fff",
-    color: "#3b82f6",
-    cursor: "pointer",
-  },
+  const maskedEmail = (() => {
+    if (!email || !email.includes("@")) return email;
+    const [user, domain] = email.split("@");
+    const head = user.slice(0, Math.min(2, user.length));
+    return `${head}${"•".repeat(Math.max(1, user.length - 2))}@${domain}`;
+  })();
+
+  return (
+    <>
+      <Helmet>
+        <title>Confirm your email - Meksova</title>
+      </Helmet>
+      <NotificationAlert ref={notificationAlertRef} />
+      <div className="auth">
+        <aside className="auth__brand">
+          <div className="auth__logo">
+            <img src={logo} alt="Meksova Finance" />
+          </div>
+          <div className="auth__brand-body">
+            <p className="auth__eyebrow">Meksova Finance · One last step</p>
+            <h1 className="auth__headline">
+              Almost there.
+              <br />
+              <span>Check your inbox.</span>
+            </h1>
+            <p className="auth__sub">
+              We emailed you a 6-digit code to confirm it's really you. Enter it
+              and your tailored workspace is ready.
+            </p>
+            <ul className="auth__benefits">
+              <li>Your industry categories are set up</li>
+              <li>30-day free trial, no credit card</li>
+              <li>Jump straight into your dashboard</li>
+            </ul>
+          </div>
+          <div className="auth__brand-foot">
+            <span>Bilingual</span>
+            <span>·</span>
+            <span>Trusted by hundreds of small businesses</span>
+          </div>
+        </aside>
+
+        <main className="auth__panel">
+          <div className="login-box signup-box">
+            <img src={logo} alt="Meksova" className="logo_img" />
+            <h2 className="signup-title" style={{ textAlign: "center" }}>
+              Confirm your email
+            </h2>
+            <p className="signup-sub" style={{ textAlign: "center" }}>
+              Enter the 6-digit code we sent to{" "}
+              <strong style={{ color: "var(--text-1)" }}>{maskedEmail}</strong>
+            </p>
+
+            <div className="otp" onPaste={handlePaste}>
+              {digits.map((d, i) => (
+                <input
+                  key={i}
+                  ref={(el) => (inputsRef.current[i] = el)}
+                  className="otp__box"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete={i === 0 ? "one-time-code" : "off"}
+                  maxLength={1}
+                  value={d}
+                  disabled={isLoading}
+                  onChange={(e) => setDigit(i, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(i, e)}
+                  onFocus={(e) => e.target.select()}
+                  aria-label={`Digit ${i + 1}`}
+                />
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleConfirm}
+              className="login-btn"
+              disabled={isLoading || code.length < CODE_LENGTH}
+            >
+              {isLoading ? (
+                <>
+                  <Spinner color="light" size="sm" /> Confirming…
+                </>
+              ) : (
+                "Confirm & continue"
+              )}
+            </button>
+
+            <p className="signup-trust">
+              Didn't get it? Check spam, or{" "}
+              <button
+                type="button"
+                className="otp__resend"
+                onClick={handleResendCode}
+                disabled={resending}
+              >
+                {resending ? "sending…" : "resend code"}
+              </button>
+            </p>
+
+            <p className="login-signup-prompt">
+              Wrong email? <Link to="/signup">Back to sign up</Link>
+            </p>
+          </div>
+        </main>
+      </div>
+    </>
+  );
 };
 
 export default Confirm;
