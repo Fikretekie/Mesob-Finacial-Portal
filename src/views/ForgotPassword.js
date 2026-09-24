@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { apiUrl, ROUTES } from "../config/api";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
@@ -12,6 +13,7 @@ import "../assets/css/Login.css";
 const logo = "/transparent.png";
 
 const ForgotPassword = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmationCode, setConfirmationCode] = useState("");
@@ -180,42 +182,37 @@ const ForgotPassword = () => {
             <img src={logo} alt="Meksova Finance" />
           </div>
           <div className="auth__brand-body">
-            <p className="auth__eyebrow">Meksova Finance · Account recovery</p>
+            <p className="auth__eyebrow">{t("auth.forgot.eyebrow")}</p>
             <h1 className="auth__headline">
-              Forgot your password?
+              {t("auth.forgot.headline1")}
               <br />
-              <span>Let's get you back in.</span>
+              <span>{t("auth.forgot.headline2")}</span>
             </h1>
-            <p className="auth__sub">
-              We'll email you a verification code so you can set a new password
-              and pick up right where you left off.
-            </p>
+            <p className="auth__sub">{t("auth.forgot.sub")}</p>
             <ul className="auth__benefits">
-              <li>Secure, code-verified reset</li>
-              <li>Your data stays exactly as you left it</li>
-              <li>Back to your dashboard in a minute</li>
+              <li>{t("auth.forgot.benefit1")}</li>
+              <li>{t("auth.forgot.benefit2")}</li>
+              <li>{t("auth.forgot.benefit3")}</li>
             </ul>
           </div>
           <div className="auth__brand-foot">
-            <span>Bilingual</span>
+            <span>{t("auth.common.bilingual")}</span>
             <span>·</span>
-            <span>Trusted by hundreds of small businesses</span>
+            <span>{t("auth.common.trusted")}</span>
           </div>
         </aside>
 
         <main className="auth__panel">
           <div className="login-box">
             <img src={logo} alt="Meksova" className="logo_img" />
-            <h2>Reset password</h2>
+            <h2>{t("auth.forgot.title")}</h2>
             <p className="login-welcome">
-              {codeSent
-                ? "Enter the code we emailed you and choose a new password."
-                : "Enter your email and we'll send you a reset code."}
+              {codeSent ? t("auth.forgot.subVerify") : t("auth.forgot.subRequest")}
             </p>
 
             <form onSubmit={codeSent ? handleResetPassword : handleSendCode}>
               <div className="login-input-group">
-                <label>Email</label>
+                <label>{t("auth.forgot.email")}</label>
                 <input
                   type="email"
                   value={email}
@@ -223,26 +220,26 @@ const ForgotPassword = () => {
                   required
                   disabled={codeSent}
                   autoComplete="email"
-                  placeholder="you@business.com"
+                  placeholder={t("auth.forgot.emailPlaceholder")}
                 />
               </div>
 
               {codeSent && (
                 <>
                   <div className="login-input-group">
-                    <label>Verification code</label>
+                    <label>{t("auth.forgot.code")}</label>
                     <input
                       type="text"
                       inputMode="numeric"
                       value={confirmationCode}
                       onChange={(e) => setConfirmationCode(e.target.value)}
                       required
-                      placeholder="6-digit code"
+                      placeholder={t("auth.forgot.codePlaceholder")}
                     />
                   </div>
 
                   <div className="login-input-group">
-                    <label>New password</label>
+                    <label>{t("auth.forgot.newPassword")}</label>
                     <div className="password-container">
                       <input
                         type={showPassword ? "text" : "password"}
@@ -250,7 +247,7 @@ const ForgotPassword = () => {
                         onChange={(e) => setNewPassword(e.target.value)}
                         required
                         autoComplete="new-password"
-                        placeholder="Create a new password"
+                        placeholder={t("auth.forgot.newPasswordPlaceholder")}
                       />
                       <button
                         type="button"
@@ -269,12 +266,12 @@ const ForgotPassword = () => {
                 {loading ? (
                   <>
                     <Spinner color="light" size="sm" />{" "}
-                    {codeSent ? "Resetting…" : "Sending…"}
+                    {codeSent ? t("auth.forgot.resetting") : t("auth.forgot.sending")}
                   </>
                 ) : codeSent ? (
-                  "Reset password"
+                  t("auth.forgot.reset")
                 ) : (
-                  "Send reset code"
+                  t("auth.forgot.send")
                 )}
               </button>
 
@@ -285,13 +282,15 @@ const ForgotPassword = () => {
                   onClick={handleResendCode}
                   disabled={resendDisabled || loading}
                 >
-                  {resendDisabled ? `Resend code (${resendTimer}s)` : "Resend code"}
+                  {resendDisabled
+                    ? t("auth.forgot.resendIn", { s: resendTimer })
+                    : t("auth.forgot.resend")}
                 </button>
               )}
             </form>
 
             <p className="login-signup-prompt">
-              Remember your password? <Link to="/login">Log in</Link>
+              {t("auth.forgot.remember")} <Link to="/login">{t("auth.common.login")}</Link>
             </p>
           </div>
         </main>
