@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { apiUrl, ROUTES, normalizeReceiptUrl } from "../config/api";
+import { getCurrentBusinessId } from "../utils/businessStorage";
 import { authHeader } from "../utils/apiFetch";
 import {
   Card,
@@ -123,8 +124,12 @@ const Receipts = ({ selectedUser }) => {
         return;
       }
 
+      const receiptsBusinessId = getCurrentBusinessId();
+      const receiptsQuery = receiptsBusinessId
+        ? `userId=${userId}&businessId=${receiptsBusinessId}`
+        : `userId=${userId}`;
       const response = await axios.get(
-        apiUrl(`${ROUTES.TRANSACTION}?userId=${userId}`)
+        apiUrl(`${ROUTES.TRANSACTION}?${receiptsQuery}`)
       );
 
       let receiptsData = response.data.filter(

@@ -30,6 +30,7 @@ import { signOut } from "aws-amplify/auth";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "components/Languageselector/LanguageSelector";
 import DownloadReportModal from "components/DownloadReportModal";
+import BusinessSwitcher from "components/BusinessSwitcher";
 
 function DemoNavbar(props) {
   const { t } = useTranslation();
@@ -445,6 +446,8 @@ function DemoNavbar(props) {
                 )}
               </>
             )}
+
+                        <BusinessSwitcher />
 
             {/* Profile Dropdown — always last */}
             <Nav navbar style={{ margin: 0, padding: 0 }}>

@@ -31,6 +31,7 @@ import { apiUrl, ROUTES, S3_BUCKET_NAME, normalizeReceiptUrl } from "../config/a
 import { authHeader } from "../utils/apiFetch";
 import * as acct from "../utils/accounting";
 import { currencySymbol, setCurrencyFromUser } from "../utils/currency";
+import { getCurrentBusinessId, fetchCurrentBusiness } from "../utils/businessStorage";
 import { Helmet } from "react-helmet";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
@@ -382,6 +383,7 @@ const MesobFinancial2 = () => {
             transactionAmount: parseFloat(installmentAmount),
             status: "Paid",
             payableId: selectedUnpaidTransaction.id,
+            ...(getCurrentBusinessId() ? { businessId: getCurrentBusinessId() } : {}),
           }),
         }
       );
@@ -769,6 +771,8 @@ const MesobFinancial2 = () => {
         };
       }
 
+      if (getCurrentBusinessId()) newTransaction.businessId = getCurrentBusinessId();
+
       const response = await axios.post(
         apiUrl(ROUTES.TRANSACTION),
         newTransaction
@@ -1151,6 +1155,7 @@ const MesobFinancial2 = () => {
         receiptUrl: Url || "",
         payableId: transaction.id,
         createdAt: new Date().toISOString(),
+        ...(getCurrentBusinessId() ? { businessId: getCurrentBusinessId() } : {}),
       };
 
       const response2 = await axios.post(
@@ -1205,6 +1210,18 @@ const MesobFinancial2 = () => {
     setLoadingUserInitialBalance(true);
     try {
       const targetUserId = uid || localStorage.getItem("userId");
+      const activeBusinessId = getCurrentBusinessId();
+
+      if (activeBusinessId) {
+        const business = await fetchCurrentBusiness();
+        setSelectedBusinessType(business?.businessType || localStorage.getItem("businessType") || "");
+        setInitialBalance(parseFloat(business?.cashBalance || 0));
+        setvalueableItems(parseFloat(business?.valueableItems || 0));
+        setoutstandingDebt(parseFloat(business?.outstandingDebt || 0));
+        setcompanyName(business?.name || localStorage.getItem("companyName") || "");
+        return;
+      }
+
       const response = await axios.get(
         apiUrl(`${ROUTES.USERS}/${targetUserId}`)
       );
@@ -1970,10 +1987,12 @@ const MesobFinancial2 = () => {
   const fetchTransactions = (uid = null) => {
     setLoadingTransactions(true);
     const targetUserId = uid || localStorage.getItem("userId");
+    const businessId = getCurrentBusinessId();
+    const query = businessId ? `userId=${targetUserId}&businessId=${businessId}` : `userId=${targetUserId}`;
 
     axios
       .get(
-        apiUrl(`${ROUTES.TRANSACTION}?userId=${targetUserId}`)
+        apiUrl(`${ROUTES.TRANSACTION}?${query}`)
       )
       .then((response) => {
         if (response.data) {
@@ -2006,9 +2025,11 @@ const MesobFinancial2 = () => {
 
   const fetchUnpaidTransactions = () => {
     setLoadingUnpaidTransactions(true);
+    const ubid = getCurrentBusinessId();
+    const unpaidQuery = ubid ? `userId=${userId}&businessId=${ubid}` : `userId=${userId}`;
     axios
       .get(
-        apiUrl(`${ROUTES.TRANSACTION}?userId=${userId}`)
+        apiUrl(`${ROUTES.TRANSACTION}?${unpaidQuery}`)
       )
       .then((response) => {
         const unpaidOrPartiallyPaid = response.data

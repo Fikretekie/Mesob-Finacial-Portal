@@ -1,21 +1,27 @@
 import axios from "axios";
 import { apiUrl, ROUTES } from "config/api";
+import { getCurrentBusinessId } from "utils/businessStorage";
 
 function currentUserId() {
   return localStorage.getItem("userId") || "anonymous";
 }
 
-/** Fetches all trips for the current user from the backend. */
+/** Fetches all trips for the current user + active business from the backend. */
 export async function fetchTrips() {
   const userId = currentUserId();
-  const res = await axios.get(apiUrl(ROUTES.MILEAGE_TRIP), { params: { userId } });
+  const businessId = getCurrentBusinessId();
+  const params = businessId ? { userId, businessId } : { userId };
+  const res = await axios.get(apiUrl(ROUTES.MILEAGE_TRIP), { params });
   return Array.isArray(res.data) ? res.data : [];
 }
 
-/** Saves one trip to the backend. Returns the saved trip (with its tripId). */
+/** Saves one trip to the backend, tagged with the active business.
+ * Returns the saved trip (with its tripId). */
 export async function saveTrip(trip) {
   const userId = currentUserId();
-  const res = await axios.post(apiUrl(ROUTES.MILEAGE_TRIP), { userId, trip });
+  const businessId = getCurrentBusinessId();
+  const taggedTrip = businessId ? { ...trip, businessId } : trip;
+  const res = await axios.post(apiUrl(ROUTES.MILEAGE_TRIP), { userId, trip: taggedTrip });
   return res.data;
 }
 

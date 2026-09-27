@@ -5,6 +5,7 @@ import axios from "axios";
 import imageCompression from "browser-image-compression";
 import { apiUrl, ROUTES } from "config/api";
 import { businessTypes } from "views/BusinessTypes";
+import { getCurrentBusinessId } from "utils/businessStorage";
 import { getStateAtPoint } from "utils/geoState";
 import { US_STATES } from "utils/usStates";
 
@@ -172,6 +173,8 @@ function QuickScanReceipt() {
         receiptUrl = uploadRes.data?.url || "";
       }
 
+      const businessId = getCurrentBusinessId();
+
       const transaction = isAssetDestination
         ? {
             // Capitalize: goods kept as stock, or equipment. Not an expense/COGS.
@@ -185,6 +188,7 @@ function QuickScanReceipt() {
             assetType: destination === "fixed" ? "fixed" : "current",
             assetName: itemName.trim(),
             receiptUrl,
+            ...(businessId ? { businessId } : {}),
           }
         : {
             // Operating expense, or cost of goods expensed now (subType "COGS").
@@ -196,6 +200,7 @@ function QuickScanReceipt() {
             subType: destination === "cogs" ? "COGS" : "Expense",
             receiptUrl,
             status: "Paid",
+            ...(businessId ? { businessId } : {}),
           };
       await axios.post(apiUrl(ROUTES.TRANSACTION), transaction);
 
@@ -211,6 +216,7 @@ function QuickScanReceipt() {
             gallons: parseFloat(gallons),
             totalCost: amountNum,
             source: "manual",
+            ...(businessId ? { businessId } : {}),
           },
         });
       }

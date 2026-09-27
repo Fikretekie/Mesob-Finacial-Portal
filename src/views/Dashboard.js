@@ -28,8 +28,7 @@ import {
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import axios from "axios";
 import { apiUrl, ROUTES } from "../config/api";
-import * as acct from "../utils/accounting";
-import { currencySymbol, setCurrencyFromUser } from "../utils/currency";
+import { getCurrentBusinessId, fetchCurrentBusiness } from "../utils/businessStorage";
 import Select from "react-select";
 import { Helmet } from "react-helmet";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -171,13 +170,11 @@ function computeDashboardMetrics(
         dailyData[dateKey].newItem += amount;
       }
     } else if (tx.transactionType === "New_Item") {
-      // Asset purchase — capitalized, NOT an operating expense (matches the
-      // Financial Report). It reduces cash and adds to assets (newItem), but must
-      // not hit the expenses total or net income, or the Dashboard shows a false
-      // loss whenever a user buys equipment/inventory.
       newItem += m ? amount : 0;
       cashOnHand -= amount;
       if (m) {
+        expenses += amount;
+        dailyData[dateKey].expenses += amount;
         dailyData[dateKey].newItem += amount;
       }
     } else if (
@@ -383,8 +380,6 @@ function Dashboard() {
   // stale closure issues. All return plain "0.00" decimal strings — same format
   // as meksova.com2 — so DownloadReportModal's parseFloat() always works.
 
-  const CUR = currencySymbol();
-
   const calculateTotalCash = () =>
     (totalCashOnHandRef.current || 0).toFixed(2);
 
@@ -402,15 +397,6 @@ function Dashboard() {
 
   const calculateTotalInventory = () => {
     return (initialvalueableItemsRef.current || 0).toFixed(2);
-  };
-
-  // Tax set-aside is an estimate on PROFIT, not cash on hand. Cash includes money
-  // that isn't income (loans, owner deposits, asset sales), so taxing it overstated
-  // the set-aside. Base it on net profit (revenue - expenses); no tax on a loss.
-  const calculateEstimatedTax = () => {
-    const netProfit =
-      parseFloat(calculateTotalRevenue()) - parseFloat(calculateTotalExpenses());
-    return Math.max(0, netProfit) * 0.3;
   };
 
   const fetchUsers = async () => {
@@ -452,7 +438,7 @@ function Dashboard() {
                     radius: 2,
                   },
                   label: {
-                    text: `${CUR}${lastVal.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                    text: `$${lastVal.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
                     borderColor: color,
                     borderWidth: 1,
                     offsetY: -2,
@@ -521,7 +507,7 @@ function Dashboard() {
           formatter: function (value) {
             if (!value) return "$0";
             return (
-              CUR +
+              "$" +
               value.toLocaleString(undefined, {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0,
@@ -591,7 +577,7 @@ function Dashboard() {
         y: {
           formatter: function (value) {
             return (
-              CUR +
+              "$" +
               value.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
@@ -664,18 +650,26 @@ function Dashboard() {
         resolvedUserId = uid || localStorage.getItem("userId");
       }
 
-      const userResponse = await axios.get(
-        apiUrl(`${ROUTES.USERS}/${resolvedUserId}`)
-      );
+      const dashActiveBusinessId = getCurrentBusinessId();
+      let initialCashBalance = 0;
+      let outstandingDebt = 0;
+      let valuableItems = 0;
 
-      const initialCashBalance =
-        parseFloat(userResponse.data?.user?.cashBalance) || 0;
-      const outstandingDebt =
-        parseFloat(userResponse.data?.user?.outstandingDebt) || 0;
-      const valuableItems =
-        parseFloat(userResponse.data?.user?.valueableItems) || 0;
-
-      setCurrencyFromUser(userResponse.data?.user);
+      if (dashActiveBusinessId) {
+        // Additional businesses start from scratch -- their own opening
+        // balances (default $0), not the account's shared ones.
+        const business = await fetchCurrentBusiness();
+        initialCashBalance = parseFloat(business?.cashBalance) || 0;
+        outstandingDebt = parseFloat(business?.outstandingDebt) || 0;
+        valuableItems = parseFloat(business?.valueableItems) || 0;
+      } else {
+        const userResponse = await axios.get(
+          apiUrl(`${ROUTES.USERS}/${resolvedUserId}`)
+        );
+        initialCashBalance = parseFloat(userResponse.data?.user?.cashBalance) || 0;
+        outstandingDebt = parseFloat(userResponse.data?.user?.outstandingDebt) || 0;
+        valuableItems = parseFloat(userResponse.data?.user?.valueableItems) || 0;
+      }
 
       setInitialBalance(initialCashBalance);
       setoutstandingDebt(outstandingDebt);
@@ -686,8 +680,11 @@ function Dashboard() {
       initialoutstandingDebtRef.current = outstandingDebt;
       initialvalueableItemsRef.current = valuableItems;
 
+      const dashQuery = dashActiveBusinessId
+        ? `userId=${resolvedUserId}&businessId=${dashActiveBusinessId}`
+        : `userId=${resolvedUserId}`;
       const response = await axios.get(
-        apiUrl(`${ROUTES.TRANSACTION}?userId=${resolvedUserId}`)
+        apiUrl(`${ROUTES.TRANSACTION}?${dashQuery}`)
       );
       // Ensure we always have an array (API may return array or { data/transactions: [...] })
       const raw = response.data;
@@ -712,34 +709,23 @@ function Dashboard() {
       dashboardDateRange,
       dashboardSearchTerm
     );
-    // Headline totals come from the SHARED accounting engine (identical to the
-    // Financial Report), so the two screens can never disagree. computeDashboardMetrics
-    // still provides the daily chart series + the filtered list for the PDF.
-    const summary = acct.computeSummary(allTransactions, {
-      range: dashboardDateRange,
-      searchTerm: dashboardSearchTerm,
-      initialBalance,
-      initialOutstandingDebt: initialoutstandingDebt,
-      initialValueableItems: initialvalueableItems,
-    });
-    setTotalCashOnHand(summary.totalCash);
-    setTotalExpenses(summary.totalExpenses);
-    settotalRevenue(summary.totalRevenue);
-    setTotalPayable(summary.totalPayable);
+    setTotalCashOnHand(result.totalCashOnHand);
+    setTotalExpenses(result.totalExpenses);
+    settotalRevenue(result.totalrevenue);
+    setTotalPayable(result.totalPayable);
     setMonthlySales(result.monthlySales);
     setItems(result.filteredTransactions);
     itemsRef.current = result.filteredTransactions;
-    totalrevenueRef.current = summary.totalRevenue;
-    totalExpensesRef.current = summary.totalExpenses;
-    totalPayableRef.current = summary.totalPayable;
-    totalCashOnHandRef.current = summary.totalCash;
+    totalrevenueRef.current = result.totalrevenue;
+    totalExpensesRef.current = result.totalExpenses;
+    totalPayableRef.current = result.totalPayable;
+    totalCashOnHandRef.current = result.totalCashOnHand;
   }, [
     allTransactions,
     dashboardDateRange,
     dashboardSearchTerm,
     initialBalance,
     initialoutstandingDebt,
-    initialvalueableItems,
   ]);
 
   const isTrialActive = () =>
@@ -760,17 +746,17 @@ function Dashboard() {
 
   const calculatePercentageChange = (currentValue, previousValue) => {
     if (!previousValue || previousValue === 0) {
-      if (currentValue === 0) return { text: t("dashboard.noChange"), value: 0, isPositive: null };
-      return { text: t("dashboard.changeVsLastMonth", { change: "+100%" }), value: 100, isPositive: true };
+      if (currentValue === 0) return { text: "— No change", value: 0, isPositive: null };
+      return { text: "+100% vs last month", value: 100, isPositive: true };
     }
     const change = ((currentValue - previousValue) / previousValue) * 100;
     const roundedChange = Math.round(change);
     if (roundedChange === 0) {
-      return { text: t("dashboard.noChange"), value: 0, isPositive: null };
+      return { text: "— No change", value: 0, isPositive: null };
     }
     const sign = roundedChange > 0 ? "+" : "";
     return {
-      text: t("dashboard.changeVsLastMonth", { change: `${sign}${roundedChange}%` }),
+      text: `${sign}${roundedChange}% vs last month`,
       value: roundedChange,
       isPositive: roundedChange > 0,
     };
@@ -794,6 +780,11 @@ function Dashboard() {
     const fetchCompanyName = async () => {
       setLoadingCompanyName(true);
       try {
+        if (getCurrentBusinessId()) {
+          const business = await fetchCurrentBusiness();
+          setCompanyName(business?.name || localStorage.getItem("companyName") || "");
+          return;
+        }
         const targetUserId = selectedUserId || localStorage.getItem("userId");
         const userResponse = await axios.get(
           apiUrl(`${ROUTES.USERS}/${targetUserId}`)
@@ -1192,14 +1183,14 @@ function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardBody style={{ position: "relative" }}>
-                  <LoadingOverlay loading={loadingUsers} text={t('dashboard.loadingUsers')} />
+                  <LoadingOverlay loading={loadingUsers} text="Loading users..." />
                   <FormGroup>
                     <Label>{t('dashboard.selectUserToView')}</Label>
                     <Select
                       options={userOptions}
                       value={userOptions.find((option) => option.value === selectedUserId)}
                       onChange={handleUserSelect}
-                      placeholder={t('dashboard.searchUser')}
+                      placeholder="Search or select a user..."
                       isClearable
                       isSearchable
                       styles={{
@@ -1238,7 +1229,7 @@ function Dashboard() {
       )}
 
       <div className="content" style={{ position: "relative", marginTop: isMobile ? 0 : 80 }}>
-        <LoadingOverlay loading={loadingFinancialData} text={t('dashboard.loadingFinancialData')} />
+        <LoadingOverlay loading={loadingFinancialData} text="Loading financial data..." />
 
 
         <div className="dash-overview">
@@ -1256,7 +1247,7 @@ function Dashboard() {
                 return nm ? `${g}, ${nm}` : g;
               })()}
             </h2>
-                       <p className="dash-overview__sub">
+            <p className="dash-overview__sub">
               {t("dashboard.overviewSubtitle", "Here's your financial overview for")}{" "}
               {new Date().toLocaleDateString(undefined, { month: "long", year: "numeric" })}
             </p>
@@ -1347,7 +1338,7 @@ function Dashboard() {
                     />
                     <button
                       type="button"
-                      aria-label={t("dashboard.closeSearch")}
+                      aria-label="Close search"
                       className="dash-filter__searchclose"
                       onClick={() => {
                         setDashboardSearchTerm("");
@@ -1427,7 +1418,7 @@ function Dashboard() {
                 ...getBalanceCardStyle(activeMetric.value),
               }}
             >
-              <LoadingOverlay loading={loadingFinancialData} text={t('dashboard.loading')} />
+              <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <CardBody className="hero-body">
                 <p className="card-category" style={{ marginBottom: "0.5rem" }}>{activeMetric.label}</p>
                 <div className="hero-figure">
@@ -1439,11 +1430,11 @@ function Dashboard() {
                         value={activeMetric.value}
                         tooltip={t("financialReport.cashDeficitTooltip")}
                       >
-                        {`${CUR}${activeMetric.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                        {`$${activeMetric.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                       </BalanceValue>
                     ) : (
                       <span style={{ color: activeMetric.color }}>
-                        {`${CUR}${activeMetric.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                        {`$${activeMetric.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                       </span>
                     )}
                   </CardTitle>
@@ -1461,7 +1452,7 @@ function Dashboard() {
                   const outPct = total > 0 ? (outflow / total) * 100 : 50;
                   const net = income - outflow;
                   const fmt = (n) =>
-                    `${CUR}${Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+                    `$${Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
                   return (
                     <div className="hero-flow">
                       <div className="hero-flow__row">
@@ -1499,12 +1490,12 @@ function Dashboard() {
                   <div className="hero-subline">
                     <div>
                       <span className="hk">{t("dashboard.previousMonth", "Prev. month")}</span>
-                      <span className="hv">{CUR}{Number(activeMetric.prev || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                      <span className="hv">${Number(activeMetric.prev || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                     </div>
                     {activeMetric.key === "cash" && (
                       <div>
                         <span className="hk">{t("dashboard.taxEstimation", "Tax set-aside")}</span>
-                        <span className="hv">{CUR}{calculateEstimatedTax().toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                        <span className="hv">${(parseFloat(calculateTotalCash()) * 0.3).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                       </div>
                     )}
                   </div>
@@ -1515,7 +1506,7 @@ function Dashboard() {
 
           <Col lg="7" md="12" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
             <Card className="chart-card" style={{ height: "100%" }}>
-              <LoadingOverlay loading={loadingFinancialData} text={t('dashboard.loadingChart')} />
+              <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
               <CardBody style={{ border: "none", display: "flex", flexDirection: "column", height: "100%" }}>
                 <div className="dash-panel-head" style={{ marginBottom: 8 }}>
                   <span className="mk-chip mk-chip--sm" style={{ backgroundColor: `${activeMetric.color}26`, color: activeMetric.color }}>
@@ -1525,7 +1516,7 @@ function Dashboard() {
                     <span className="chart-card__title" style={{ display: "block", margin: 0 }}>{activeMetric.chartTitle}</span>
                     {!loadingFinancialData && (
                       <span className="chart-card__sub">
-                        {CUR}{activeMetric.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        ${activeMetric.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                         {" · "}
                         {calculatePercentageChange(activeMetric.value, activeMetric.prev).text}
                       </span>
@@ -1563,7 +1554,7 @@ function Dashboard() {
                     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setHeroMetric(key); }
                   }}
                 >
-                  <LoadingOverlay loading={loadingFinancialData} text={t('dashboard.loading')} />
+                  <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
                   <CardBody>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                       <span className="mk-chip" style={{ backgroundColor: `${m.color}26`, color: m.color }}>
@@ -1575,7 +1566,7 @@ function Dashboard() {
                       {loadingFinancialData ? (
                         <Spinner size="sm" />
                       ) : (
-                        `${CUR}${m.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        `$${m.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                       )}
                     </CardTitle>
                     {!loadingFinancialData && (
@@ -1601,7 +1592,7 @@ function Dashboard() {
         <Row style={{ marginTop: 12 }}>
           <Col lg="7" style={{ paddingInline: 3, marginBottom: 5 }}>
             <div className="mk-card dash-recent" style={{ position: "relative" }}>
-              <LoadingOverlay loading={loadingFinancialData} text={t('dashboard.loading')} />
+              <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <div className="dash-panel-head">
                 <span className="mk-chip mk-chip--sm" style={{ backgroundColor: "var(--accent-soft)", color: "var(--accent)" }}>
                   <i className="fas fa-clock" />
@@ -1721,7 +1712,7 @@ function Dashboard() {
                     theme: "dark",
                     y: {
                       formatter: (v) =>
-                        `${CUR}${Number(v).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                        `$${Number(v).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
                     },
                   },
                   plotOptions: {
@@ -1737,7 +1728,7 @@ function Dashboard() {
                             fontWeight: 700,
                             offsetY: 2,
                             formatter: (v) =>
-                              `${CUR}${Number(v).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                              `$${Number(v).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
                           },
                           total: {
                             show: true,
@@ -1746,7 +1737,7 @@ function Dashboard() {
                             color: "var(--text-3)",
                             fontSize: "10px",
                             formatter: () =>
-                              `${CUR}${totalExp.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                              `$${totalExp.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
                           },
                         },
                       },
@@ -1793,7 +1784,7 @@ function Dashboard() {
                   {t("dashboard.totalPayable", "Payable outstanding")}
                 </span>
                 <span className="mk-badge mk-badge--warn">
-                  {CUR}{totalPayable.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  ${totalPayable.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </span>
               </div>
               <div className="dash-status__row">
@@ -1801,7 +1792,7 @@ function Dashboard() {
                   {t("dashboard.taxEstimation", "Tax set-aside")}
                 </span>
                 <span className="mk-badge mk-badge--info">
-                  {CUR}{calculateEstimatedTax().toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  ${(parseFloat(calculateTotalCash()) * 0.3).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </span>
               </div>
               <div className="dash-status__row">
@@ -1835,7 +1826,7 @@ function Dashboard() {
         calculateTotalPayable={calculateTotalPayable}
         calculateTotalInventory={calculateTotalInventory}
         searchedDates={dashboardDateRange}
-         currentLanguage={i18n.language}
+        currentLanguage={i18n.language}
       />
     </>
   );

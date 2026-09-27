@@ -25,6 +25,7 @@ import {
 } from "reactstrap";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import { apiUrl, ROUTES, S3_BUCKET_NAME } from "../config/api";
+import { getCurrentBusinessId, fetchCurrentBusiness, updateBusiness } from "../utils/businessStorage";
 import "./UserPage.css";
 import { saveAs } from "file-saver";
 
@@ -107,16 +108,33 @@ function UserPage() {
           apiUrl(`${ROUTES.USERS}/${userId}`)
         );
         console.log("api response", response);
-        const user = response.data?.user;
+               const user = response.data?.user;
         if (user) {
           // Save both the current and the original copy
           const legacyBusinessType =
             user.businessType === "Resturant/Cafe" ? "Cafe" : user.businessType;
-          const fullUser = { ...user, id: userId, businessType: legacyBusinessType };
+          let fullUser = { ...user, id: userId, businessType: legacyBusinessType };
+
+          if (getCurrentBusinessId()) {
+            // An additional business is active -- show/edit ITS company
+            // info and opening balances, not the account's shared ones.
+            // Don't touch localStorage.businessType here; it's already
+            // correctly mirrored by switchToBusiness().
+            const business = await fetchCurrentBusiness();
+            fullUser = {
+              ...fullUser,
+              companyName: business?.name || localStorage.getItem("companyName") || "",
+              businessType: business?.businessType || localStorage.getItem("businessType") || "",
+              cashBalance: business?.cashBalance ?? 0,
+              outstandingDebt: business?.outstandingDebt ?? 0,
+              valueableItems: business?.valueableItems ?? 0,
+            };
+          } else {
+            localStorage.setItem("businessType", legacyBusinessType || "");
+          }
+
           setUserData(fullUser);
           setOriginalData(fullUser);
-                    localStorage.setItem("businessType", legacyBusinessType || "");
-          // setUserData({ ...user, id: userId });
           setIsCustomer(user.role === 2 || user.role === 1);
         } else {
           setUserData({ id: userId });
@@ -195,17 +213,47 @@ function UserPage() {
     if (isEditing && hasChanges) {
       try {
         const { id, ...updateFields } = userData;
+        const activeBusinessId = getCurrentBusinessId();
 
-        console.log("Sending update request for ID:", id);
-        console.log("Payload:", updateFields);
+        if (activeBusinessId) {
+          // Business-specific fields go to the active business's own
+          // record; the account's Users record (and its shared businessType/
+          // companyName/balances, used by the default business) is untouched.
+          const {
+            companyName,
+            businessType,
+            cashBalance,
+            outstandingDebt,
+            valueableItems,
+            ...personalFields
+          } = updateFields;
 
-        const response = await axios.put(
-          apiUrl(`${ROUTES.USERS}/${id}`),
-          updateFields
-        );
+          await updateBusiness(activeBusinessId, {
+            name: companyName,
+            businessType,
+            cashBalance,
+            outstandingDebt,
+            valueableItems,
+          });
 
-        console.log("Update response:", response.data);
-                localStorage.setItem("businessType", userData.businessType || "");
+          if (Object.keys(personalFields).length > 0) {
+            await axios.put(apiUrl(`${ROUTES.USERS}/${id}`), personalFields);
+          }
+
+          localStorage.setItem("companyName", companyName || "");
+        } else {
+          console.log("Sending update request for ID:", id);
+          console.log("Payload:", updateFields);
+
+          const response = await axios.put(
+            apiUrl(`${ROUTES.USERS}/${id}`),
+            updateFields
+          );
+
+          console.log("Update response:", response.data);
+          localStorage.setItem("businessType", userData.businessType || "");
+        }
+
         setIsEditing(false);
         setHasChanges(false);
         setSuccess("Profile updated successfully!");
@@ -259,9 +307,13 @@ function UserPage() {
       }
     }
   };
-  const fetchTransactionsForExport = async () => {
+   const fetchTransactionsForExport = async () => {
     const userId = localStorage.getItem("userId");
-    const res = await fetchWithRetry(apiUrl(`${ROUTES.TRANSACTION}?userId=${userId}`));
+    const exportBusinessId = getCurrentBusinessId();
+    const exportQuery = exportBusinessId
+      ? `userId=${userId}&businessId=${exportBusinessId}`
+      : `userId=${userId}`;
+    const res = await fetchWithRetry(apiUrl(`${ROUTES.TRANSACTION}?${exportQuery}`));
     const data = await res.json();
     return data || [];
   };

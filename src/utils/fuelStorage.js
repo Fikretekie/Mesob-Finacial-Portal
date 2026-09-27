@@ -1,21 +1,28 @@
 import axios from "axios";
 import { apiUrl, ROUTES } from "config/api";
+import { getCurrentBusinessId } from "utils/businessStorage";
 
 function currentUserId() {
   return localStorage.getItem("userId") || "anonymous";
 }
 
-/** Fetches all fuel purchases for the current user from the backend. */
+/** Fetches all fuel purchases for the current user + active business
+ * from the backend. */
 export async function fetchFuelPurchases() {
   const userId = currentUserId();
-  const res = await axios.get(apiUrl(ROUTES.FUEL_PURCHASE), { params: { userId } });
+  const businessId = getCurrentBusinessId();
+  const params = businessId ? { userId, businessId } : { userId };
+  const res = await axios.get(apiUrl(ROUTES.FUEL_PURCHASE), { params });
   return Array.isArray(res.data) ? res.data : [];
 }
 
-/** Saves one fuel purchase to the backend. Returns the saved record. */
+/** Saves one fuel purchase to the backend, tagged with the active
+ * business. Returns the saved record. */
 export async function saveFuelPurchase(purchase) {
   const userId = currentUserId();
-  const res = await axios.post(apiUrl(ROUTES.FUEL_PURCHASE), { userId, purchase });
+  const businessId = getCurrentBusinessId();
+  const taggedPurchase = businessId ? { ...purchase, businessId } : purchase;
+  const res = await axios.post(apiUrl(ROUTES.FUEL_PURCHASE), { userId, purchase: taggedPurchase });
   return res.data;
 }
 
