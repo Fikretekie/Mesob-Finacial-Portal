@@ -8,6 +8,7 @@ import {
   apiUrl,
   ROUTES,
   getStripeMonthlyPriceId,
+  getEnv,
 } from "../../config/api";
 import {
   Row,
@@ -116,6 +117,30 @@ const styles = {
     marginBottom: 0,
     lineHeight: 1.6,
     gridColumn: "1 / -1",
+  },
+  /* billing cycle toggle */
+  cycleToggle: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "0.5rem",
+    marginBottom: "1rem",
+  },
+  cyclePill: (active) => ({
+    border: active ? "1px solid #3b82f6" : "1px solid #334155",
+    background: active ? "rgba(59,130,246,0.15)" : "transparent",
+    color: active ? "var(--text-1)" : "var(--text-3)",
+    borderRadius: "999px",
+    padding: "0.4rem 1rem",
+    fontSize: "clamp(0.8rem, 3vw, 0.9rem)",
+    fontWeight: "600",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+  }),
+  cycleSavings: {
+    color: "#34d399",
+    fontSize: "clamp(0.7rem, 2.5vw, 0.78rem)",
+    fontWeight: "600",
+    marginLeft: "4px",
   },
   /* price */
   priceWrap: { textAlign: "center", marginBottom: "1rem" },
@@ -294,7 +319,7 @@ const SubscriptionPlans = () => {
   const { t } = useTranslation();
   const location = useLocation();
 
-  const [billingCycle] = useState("monthly");
+  const [billingCycle, setBillingCycle] = useState("monthly");
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -353,15 +378,18 @@ const SubscriptionPlans = () => {
   const plans = [
     {
       name: t("subscription.pricingPlan"),
-      price: { monthly: "$29.99/month", yearly: "$600/year" },
+      price: { monthly: "$29.99/month", yearly: "$299.99/year" },
       priceId: {
         monthly: getStripeMonthlyPriceId(),
         yearly: "price_basic_yearly",
       },
       paypalPlanId: {
-        monthly: window?.location.hostname.includes("localhost")
-          ? "P-1E453171T1240781XNDIUNGY"
-          : "P-6F168158R7479781ENIS3BMQ",
+        monthly: getEnv() === "production"
+          ? "P-4DH237728B393202MNK4JXDA"
+          : "P-34787152CT884572TNK2TSRI",
+        yearly: getEnv() === "production"
+          ? "P-0HL90234RM559280ANK4JXDA"
+          : "P-1NJ16193HB228783PNK2TSRI",
       },
     },
   ];
@@ -460,9 +488,9 @@ const SubscriptionPlans = () => {
   };
 
   const getPaypalClientId = () =>
-    ["localhost", "127.0.0.1"].includes(window.location.hostname)
-      ? "AfyldJzeR-e8NQP2M24ocwWHWPfwRAH8XrUa7W70nwSfDYXmHjMOUgdpiEuv8RTV5RT6-GcR_hOMbG6A"
-      : "AVuPk0EljwS6RR9n8GU5Rb2MOQADzQ6T3qSj8YoAsNaHGYwdqko9GOilnxq7vCFDn2iH9hQ8xDoaPL3u";
+    getEnv() === "production"
+      ? "BAAga0rtXS3g2MuYrH_6rDIEgudLNSGyrBXx8xbJ16-ju1Fowe_9IYUXUMOsHDBJEcVdDEd8twmkmAVF7c"
+      : "AUBo6OTLCuCJS2A8eTCVdtzYTaH9020vCFdoC5dMl5Ejv-NcZWxClWuOeukqVNS2FUDl0ZvjAqA6dnvM";
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
@@ -554,12 +582,39 @@ const SubscriptionPlans = () => {
                   </p>
                 </div>
 
+                {/* Billing cycle toggle */}
+                {!isSubscribed && (
+                  <div style={styles.cycleToggle}>
+                    <button
+                      type="button"
+                      style={styles.cyclePill(billingCycle === "monthly")}
+                      onClick={() => setBillingCycle("monthly")}
+                    >
+                      Monthly
+                    </button>
+                    <button
+                      type="button"
+                      style={styles.cyclePill(billingCycle === "yearly")}
+                      onClick={() => setBillingCycle("yearly")}
+                    >
+                      Yearly <span style={styles.cycleSavings}>Save 17%</span>
+                    </button>
+                  </div>
+                )}
+
                 {/* Price */}
                 <div style={styles.priceWrap}>
-                  <p style={styles.price}>
-                    $29.99{" "}
-                    <span style={styles.perMonth}>/ month</span>
-                  </p>
+                  {billingCycle === "yearly" ? (
+                    <p style={styles.price}>
+                      $299.99{" "}
+                      <span style={styles.perMonth}>/ year</span>
+                    </p>
+                  ) : (
+                    <p style={styles.price}>
+                      $29.99{" "}
+                      <span style={styles.perMonth}>/ month</span>
+                    </p>
+                  )}
                 </div>
 
                 {/* CTA / subscribed state */}
@@ -661,15 +716,23 @@ const SubscriptionPlans = () => {
                       vault: true,
                     }}
                   >
-                    {billingCycle === "monthly" && (() => {
+                    {(() => {
                       const selectedPlan = plans.find((p) =>
                         Object.values(p.priceId).includes(selectedPriceId)
                       );
-                      const planId = selectedPlan?.paypalPlanId?.monthly;
+                      const planId = selectedPlan?.paypalPlanId?.[billingCycle];
                       console.log("planId", planId);
                       console.log("selectedPlan", selectedPlan);
                       console.log("plans", plans);
                       console.log("selectedPriceId", selectedPriceId);
+
+                      if (!planId) {
+                        return (
+                          <p style={{ color: "var(--text-3)", fontSize: "0.85rem", textAlign: "center", margin: 0 }}>
+                            PayPal for yearly billing isn't set up yet — please use card.
+                          </p>
+                        );
+                      }
 
                       return (
                         <button
