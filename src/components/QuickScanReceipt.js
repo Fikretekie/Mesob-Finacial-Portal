@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Input, FormGroup, Label, Spinner } from "reactstrap";
 import axios from "axios";
 import imageCompression from "browser-image-compression";
@@ -34,6 +35,7 @@ const toBase64 = (file) =>
  * and writes a FuelPurchase record alongside the normal Transaction, so it
  * counts toward IFTA too. */
 function QuickScanReceipt() {
+  const { t } = useTranslation();
   const fileInputRef = useRef(null);
   const [isBusy, setIsBusy] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -47,10 +49,21 @@ function QuickScanReceipt() {
   const [category, setCategory] = useState("");
   const [state, setState] = useState("");
   const [gallons, setGallons] = useState("");
+  // How the scanned purchase is recorded on the books:
+  //   expense   -> operating expense (Pay / subType "Expense") — the default
+  //   cogs      -> cost of goods sold now (Pay / subType "COGS")
+  //   inventory -> capitalized as current asset (New_Item / assetType "current")
+  //   fixed     -> capitalized as fixed asset (New_Item / assetType "fixed")
+  const [destination, setDestination] = useState("expense");
+  const [itemName, setItemName] = useState("");
 
   const businessType = localStorage.getItem("businessType") || "";
   const expenseOptions = businessTypes[businessType]?.expenses || [];
-  const isFuelTunnel = businessType === "Trucking" && category === "Fuel Expense";
+  const isAssetDestination = destination === "inventory" || destination === "fixed";
+  // Fuel handling (State/Gallons + IFTA FuelPurchase) only applies to a fuel
+  // operating expense, not to goods capitalized as inventory/assets.
+  const isFuelTunnel =
+    businessType === "Trucking" && category === "Fuel Expense" && destination === "expense";
 
   const resetAndClose = () => {
     setShowReview(false);
@@ -60,6 +73,8 @@ function QuickScanReceipt() {
     setCategory("");
     setState("");
     setGallons("");
+    setDestination("expense");
+    setItemName("");
     setError("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -109,6 +124,7 @@ function QuickScanReceipt() {
       const totalNum = total ? parseFloat(String(total).replace(/[^0-9.]/g, "")) : null;
 
       setAmount(totalNum ? String(totalNum) : "");
+      if (vendor) setItemName(String(vendor));
       const guessed = guessCategoryFromVendor(vendor, businessType);
       setCategory(guessed);
       if (guessed === "Fuel Expense") {
@@ -128,6 +144,10 @@ function QuickScanReceipt() {
     const amountNum = parseFloat(amount);
     if (!amountNum || amountNum <= 0) {
       setError("Enter a valid amount.");
+      return;
+    }
+    if (isAssetDestination && !itemName.trim()) {
+      setError("Enter an item name.");
       return;
     }
     if (isFuelTunnel && (!state || !gallons)) {
@@ -152,16 +172,32 @@ function QuickScanReceipt() {
         receiptUrl = uploadRes.data?.url || "";
       }
 
-      await axios.post(apiUrl(ROUTES.TRANSACTION), {
-        userId,
-        transactionType: "Pay",
-        transactionPurpose: category || "Other",
-        transactionAmount: amountNum,
-        originalAmount: amountNum,
-        subType: "Expense",
-        receiptUrl,
-        status: "Paid",
-      });
+      const transaction = isAssetDestination
+        ? {
+            // Capitalize: goods kept as stock, or equipment. Not an expense/COGS.
+            userId,
+            transactionType: "New_Item",
+            subType: "New_Item",
+            status: "Paid",
+            transactionPurpose: itemName.trim(),
+            transactionAmount: amountNum,
+            originalAmount: amountNum,
+            assetType: destination === "fixed" ? "fixed" : "current",
+            assetName: itemName.trim(),
+            receiptUrl,
+          }
+        : {
+            // Operating expense, or cost of goods expensed now (subType "COGS").
+            userId,
+            transactionType: "Pay",
+            transactionPurpose: category || "Other",
+            transactionAmount: amountNum,
+            originalAmount: amountNum,
+            subType: destination === "cogs" ? "COGS" : "Expense",
+            receiptUrl,
+            status: "Paid",
+          };
+      await axios.post(apiUrl(ROUTES.TRANSACTION), transaction);
 
       if (isFuelTunnel) {
         const today = new Date();
@@ -201,7 +237,7 @@ function QuickScanReceipt() {
       <button
         onClick={() => fileInputRef.current?.click()}
         disabled={isBusy}
-        title="Scan Receipt"
+        title={t("quickScan.scanReceipt")}
         style={{
           marginTop: "10px",
           height: "32px",
@@ -228,7 +264,7 @@ function QuickScanReceipt() {
             <circle cx="12" cy="13" r="4" />
           </svg>
         )}
-        {!isBusy && "Scan Receipt"}
+        {!isBusy && t("quickScan.scanReceipt")}
         {!isBusy && (
           <span
             style={{
@@ -242,13 +278,13 @@ function QuickScanReceipt() {
               textTransform: "uppercase",
             }}
           >
-            New
+            {t("quickScan.badgeNew")}
           </span>
         )}
       </button>
 
       <Modal isOpen={showReview} toggle={isBusy ? undefined : resetAndClose}>
-        <ModalHeader toggle={isBusy ? undefined : resetAndClose}>Scanned Receipt</ModalHeader>
+        <ModalHeader toggle={isBusy ? undefined : resetAndClose}>{t("quickScan.scannedReceipt")}</ModalHeader>
         <ModalBody>
           {error && (
             <div className="alert alert-danger" role="alert">
@@ -265,28 +301,59 @@ function QuickScanReceipt() {
           {isBusy ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", padding: "24px 0" }}>
               <Spinner color="primary" />
-              <span>Reading receipt...</span>
+              <span>{t("quickScan.readingReceipt")}</span>
             </div>
           ) : (
             <>
               <FormGroup>
-                <Label>Amount</Label>
+                <Label>{t("quickScan.amount")}</Label>
                 <Input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
               </FormGroup>
               <FormGroup>
-                <Label>Category</Label>
-                <Input type="select" value={category} onChange={(e) => setCategory(e.target.value)}>
-                  <option value="">Select category...</option>
-                  {expenseOptions.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
+                <Label>{t("quickScan.recordAs")}</Label>
+                <Input type="select" value={destination} onChange={(e) => setDestination(e.target.value)}>
+                  <option value="expense">{t("quickScan.destExpense")}</option>
+                  <option value="cogs">{t("quickScan.destCogs")}</option>
+                  <option value="inventory">{t("quickScan.destInventory")}</option>
+                  <option value="fixed">{t("quickScan.destFixed")}</option>
                 </Input>
+                {destination === "cogs" && (
+                  <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                    {t("quickScan.cogsHint")}
+                  </small>
+                )}
+                {isAssetDestination && (
+                  <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                    {t("quickScan.assetHint", { kind: destination === "fixed" ? t("quickScan.kindFixed") : t("quickScan.kindInventory") })}
+                  </small>
+                )}
               </FormGroup>
+              {isAssetDestination ? (
+                <FormGroup>
+                  <Label>{t("quickScan.itemName")}</Label>
+                  <Input
+                    type="text"
+                    value={itemName}
+                    onChange={(e) => setItemName(e.target.value)}
+                    placeholder={t("quickScan.itemNamePlaceholder")}
+                  />
+                </FormGroup>
+              ) : (
+                <FormGroup>
+                  <Label>{t("quickScan.category")}</Label>
+                  <Input type="select" value={category} onChange={(e) => setCategory(e.target.value)}>
+                    <option value="">{t("quickScan.selectCategory")}</option>
+                    {expenseOptions.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </Input>
+                </FormGroup>
+              )}
               {isFuelTunnel && (
                 <>
                   <FormGroup>
                     <Label>
-                      State{isLocating && <Spinner size="sm" style={{ marginLeft: "8px" }} />}
+                      {t("quickScan.state")}{isLocating && <Spinner size="sm" style={{ marginLeft: "8px" }} />}
                     </Label>
                     <Input
                       type="select"
@@ -295,7 +362,7 @@ function QuickScanReceipt() {
                       disabled={isLocating}
                     >
                       <option value="">
-                        {isLocating ? "Detecting your location..." : "Select a state..."}
+                        {isLocating ? t("quickScan.detectingLocation") : t("quickScan.selectState")}
                       </option>
                       {US_STATES.map((s) => (
                         <option key={s.abbr} value={s.abbr}>{s.name}</option>
@@ -303,7 +370,7 @@ function QuickScanReceipt() {
                     </Input>
                   </FormGroup>
                   <FormGroup>
-                    <Label>Gallons</Label>
+                    <Label>{t("quickScan.gallons")}</Label>
                     <Input type="number" step="0.01" value={gallons} onChange={(e) => setGallons(e.target.value)} />
                   </FormGroup>
                 </>
@@ -314,10 +381,10 @@ function QuickScanReceipt() {
         {!isBusy && (
           <ModalFooter>
             <Button color="secondary" onClick={resetAndClose} disabled={isSaving}>
-              Cancel
+              {t("quickScan.cancel")}
             </Button>
             <Button color="primary" onClick={handleSave} disabled={isSaving}>
-              {isSaving ? "Saving..." : "Save"}
+              {isSaving ? t("quickScan.saving") : t("quickScan.save")}
             </Button>
           </ModalFooter>
         )}

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { apiUrl, ROUTES } from "../config/api";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
@@ -7,10 +8,12 @@ import { Spinner } from "reactstrap";
 import { Helmet } from "react-helmet";
 import { resetPassword, confirmResetPassword } from "aws-amplify/auth";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
+import "../assets/css/Login.css";
 
 const logo = "/transparent.png";
 
 const ForgotPassword = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmationCode, setConfirmationCode] = useState("");
@@ -172,206 +175,125 @@ const ForgotPassword = () => {
       <Helmet>
         <title>Reset Password - Meksova</title>
       </Helmet>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          backgroundColor: "#1d212c",
-        }}
-      >
-        <NotificationAlert ref={notificationAlertRef} />
-        <div
-          style={{
-            backgroundColor: "#181b26",
-            padding: "2rem",
-            borderRadius: "8px",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            width: "100%",
-            maxWidth: "400px",
-          }}
-        >
-          <img
-            src={logo}
-            alt="Logo"
-            style={{
-              display: "block",
-              margin: "0 auto 1rem",
-              maxWidth: "150px",
-            }}
-          />
-          <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>
-            Reset Password
-          </h2>
-          <p style={{ textAlign: "center", color:'rgb(156, 165, 176)', marginBottom: "1.5rem" }}>
-            {codeSent
-              ? "Enter the verification code and new password"
-              : "Enter your email to receive a verification code"}
-          </p>
-          <form onSubmit={codeSent ? handleResetPassword : handleSendCode}>
-            {/* <div style={{ marginBottom: "1rem" }}> */}
-            <div className="login-input-group">
+      <NotificationAlert ref={notificationAlertRef} />
+      <div className="auth">
+        <aside className="auth__brand">
+          <div className="auth__logo">
+            <img src={logo} alt="Meksova Finance" />
+          </div>
+          <div className="auth__brand-body">
+            <p className="auth__eyebrow">{t("auth.forgot.eyebrow")}</p>
+            <h1 className="auth__headline">
+              {t("auth.forgot.headline1")}
+              <br />
+              <span>{t("auth.forgot.headline2")}</span>
+            </h1>
+            <p className="auth__sub">{t("auth.forgot.sub")}</p>
+            <ul className="auth__benefits">
+              <li>{t("auth.forgot.benefit1")}</li>
+              <li>{t("auth.forgot.benefit2")}</li>
+              <li>{t("auth.forgot.benefit3")}</li>
+            </ul>
+          </div>
+          <div className="auth__brand-foot">
+            <span>{t("auth.common.bilingual")}</span>
+            <span>·</span>
+            <span>{t("auth.common.trusted")}</span>
+          </div>
+        </aside>
 
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "0.5rem",
-                  color: "rgb(255, 255, 255)",
-                  fontWeight: "bold",
-                }}
-              >
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={codeSent}
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #ccc",
-                  borderRadius: "4px",
-                  marginBottom:12
-                }}
-              />
-               
-            </div>
-            {codeSent && (
-              <>
-                <div style={{ marginBottom: "1rem" }}>
-                 <div className="login-input-group">
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: "0.5rem",
-                      color: "rgb(255, 255, 255)",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Verification Code
-                  </label>
-                  <input
-                    type="text"
-                    value={confirmationCode}
-                    onChange={(e) => setConfirmationCode(e.target.value)}
-                    required
-                    style={{
-                      width: "100%",
-                      padding: "0.5rem",
-                      border: "1px solid #ccc",
-                      borderRadius: "4px",
-                    }}
-                  />
-                </div>
-                <div style={{ marginBottom: "1rem" }}>
-                 <div className="login-input-group">
+        <main className="auth__panel">
+          <div className="login-box">
+            <img src={logo} alt="Meksova" className="logo_img" />
+            <h2>{t("auth.forgot.title")}</h2>
+            <p className="login-welcome">
+              {codeSent ? t("auth.forgot.subVerify") : t("auth.forgot.subRequest")}
+            </p>
 
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: "0.5rem",
-                      color: "rgb(255, 255, 255)",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    New Password
-                  </label>
-                  <div style={{ position: "relative" }}>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      required
-                      style={{
-                        width: "100%",
-                        padding: "0.5rem",
-                        paddingRight: "2.5rem", // Make space for the eye icon
-                        border: "1px solid #ccc",
-                        borderRadius: "4px",
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={togglePasswordVisibility}
-                      style={{
-                        position: "absolute",
-                        right: "0.5rem",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {showPassword ? <FaEyeSlash color="white" /> : <FaEye color="white" />}
-                    </button>
-                  </div>
-                  </div>
-                  </div>
-                </div>
-              </>
-            )}
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                backgroundColor: "#007bff",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "1rem",
-              }}
-            >
-              {loading ? (
+            <form onSubmit={codeSent ? handleResetPassword : handleSendCode}>
+              <div className="login-input-group">
+                <label>{t("auth.forgot.email")}</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={codeSent}
+                  autoComplete="email"
+                  placeholder={t("auth.forgot.emailPlaceholder")}
+                />
+              </div>
+
+              {codeSent && (
                 <>
-                  <Spinner color="light" size="sm" />{" "}
-                  {codeSent ? "Resetting..." : "Sending..."}
+                  <div className="login-input-group">
+                    <label>{t("auth.forgot.code")}</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={confirmationCode}
+                      onChange={(e) => setConfirmationCode(e.target.value)}
+                      required
+                      placeholder={t("auth.forgot.codePlaceholder")}
+                    />
+                  </div>
+
+                  <div className="login-input-group">
+                    <label>{t("auth.forgot.newPassword")}</label>
+                    <div className="password-container">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                        autoComplete="new-password"
+                        placeholder={t("auth.forgot.newPasswordPlaceholder")}
+                      />
+                      <button
+                        type="button"
+                        className="toggle-password"
+                        onClick={togglePasswordVisibility}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
                 </>
-              ) : codeSent ? (
-                "Reset Password"
-              ) : (
-                "Send Verification Code"
               )}
-            </button>
-            {codeSent && (
-              <button
-                type="button"
-                onClick={handleResendCode}
-                disabled={resendDisabled || loading}
-                style={{
-                  width: "100%",
-                  padding: "0.75rem",
-                  backgroundColor: resendDisabled ? "#ccc" : "#6c757d",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: resendDisabled ? "not-allowed" : "pointer",
-                  fontSize: "1rem",
-                  marginTop: "0.5rem",
-                }}
-              >
-                {resendDisabled
-                  ? `Resend Code (${resendTimer}s)`
-                  : "Resend Code"}
+
+              <button type="submit" className="login-btn" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Spinner color="light" size="sm" />{" "}
+                    {codeSent ? t("auth.forgot.resetting") : t("auth.forgot.sending")}
+                  </>
+                ) : codeSent ? (
+                  t("auth.forgot.reset")
+                ) : (
+                  t("auth.forgot.send")
+                )}
               </button>
-            )}
-          </form>
-          <p style={{ textAlign: "center", color:'rgb(156, 165, 176)', marginTop: "1rem" }}>
-            Remember your password?{" "}
-            <Link
-              to="/login"
-              style={{ color: "#007bff", textDecoration: "none" }}
-            >
-              Login
-            </Link>
-          </p>
-        </div>
+
+              {codeSent && (
+                <button
+                  type="button"
+                  className="social-login-btn"
+                  onClick={handleResendCode}
+                  disabled={resendDisabled || loading}
+                >
+                  {resendDisabled
+                    ? t("auth.forgot.resendIn", { s: resendTimer })
+                    : t("auth.forgot.resend")}
+                </button>
+              )}
+            </form>
+
+            <p className="login-signup-prompt">
+              {t("auth.forgot.remember")} <Link to="/login">{t("auth.common.login")}</Link>
+            </p>
+          </div>
+        </main>
       </div>
     </>
   );

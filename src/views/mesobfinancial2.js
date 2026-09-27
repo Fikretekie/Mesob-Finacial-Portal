@@ -29,6 +29,8 @@ import { faPlus, faDownload, faCircleInfo, faTimes } from "@fortawesome/free-sol
 import axios from "axios";
 import { apiUrl, ROUTES, S3_BUCKET_NAME, normalizeReceiptUrl } from "../config/api";
 import { authHeader } from "../utils/apiFetch";
+import * as acct from "../utils/accounting";
+import { currencySymbol, setCurrencyFromUser } from "../utils/currency";
 import { Helmet } from "react-helmet";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
@@ -266,9 +268,12 @@ const MesobFinancial2 = () => {
   const [receiveSaleAssetName, setReceiveSaleAssetName] = useState("");
   const [receiveSaleAssetCost, setReceiveSaleAssetCost] = useState(0);  // cost for display/validation
   const [selectedSaleItem, setSelectedSaleItem] = useState(null);  // full transaction object for sale
+  const [saleQty, setSaleQty] = useState("");                    // qty sold (quantity-tracked lots)
+  const [saleCostPortion, setSaleCostPortion] = useState("");    // cost of portion sold (legacy lots w/o qty)
   const [assetType, setAssetType] = useState("");                // "fixed" | "current"
   const [assetName, setAssetName] = useState("");                // selected or manual name
   const [assetNameManual, setAssetNameManual] = useState("");    // when "Enter manually" for asset
+  const [purchaseQty, setPurchaseQty] = useState("");            // qty bought (inventory purchases)
   const [boughtNewItemPurposes, setBoughtNewItemPurposes] = useState([]);
   // Add method to save new purposes
   const handleAddPurpose = () => {
@@ -511,7 +516,7 @@ const MesobFinancial2 = () => {
           if (vendor || totalNum) {
             notify(
               "tr",
-              `Receipt scanned${vendor ? `: ${vendor}` : ""}${totalNum ? ` — $${totalNum}` : ""}. Please review before saving.`,
+              `Receipt scanned${vendor ? `: ${vendor}` : ""}${totalNum ? ` — ${CUR}${totalNum}` : ""}. Please review before saving.`,
               "success"
             );
           }
@@ -568,6 +573,7 @@ const MesobFinancial2 = () => {
   };
 
   const userId = localStorage.getItem("userId");
+  const CUR = currencySymbol();
 
   const notify = (place, message, type) => {
     notificationAlertRef.current.notificationAlert({
@@ -634,48 +640,103 @@ const MesobFinancial2 = () => {
       let newTransaction;
 
       if (transactionType === "receive" && (receiveSubMode === "saleCurrent" || receiveSubMode === "saleFixed")) {
-        const cost = selectedSaleItem ? parseFloat(selectedSaleItem.amount) : parseFloat(receiveSaleAssetCost) || 0;
-        const assetName = selectedSaleItem ? selectedSaleItem.name : receiveSaleAssetName;
+        const saleAssetName = selectedSaleItem ? selectedSaleItem.name : receiveSaleAssetName;
+        const isInventory = receiveSubMode === "saleCurrent";
+        // Cost of goods sold for THIS sale = only the portion sold, not the whole
+        // lot. Quantity-tracked lots multiply qty × unit cost; legacy lots take
+        // the cost-of-portion the user entered; otherwise the whole remaining.
+        let cost;
+        let quantitySold;
+        if (isInventory && selectedSaleItem) {
+          const remaining = parseFloat(selectedSaleItem.amount) || 0;
+          if (selectedSaleItem.unitCost != null && saleQty !== "" && !isNaN(parseFloat(saleQty))) {
+            quantitySold = parseFloat(saleQty);
+            cost = quantitySold * selectedSaleItem.unitCost;
+          } else if (saleCostPortion !== "" && !isNaN(parseFloat(saleCostPortion))) {
+            cost = parseFloat(saleCostPortion);
+          } else {
+            cost = remaining;
+          }
+          cost = Math.min(cost, remaining); // never cost more than what's left
+        } else {
+          cost = selectedSaleItem ? parseFloat(selectedSaleItem.amount) : parseFloat(receiveSaleAssetCost) || 0;
+        }
         newTransaction = {
           userId: localStorage.getItem("userId"),
           transactionType: "Receive",
-          subType: receiveSubMode === "saleCurrent" ? "sale_inventory" : "sale_fixed",
-          transactionPurpose: assetName,
+          subType: isInventory ? "sale_inventory" : "sale_fixed",
+          transactionPurpose: saleAssetName,
           transactionAmount: parseFloat(transactionAmount),
           originalAmount: cost,
-          assetType: receiveSubMode === "saleCurrent" ? "current" : "fixed",
-          assetName: assetName,
+          ...(quantitySold != null ? { quantitySold } : {}),
+          assetType: isInventory ? "current" : "fixed",
+          assetName: saleAssetName,
           soldTransactionId: selectedSaleItem ? selectedSaleItem.id : null,
           receiptUrl: Url || "",
         };
       } else if (isPayableBoughtItem) {
         // Haven't Yet Paid → Bought a new item (payable, not paid)
-        newTransaction = {
-          userId: localStorage.getItem("userId"),
-          transactionType: "Payable",
-          subType: "New_Item",
-          status: "Unpaid",
-          transactionPurpose: resolvedAssetName || "",
-          transactionAmount: parseFloat(transactionAmount),
-          originalAmount: parseFloat(transactionAmount),
-          assetType: assetType || null,
-          assetName: resolvedAssetName || null,
-          receiptUrl: Url || "",
-        };
+        newTransaction =
+          assetType === "cogs"
+            ? {
+                // Cost of goods bought on credit — expensed as COGS, not capitalized.
+                userId: localStorage.getItem("userId"),
+                transactionType: "Payable",
+                subType: "COGS",
+                status: "Unpaid",
+                transactionPurpose: resolvedAssetName || "",
+                transactionAmount: parseFloat(transactionAmount),
+                originalAmount: parseFloat(transactionAmount),
+                remainingAmount: parseFloat(transactionAmount),
+                assetName: resolvedAssetName || null,
+                receiptUrl: Url || "",
+              }
+            : {
+                userId: localStorage.getItem("userId"),
+                transactionType: "Payable",
+                subType: "New_Item",
+                status: "Unpaid",
+                transactionPurpose: resolvedAssetName || "",
+                transactionAmount: parseFloat(transactionAmount),
+                originalAmount: parseFloat(transactionAmount),
+                assetType: assetType || null,
+                assetName: resolvedAssetName || null,
+                ...(assetType === "current" && purchaseQty !== "" && !isNaN(parseFloat(purchaseQty))
+                  ? { quantity: parseFloat(purchaseQty) }
+                  : {}),
+                receiptUrl: Url || "",
+              };
       } else if (isPayBoughtItem) {
         // Paid Cash → Bought a new item (item name only, no description)
-        newTransaction = {
-          userId: localStorage.getItem("userId"),
-          transactionType: "New_Item",
-          subType: "New_Item",
-          status: "Paid",
-          transactionPurpose: resolvedAssetName || "",
-          transactionAmount: parseFloat(transactionAmount),
-          originalAmount: parseFloat(transactionAmount),
-          assetType: assetType || null,
-          assetName: resolvedAssetName || null,
-          receiptUrl: Url || "",
-        };
+        newTransaction =
+          assetType === "cogs"
+            ? {
+                // Cost of goods paid in cash — expensed as COGS immediately.
+                userId: localStorage.getItem("userId"),
+                transactionType: "Pay",
+                subType: "COGS",
+                status: "Paid",
+                transactionPurpose: resolvedAssetName || "",
+                transactionAmount: parseFloat(transactionAmount),
+                originalAmount: parseFloat(transactionAmount),
+                assetName: resolvedAssetName || null,
+                receiptUrl: Url || "",
+              }
+            : {
+                userId: localStorage.getItem("userId"),
+                transactionType: "New_Item",
+                subType: "New_Item",
+                status: "Paid",
+                transactionPurpose: resolvedAssetName || "",
+                transactionAmount: parseFloat(transactionAmount),
+                originalAmount: parseFloat(transactionAmount),
+                assetType: assetType || null,
+                assetName: resolvedAssetName || null,
+                ...(assetType === "current" && purchaseQty !== "" && !isNaN(parseFloat(purchaseQty))
+                  ? { quantity: parseFloat(purchaseQty) }
+                  : {}),
+                receiptUrl: Url || "",
+              };
       } else {
         // All other cases (receive other income, pay expense, pay recorded, pay bought item, Payable expense)
         newTransaction = {
@@ -744,6 +805,9 @@ const MesobFinancial2 = () => {
     setReceiveSaleAssetName("");
     setReceiveSaleAssetCost(0);
     setSelectedSaleItem(null);
+    setSaleQty("");
+    setSaleCostPortion("");
+    setPurchaseQty("");
     setAssetType("");
     setAssetName("");
     setAssetNameManual("");
@@ -1145,6 +1209,7 @@ const MesobFinancial2 = () => {
         apiUrl(`${ROUTES.USERS}/${targetUserId}`)
       );
       if (response.data?.user) {
+        setCurrencyFromUser(response.data.user);
         if (response.data.user.businessType) {
           const bizType = response.data.user.businessType || "";
           setSelectedBusinessType(bizType);
@@ -1318,13 +1383,13 @@ const MesobFinancial2 = () => {
       const amount = parseFloat(transaction.transactionAmount) || 0;
 
       if (transaction.transactionType === "Receive") {
-        if (
-          transaction.subType === "sale_fixed" ||
-          transaction.subType === "sale_inventory"
-        ) {
+        // Fixed-asset disposals book only their gain/loss (Other Income/Expense).
+        if (transaction.subType === "sale_fixed") {
           recordAssetSaleGainLoss(transaction, newRevenues, newExpenses);
           return;
         }
+        // Ordinary sales AND inventory sales are gross operating revenue; the cost
+        // of inventory sold is recognized separately as COGS (calculateCOGS).
         const purpose = transaction.transactionPurpose;
         newRevenues[purpose] = (newRevenues[purpose] || 0) + amount;
       } else if (
@@ -1349,8 +1414,11 @@ const MesobFinancial2 = () => {
           transaction.payableId !== "outstanding-debt" &&
           !purpose.includes("Outstanding Debt") &&
           !isPayableNewItem &&
-          !isPaymentForNewItem
+          !isPaymentForNewItem &&
+          transaction.subType !== "COGS"
         ) {
+          // COGS-tagged purchases are shown under Cost of Goods Sold, not in the
+          // Operating Expenses detail — keep them out of the expenses map.
           newExpenses[purpose] = (newExpenses[purpose] || 0) + amount;
         }
 
@@ -1368,61 +1436,8 @@ const MesobFinancial2 = () => {
   };
 
   // Get individual current asset transactions (not grouped) for the dropdown
-  const getCurrentAssetItems = () => {
-    const result = [];
-    const soldIds = new Set();
-
-    // Track which transactions have been sold
-    items.forEach((t) => {
-      if (t.transactionType === "Receive" && t.subType === "sale_inventory" && t.soldTransactionId) {
-        soldIds.add(t.soldTransactionId);
-      }
-    });
-
-    items.forEach((t) => {
-      // Skip if already sold
-      if (soldIds.has(t.id)) return;
-
-      // Explicit current assets with assetName
-      const isNewItemCurrent = t.transactionType === "New_Item" && t.assetType === "current" && t.assetName;
-      const isPayableCurrent = t.transactionType === "Payable" && t.assetType === "current" && t.subType === "New_Item" && t.assetName;
-      // Include New_Item without assetType (default to current assets / inventory)
-      const isNewItemDefault = t.transactionType === "New_Item" && !t.assetType && t.assetName;
-
-      if (isNewItemCurrent || isPayableCurrent || isNewItemDefault) {
-        // Use originalAmount for Payable (transactionAmount changes after payment)
-        const amount = t.transactionType === "Payable"
-          ? parseFloat(t.originalAmount || t.transactionAmount || 0)
-          : parseFloat(t.transactionAmount || 0);
-        result.push({
-          id: t.id,
-          name: t.assetName,
-          amount: amount,
-          purpose: t.transactionPurpose,
-          displayName: `${t.assetName} - $${amount.toFixed(2)}`
-        });
-      }
-
-      // Fallback: Payable+New_Item without assetType OR with assetType not fixed (default to current)
-      const isPayableDefaultCurrent = t.transactionType === "Payable" &&
-        t.subType === "New_Item" &&
-        t.assetType !== "fixed" &&
-        !t.assetName &&
-        t.transactionPurpose;
-      if (isPayableDefaultCurrent) {
-        const amount = parseFloat(t.originalAmount || t.transactionAmount || 0);
-        result.push({
-          id: t.id,
-          name: t.transactionPurpose,
-          amount: amount,
-          purpose: t.transactionPurpose,
-          displayName: `${t.transactionPurpose} - $${amount.toFixed(2)}`
-        });
-      }
-    });
-
-    return result;
-  };
+  // Inventory lots still in stock (partial-sale aware) — shared engine.
+  const getCurrentAssetItems = () => acct.getCurrentAssetItems(items);
 
   const getFixedAssetItems = () => {
     const result = [];
@@ -1453,7 +1468,7 @@ const MesobFinancial2 = () => {
           name: t.assetName,
           amount: amount,
           purpose: t.transactionPurpose,
-          displayName: `${t.assetName} - $${amount.toFixed(2)}`
+          displayName: `${t.assetName} - ${CUR}${amount.toFixed(2)}`
         });
       }
 
@@ -1476,7 +1491,7 @@ const MesobFinancial2 = () => {
           name: t.transactionPurpose,
           amount: amount,
           purpose: t.transactionPurpose,
-          displayName: `${t.transactionPurpose} - $${amount.toFixed(2)}`
+          displayName: `${t.transactionPurpose} - ${CUR}${amount.toFixed(2)}`
         });
       }
     });
@@ -1513,65 +1528,18 @@ const MesobFinancial2 = () => {
     return Math.max(0, cost);
   };
 
-  const calculateOtherIncome = () => {
-    const filteredItems = getFilteredItems();
-    const total = filteredItems.reduce((sum, value) => {
-      if (
-        value.transactionType === "Receive" &&
-        (value.subType === "sale_fixed" || value.subType === "sale_inventory")
-      ) {
-        const gain =
-          parseFloat(value.transactionAmount || 0) -
-          parseFloat(value.originalAmount || 0);
-        if (gain > 0) return sum + gain;
-      }
-      return sum;
-    }, 0);
-    return total.toFixed(2);
-  };
-
-  const calculateOtherExpense = () => {
-    const filteredItems = getFilteredItems();
-    const total = filteredItems.reduce((sum, value) => {
-      if (
-        value.transactionType === "Receive" &&
-        (value.subType === "sale_fixed" || value.subType === "sale_inventory")
-      ) {
-        const gain =
-          parseFloat(value.transactionAmount || 0) -
-          parseFloat(value.originalAmount || 0);
-        if (gain < 0) return sum + Math.abs(gain);
-      }
-      return sum;
-    }, 0);
-    return total.toFixed(2);
-  };
-
-  const calculateOperatingRevenue = () => {
-    const filteredItems = getFilteredItems();
-    const total = filteredItems.reduce((sum, value) => {
-      if (value.transactionType === "Receive") {
-        if (value.subType === "sale_fixed" || value.subType === "sale_inventory") {
-          return sum;
-        }
-        return sum + parseFloat(value.transactionAmount || 0);
-      }
-      return sum;
-    }, 0);
-    return total.toFixed(2);
-  };
-
-  const calculateOperatingExpenses = () => {
-    return (
-      parseFloat(calculateTotalExpenses()) - parseFloat(calculateOtherExpense())
-    ).toFixed(2);
-  };
-
-  const calculateTotalRevenue = () => {
-    return (
-      parseFloat(calculateOperatingRevenue()) + parseFloat(calculateOtherIncome())
-    ).toFixed(2);
-  };
+  // ── Accounting engine ──────────────────────────────────────────────────────
+  // Thin delegates to the shared, pure engine in utils/accounting.js so the
+  // Financial Report and the Dashboard compute every figure identically. The
+  // logic (gross inventory sales, fixed-asset gain/loss, installment-remaining,
+  // capitalized asset purchases) lives there, tested in one place.
+  const calculateOtherIncome = () => acct.calculateOtherIncome(getFilteredItems());
+  const calculateOtherExpense = () => acct.calculateOtherExpense(getFilteredItems());
+  const calculateOperatingRevenue = () => acct.calculateOperatingRevenue(getFilteredItems());
+  const calculateCOGS = () => acct.calculateCOGS(getFilteredItems(), items);
+  const calculateGrossProfit = () => acct.calculateGrossProfit(getFilteredItems(), items);
+  const calculateOperatingExpenses = () => acct.calculateOperatingExpenses(getFilteredItems(), items);
+  const calculateTotalRevenue = () => acct.calculateTotalRevenue(getFilteredItems());
 
   const renderIncomeStatementRows = () => (
     <>
@@ -1596,7 +1564,6 @@ const MesobFinancial2 = () => {
               (item) =>
                 item.transactionPurpose === purpose &&
                 item.transactionType === "Receive" &&
-                item.subType !== "sale_inventory" &&
                 item.subType !== "sale_fixed"
             );
           })
@@ -1606,7 +1573,6 @@ const MesobFinancial2 = () => {
               if (
                 item.transactionPurpose === purpose &&
                 item.transactionType === "Receive" &&
-                item.subType !== "sale_inventory" &&
                 item.subType !== "sale_fixed"
               ) {
                 return sum + parseFloat(item.transactionAmount || 0);
@@ -1657,13 +1623,40 @@ const MesobFinancial2 = () => {
             textAlign: "right",
           }}
         >
-          $
+          {CUR}
           {parseFloat(calculateOperatingRevenue()).toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           })}
         </td>
       </tr>
+
+      {parseFloat(calculateCOGS()) > 0 && (
+        <>
+          <tr>
+            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
+              <strong>{t("financialReport.costOfGoodsSold")}</strong>
+            </td>
+            <td style={{ color: FINANCIAL_COLORS.expense, fontWeight: "bold", padding: "8px", border: "1px solid var(--border)", textAlign: "right" }}>
+              {CUR}
+              {parseFloat(calculateCOGS()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </td>
+          </tr>
+          <tr>
+            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
+              <strong>
+                {parseFloat(calculateGrossProfit()) < 0
+                  ? t("financialReport.grossLoss")
+                  : t("financialReport.grossProfit")}
+              </strong>
+            </td>
+            <td style={{ color: getNetIncomeColor(parseFloat(calculateGrossProfit())), fontWeight: "bold", padding: "8px", border: "1px solid var(--border)", textAlign: "right" }}>
+              {CUR}
+              {parseFloat(calculateGrossProfit()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </td>
+          </tr>
+        </>
+      )}
 
       <tr
         onClick={() => setIsOtherIncomeExpanded(!isOtherIncomeExpanded)}
@@ -1694,7 +1687,7 @@ const MesobFinancial2 = () => {
                   textAlign: "right",
                 }}
               >
-                $
+                {CUR}
                 {parseFloat(amount || 0).toLocaleString("en-US", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
@@ -1723,7 +1716,7 @@ const MesobFinancial2 = () => {
             textAlign: "right",
           }}
         >
-          $
+          {CUR}
           {parseFloat(calculateOtherIncome()).toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
@@ -1800,7 +1793,7 @@ const MesobFinancial2 = () => {
             fontWeight: "bold",
           }}
         >
-          <strong>{t("financialReport.totalExpenses")}</strong>
+          <strong>{t("financialReport.operatingExpenses")}</strong>
         </td>
         <td
           style={{
@@ -1811,7 +1804,7 @@ const MesobFinancial2 = () => {
             textAlign: "right",
           }}
         >
-          $
+          {CUR}
           {parseFloat(calculateOperatingExpenses()).toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
@@ -1848,7 +1841,7 @@ const MesobFinancial2 = () => {
                   textAlign: "right",
                 }}
               >
-                $
+                {CUR}
                 {parseFloat(amount || 0).toLocaleString("en-US", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
@@ -1877,7 +1870,7 @@ const MesobFinancial2 = () => {
             textAlign: "right",
           }}
         >
-          $
+          {CUR}
           {parseFloat(calculateOtherExpense()).toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
@@ -1904,7 +1897,7 @@ const MesobFinancial2 = () => {
             textAlign: "right",
           }}
         >
-          $
+          {CUR}
           {(
             parseFloat(calculateTotalRevenue()) - parseFloat(calculateTotalExpenses())
           ).toLocaleString("en-US", {
@@ -1916,63 +1909,11 @@ const MesobFinancial2 = () => {
     </>
   );
 
-  const calculateTotalInventory = () => {
-    const valueableItems = initialvalueableItems || 0;
-    const filteredItems = getFilteredItems();
+  const calculateTotalInventory = () =>
+    acct.calculateTotalInventory(getFilteredItems(), initialvalueableItems);
 
-    const newItemsTotal = filteredItems.reduce((sum, item) => {
-      // New_Item transactions with current asset type
-      const isNewItemCurrent = item.transactionType === "New_Item" && item.assetType === "current";
-      // Payable with current asset type and subType New_Item
-      const isPayableCurrent = item.transactionType === "Payable" && item.assetType === "current" && item.subType === "New_Item";
-      // Legacy/Default: New_Item without assetType (treat as inventory by default, unless explicitly fixed)
-      const isLegacyNewItem = item.transactionType === "New_Item" && item.subType === "New_Item" && item.assetType !== "fixed";
-      // Payable New_Item without assetType (treat as inventory by default)
-      const isLegacyPayableNewItem = item.transactionType === "Payable" && item.subType === "New_Item" && !item.assetType;
-
-      if (isNewItemCurrent || isPayableCurrent || isLegacyNewItem || isLegacyPayableNewItem) {
-        // Use originalAmount for Payable (transactionAmount changes after payment)
-        const amount = item.transactionType === "Payable"
-          ? parseFloat(item.originalAmount || item.transactionAmount || 0)
-          : parseFloat(item.transactionAmount || 0);
-        return sum + amount;
-      }
-      return sum;
-    }, 0);
-
-    const saleInventoryCost = filteredItems.reduce((sum, item) => {
-      if (item.transactionType === "Receive" && item.subType === "sale_inventory" && parseFloat(item.originalAmount || 0)) {
-        return sum + parseFloat(item.originalAmount);
-      }
-      return sum;
-    }, 0);
-
-    const totalInventory = Math.max(0, newItemsTotal - saleInventoryCost + valueableItems);
-    return totalInventory.toFixed(2);
-  };
-
-  const calculateTotalFixedAssets = () => {
-    const filteredItems = getFilteredItems();
-    const fixedAdded = filteredItems.reduce((sum, item) => {
-      const isNewItemFixed = item.transactionType === "New_Item" && item.assetType === "fixed";
-      const isPayableFixed = item.transactionType === "Payable" && item.assetType === "fixed" && item.subType === "New_Item";
-      if (isNewItemFixed || isPayableFixed) {
-        // Use originalAmount for Payable (transactionAmount changes after payment)
-        const amount = item.transactionType === "Payable"
-          ? parseFloat(item.originalAmount || item.transactionAmount || 0)
-          : parseFloat(item.transactionAmount || 0);
-        return sum + amount;
-      }
-      return sum;
-    }, 0);
-    const fixedSold = filteredItems.reduce((sum, item) => {
-      if (item.transactionType === "Receive" && item.subType === "sale_fixed" && parseFloat(item.originalAmount || 0)) {
-        return sum + parseFloat(item.originalAmount);
-      }
-      return sum;
-    }, 0);
-    return (fixedAdded - fixedSold).toFixed(2);
-  };
+  const calculateTotalFixedAssets = () =>
+    acct.calculateTotalFixedAssets(getFilteredItems());
 
   const getFixedAssetBreakdown = () => {
     const filteredItems = getFilteredItems();
@@ -2018,108 +1959,13 @@ const MesobFinancial2 = () => {
     return Object.entries(byName).map(([name, balance]) => ({ name, balance: Math.max(0, balance) })).filter((x) => x.balance > 0);
   };
 
-  const calculateTotalExpenses = () => {
-    const filteredItems = getFilteredItems();
-    const payExpenses = filteredItems.reduce((sum, value) => {
-      // Exclude Payable+New_Item (asset purchases on credit) - these are inventory, not expenses
-      const isPayableNewItem = value.transactionType === "Payable" && value.subType === "New_Item";
+  // Authoritative total expenses driving net income (delegates to shared engine).
+  const calculateTotalExpenses = () => acct.calculateTotalExpenses(getFilteredItems(), items);
 
-      // Exclude Pay transactions that are payments for New_Item Payables (asset purchases)
-      let isPaymentForNewItem = false;
-      if (value.transactionType === "Pay" && value.payableId && value.payableId !== "outstanding-debt") {
-        const originalPayable = items.find(item => item.id === value.payableId);
-        if (originalPayable && originalPayable.subType === "New_Item") {
-          isPaymentForNewItem = true;
-        }
-      }
+  const calculateTotalCash = () => acct.calculateTotalCash(getFilteredItems(), initialBalance);
 
-      if (
-        (value.transactionType === "Pay" ||
-          (value.transactionType === "Payable" && value.status !== "Paid")) &&
-        value.payableId !== "outstanding-debt" &&
-        !value.transactionPurpose.includes("Outstanding Debt") &&
-        !isPayableNewItem &&
-        !isPaymentForNewItem
-      ) {
-        return sum + parseFloat(value.transactionAmount || 0);
-      }
-      return sum;
-    }, 0);
-    const lossOnSale = filteredItems.reduce((sum, item) => {
-      if (
-        item.transactionType === "Receive" &&
-        (item.subType === "sale_inventory" || item.subType === "sale_fixed")
-      ) {
-        const gain =
-          parseFloat(item.transactionAmount || 0) -
-          parseFloat(item.originalAmount || 0);
-        if (gain < 0) return sum + Math.abs(gain);
-      }
-      return sum;
-    }, 0);
-    return (payExpenses + lossOnSale).toFixed(2);
-  };
-
-  const calculateTotalCash = () => {
-    const filteredItems = getFilteredItems();
-
-    const totalReceived = filteredItems.reduce((sum, value) => {
-      if (value.transactionType === "Receive") {
-        return sum + parseFloat(value.transactionAmount || 0);
-      }
-      return sum;
-    }, 0);
-
-    const New_ItemReceived = filteredItems.reduce((sum, value) => {
-      if (value.transactionType === "New_Item") {
-        return sum + parseFloat(value.transactionAmount || 0);
-      }
-      return sum;
-    }, 0);
-
-    // Include ALL Pay transactions (including outstanding debt payments)
-    const totalExpenses = filteredItems.reduce((sum, value) => {
-      if (value.transactionType === "Pay") {
-        return sum + parseFloat(value.transactionAmount || 0);
-      }
-      return sum;
-    }, 0);
-
-    const totalCash =
-      initialBalance + totalReceived - totalExpenses - New_ItemReceived;
-    return totalCash.toFixed(2);
-  };
-
-  const calculateTotalPayable = () => {
-    const filteredItems = getFilteredItems();
-
-    // Count unpaid regular Payables
-    const totalPayable = filteredItems.reduce((sum, value) => {
-      if (value.transactionType === "Payable" && value.status !== "Paid") {
-        return sum + parseFloat(value.transactionAmount || 0);
-      }
-      return sum;
-    }, 0);
-
-    // *** FIX: Use 'items' instead of 'filteredItems' for complete payment history ***
-    const outstandingDebtPayments = items.reduce((sum, value) => {
-      if (
-        value.payableId === "outstanding-debt" &&
-        value.transactionType === "Pay"
-      ) {
-        return sum + parseFloat(value.transactionAmount || 0);
-      }
-      return sum;
-    }, 0);
-
-    // Calculate remaining outstanding debt
-    const remainingOutstandingDebt = Math.max(
-      0,
-      initialoutstandingDebt - outstandingDebtPayments
-    );
-
-    return (totalPayable + remainingOutstandingDebt).toFixed(2);
-  };
+  const calculateTotalPayable = () =>
+    acct.calculateTotalPayable(getFilteredItems(), items, initialoutstandingDebt);
 
   const fetchTransactions = (uid = null) => {
     setLoadingTransactions(true);
@@ -2684,7 +2530,7 @@ const MesobFinancial2 = () => {
                 />
                 <button
                   type="button"
-                  aria-label="Close search"
+                  aria-label={t('financialReport.closeSearch')}
                   className="dash-filter__searchclose"
                   onClick={() => { setSearchTerm(""); setShowSearchInput(false); }}
                 >
@@ -2868,7 +2714,7 @@ const MesobFinancial2 = () => {
               <p className="mksv-hero-sub">{t('financialReport.subtitle', 'Track, analyze, and grow your business.')}</p>
               <QuickScanReceipt />
             </div>
-            <div className="mksv-hero-tag">SIMPLE TOOLS.<br />REAL GROWTH.</div>
+            <div className="mksv-hero-tag">{t('financialReport.heroTag1')}<br />{t('financialReport.heroTag2')}</div>
             <svg className="mksv-hero-mtn" viewBox="0 0 300 80" fill="none" preserveAspectRatio="none">
               <path d="M0 80 L0 64 L52 36 L92 52 L132 20 L172 48 L216 24 L258 44 L300 28 L300 80 Z" fill="#3b82f6" fillOpacity="0.10" />
               <path d="M0 64 L52 36 L92 52 L132 20 L172 48 L216 24 L258 44 L300 28" stroke="#3b82f6" strokeOpacity="0.55" strokeWidth="1.5" />
@@ -3012,7 +2858,7 @@ const MesobFinancial2 = () => {
                       <div className="mksv-stat-main">
                         <div className="mksv-stat-label">{t('financialReport.totalCashOnHand')}</div>
                         <BalanceValue value={parseFloat(calculateTotalCash())} tooltip={t('financialReport.cashDeficitTooltip')} style={{ fontSize: "1.15rem", fontWeight: 800 }}>
-                          ${parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {CUR}{parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </BalanceValue>
                       </div>
                       <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><path d="M2 26 12 24 22 25 32 18 42 20 52 10 64 6 64 34 2 34Z" fill="#34d39922" /><polyline points="2,26 12,24 22,25 32,18 42,20 52,10 64,6" fill="none" stroke="#34d399" strokeWidth="2" /></svg>
@@ -3022,7 +2868,7 @@ const MesobFinancial2 = () => {
                       <div className="mksv-ico mksv-ico--payable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 3h9l5 5v13H6z" /><path d="M9 12h7M9 16h7" /></svg></div>
                       <div className="mksv-stat-main">
                         <div className="mksv-stat-label">{t('financialReport.totalPayable')}</div>
-                        <div className="mksv-stat-val" style={{ color: FINANCIAL_COLORS.payable }}>${parseFloat(calculateTotalPayable()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        <div className="mksv-stat-val" style={{ color: FINANCIAL_COLORS.payable }}>{CUR}{parseFloat(calculateTotalPayable()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       </div>
                       <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><polyline points="2,20 12,18 22,22 32,16 42,19 52,14 64,12" fill="none" stroke="#e6b25f" strokeWidth="2" /></svg>
                     </div>
@@ -3031,7 +2877,7 @@ const MesobFinancial2 = () => {
                       <div className="mksv-ico mksv-ico--accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-7" /></svg></div>
                       <div className="mksv-stat-main">
                         <div className="mksv-stat-label">{t('financialReport.totalRevenue')}</div>
-                        <div className="mksv-stat-val" style={{ color: "#3b82f6" }}>${parseFloat(calculateTotalRevenue()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        <div className="mksv-stat-val" style={{ color: "#3b82f6" }}>{CUR}{parseFloat(calculateTotalRevenue()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       </div>
                       <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><path d="M2 28 12 22 22 24 32 15 42 17 52 9 64 4 64 34 2 34Z" fill="#3b82f622" /><polyline points="2,28 12,22 22,24 32,15 42,17 52,9 64,4" fill="none" stroke="#3b82f6" strokeWidth="2" /></svg>
                     </div>
@@ -3040,7 +2886,7 @@ const MesobFinancial2 = () => {
                       <div className="mksv-ico mksv-ico--expense"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 12a9 9 0 11-9-9v9z" /></svg></div>
                       <div className="mksv-stat-main">
                         <div className="mksv-stat-label">{t('financialReport.totalExpense')}</div>
-                        <div className="mksv-stat-val" style={{ color: FINANCIAL_COLORS.expense }}>${parseFloat(calculateTotalExpenses(true)).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        <div className="mksv-stat-val" style={{ color: FINANCIAL_COLORS.expense }}>{CUR}{parseFloat(calculateTotalExpenses(true)).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       </div>
                       <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><polyline points="2,14 12,16 22,13 32,17 42,15 52,19 64,17" fill="none" stroke="#a855f7" strokeWidth="2" /></svg>
                     </div>
@@ -3332,7 +3178,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {parseFloat(calculateTotalPayable()).toLocaleString(
                               "en-US",
                               {
@@ -3359,7 +3205,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {(
                               initialBalance +
                               initialvalueableItems -
@@ -3390,7 +3236,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {(
                               parseFloat(calculateTotalRevenue()) -
                               parseFloat(calculateTotalExpenses())
@@ -3418,7 +3264,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {(
                               parseFloat(calculateTotalPayable()) +
                               (initialBalance + initialvalueableItems - initialoutstandingDebt) +
@@ -3443,7 +3289,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            ${(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {CUR}{(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td
                             style={{
@@ -3452,7 +3298,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {(
                               parseFloat(calculateTotalPayable()) +
                               initialBalance +
@@ -3502,7 +3348,7 @@ const MesobFinancial2 = () => {
                         tooltip={t("financialReport.cashDeficitTooltip")}
                         style={{ fontSize: "1.1rem" }}
                       >
-                        $
+                        {CUR}
                         {parseFloat(calculateTotalCash()).toLocaleString("en-US", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
@@ -3529,7 +3375,7 @@ const MesobFinancial2 = () => {
                           fontSize: "1.1rem",
                         }}
                       >
-                        $
+                        {CUR}
                         {parseFloat(calculateTotalPayable()).toLocaleString(
                           "en-US",
                           {
@@ -3592,7 +3438,7 @@ const MesobFinancial2 = () => {
                               fontSize: "1.1rem",
                             }}
                           >
-                            $
+                            {CUR}
                             {parseFloat(calculateTotalRevenue()).toLocaleString(
                               "en-US",
                               {
@@ -3687,7 +3533,7 @@ const MesobFinancial2 = () => {
                               fontSize: "1.1rem",
                             }}
                           >
-                            $
+                            {CUR}
                             {parseFloat(
                               calculateTotalExpenses(true)
                             ).toLocaleString("en-US", {
@@ -3818,7 +3664,7 @@ const MesobFinancial2 = () => {
                   {loadingTransactions ? (
                     <div className="d-flex flex-column align-items-center justify-content-center" style={{ height: "100%", minHeight: "300px" }}>
                       <Spinner color="primary" />
-                      <p style={{ color: "var(--text-1)", marginTop: "1rem" }}>Loading transactions...</p>
+                      <p style={{ color: "var(--text-1)", marginTop: "1rem" }}>{t('financialReport.loadingTransactions')}</p>
                     </div>
                   ) : (
                     <div style={{ width: "100%" }}>
@@ -4023,7 +3869,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {parseFloat(calculateTotalPayable()).toLocaleString(
                               "en-US",
                               {
@@ -4050,7 +3896,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {(
                               initialBalance +
                               initialvalueableItems -
@@ -4081,7 +3927,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {(
                               parseFloat(calculateTotalRevenue()) -
                               parseFloat(calculateTotalExpenses())
@@ -4109,7 +3955,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid var(--border)",
                             }}
                           >
-                            $
+                            {CUR}
                             {(
                               parseFloat(calculateTotalPayable()) +
                               (initialBalance + initialvalueableItems - initialoutstandingDebt) +
@@ -4134,7 +3980,7 @@ const MesobFinancial2 = () => {
           </ModalHeader>
           <ModalBody>
             <FormGroup>
-              <Label>Type</Label>
+              <Label>{t('financialReport.type')}</Label>
               <Input
                 type="select"
                 value={editType}
@@ -4143,21 +3989,21 @@ const MesobFinancial2 = () => {
                 {!["Receive", "Pay"].includes(editType) && (
                   <option value={editType}>{editType}</option>
                 )}
-                <option value="Receive">Receive</option>
-                <option value="Pay">Pay</option>
+                <option value="Receive">{t('financialReport.receive')}</option>
+                <option value="Pay">{t('financialReport.pay')}</option>
               </Input>
             </FormGroup>
             <FormGroup>
-              <Label>Purpose</Label>
+              <Label>{t('financialReport.purpose')}</Label>
               <Input
                 type="text"
                 value={editPurpose}
                 onChange={(e) => setEditPurpose(e.target.value)}
-                placeholder="Transaction purpose"
+                placeholder={t('financialReport.transactionPurpose')}
               />
             </FormGroup>
             <FormGroup>
-              <Label>Amount</Label>
+              <Label>{t('financialReport.amount')}</Label>
               <Input
                 type="number"
                 min="0"
@@ -4174,10 +4020,10 @@ const MesobFinancial2 = () => {
               onClick={() => setEditModalOpen(false)}
               disabled={savingEdit}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button color="primary" onClick={handleSaveEdit} disabled={savingEdit}>
-              {savingEdit ? <Spinner size="sm" /> : "Save"}
+              {savingEdit ? <Spinner size="sm" /> : t('financialReport.save')}
             </Button>
           </ModalFooter>
         </Modal>
@@ -4228,6 +4074,9 @@ const MesobFinancial2 = () => {
             }}
           >
             {editingTransaction ? t('financialReport.editTransaction') : t('financialReport.addTransaction')}
+            <span className="mksv-modal-sub">
+              {t('financialReport.addTransactionSubtitle', 'Record money in, money out, or what you owe.')}
+            </span>
           </ModalHeader>
           <ModalBody>
             <FormGroup>
@@ -4237,7 +4086,7 @@ const MesobFinancial2 = () => {
                   color={
                     transactionType === "receive" ? "primary" : "secondary"
                   }
-                  className="transaction-type-btn"
+                  className="transaction-type-btn type-in"
                   onClick={() => {
                     setTransactionType("receive");
                     setPaymentMode(null);
@@ -4246,28 +4095,31 @@ const MesobFinancial2 = () => {
                     setReceiveSaleAssetCost(0);
                   }}
                 >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v10" /><path d="m7 12 5 5 5-5" /><path d="M5 20h14" /></svg>
                   {t('financialReport.receivedCash')}
                 </Button>
                 <Button
                   color={transactionType === "pay" ? "primary" : "secondary"}
-                  className="transaction-type-btn"
+                  className="transaction-type-btn type-out"
                   onClick={() => {
                     setTransactionType("pay");
                     setPaymentMode(null);
                   }}
                 >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V9" /><path d="m7 12 5-5 5 5" /><path d="M5 4h14" /></svg>
                   {t('financialReport.paidCash')}
                 </Button>
                 <Button
                   color={
                     transactionType === "Payable" ? "primary" : "secondary"
                   }
-                  className="transaction-type-btn"
+                  className="transaction-type-btn type-owed"
                   onClick={() => {
                     setTransactionType("Payable");
                     setPaymentMode(null);
                   }}
                 >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
                   {t('financialReport.haventYetPaid')}
                 </Button>
               </div>
@@ -4277,6 +4129,7 @@ const MesobFinancial2 = () => {
               <FormGroup>
                 <Label>{t('financialReport.selectAction')}:</Label>
                 <div
+                  className="mksv-actions mksv-actions--out"
                   style={{
                     display: "flex",
                     gap: "5px",
@@ -4284,8 +4137,8 @@ const MesobFinancial2 = () => {
                   }}
                 >
                   <Button
-                    color="primary"
-                    className="transaction-action-btn"
+                    color="secondary"
+                    className={`transaction-action-btn${paymentMode === "recorded" ? " is-selected" : ""}`}
                     onClick={() => {
                       setsubType("Recorded");
                       setPaymentMode("recorded");
@@ -4295,8 +4148,8 @@ const MesobFinancial2 = () => {
                   </Button>
 
                   <Button
-                    color="primary"
-                    className="transaction-action-btn action-expense"
+                    color="secondary"
+                    className={`transaction-action-btn action-expense${paymentMode === "new" ? " is-selected" : ""}`}
                     onClick={() => {
                       setsubType("Expense");
                       setPaymentMode("new");
@@ -4305,8 +4158,8 @@ const MesobFinancial2 = () => {
                     {t('financialReport.newExpense')}
                   </Button>
                   <Button
-                    color="warning"
-                    className="transaction-action-btn action-new-item"
+                    color="secondary"
+                    className={`transaction-action-btn action-new-item${paymentMode === "boughtItem" ? " is-selected" : ""}`}
                     onClick={() => {
                       setsubType("New_Item");
                       setPaymentMode("boughtItem");
@@ -4321,7 +4174,7 @@ const MesobFinancial2 = () => {
             {transactionType === "receive" && (
               <FormGroup>
                 <Label>{t('financialReport.selectAction')}:</Label>
-                <div style={{ display: "flex", gap: "5px", marginBottom: "15px", flexWrap: "wrap" }}>
+                <div className="mksv-actions mksv-actions--in" style={{ display: "flex", gap: "5px", marginBottom: "15px", flexWrap: "wrap" }}>
                   {getCurrentAssetItems().length > 0 && (
                   <Button
                     color={receiveSubMode === "saleCurrent" ? "primary" : "secondary"}
@@ -4393,11 +4246,12 @@ const MesobFinancial2 = () => {
               <FormGroup>
                 <Label>{t('financialReport.selectAction')}:</Label>
                 <div
+                  className="mksv-actions mksv-actions--owed"
                   style={{ display: "flex", gap: "5px", marginBottom: "15px" }}
                 >
                   <Button
-                    color="danger"
-                    className="transaction-action-btn action-expense"
+                    color="secondary"
+                    className={`transaction-action-btn action-expense${payableSubMode === "expense" ? " is-selected" : ""}`}
                     onClick={() => {
                       setPayableSubMode("expense");
                       setPaymentMode(null);
@@ -4406,8 +4260,8 @@ const MesobFinancial2 = () => {
                     {t('financialReport.expense')}
                   </Button>
                   <Button
-                    color="warning"
-                    className="transaction-action-btn action-new-item"
+                    color="secondary"
+                    className={`transaction-action-btn action-new-item${payableSubMode === "boughtItem" ? " is-selected" : ""}`}
                     onClick={() => {
                       setPayableSubMode("boughtItem");
                       setPaymentMode(null);
@@ -4450,13 +4304,21 @@ const MesobFinancial2 = () => {
                         (t) => t.status !== "Paid" && t.transactionAmount !== 0
                       )
                       .map((t) => {
-                        // Use originalAmount for display (transactionAmount changes after partial payments)
-                        const displayAmount = t.originalAmount || t.transactionAmount;
+                        // Show what's LEFT to pay, not the original amount. After a
+                        // partial payment the remaining balance is what matters; if
+                        // some has been paid, also show the original for context.
+                        const original = parseFloat(t.originalAmount || t.transactionAmount) || 0;
+                        const remaining =
+                          parseFloat(t.remainingAmount != null ? t.remainingAmount : t.transactionAmount) || 0;
                         // Show assetName if available, otherwise transactionPurpose
                         const displayName = t.assetName || t.transactionPurpose;
+                        const label =
+                          remaining < original
+                            ? `${displayName} - ${CUR}${remaining.toFixed(2)} left (of ${CUR}${original.toFixed(2)})`
+                            : `${displayName} - ${CUR}${original.toFixed(2)}`;
                         return (
                           <option key={t.id} value={t.id}>
-                            {displayName} - ${parseFloat(displayAmount).toFixed(2)}
+                            {label}
                           </option>
                         );
                       })}
@@ -4511,7 +4373,7 @@ const MesobFinancial2 = () => {
                         // Validate that partial payment is less than or equal to remaining amount
                         if (value > currentRemaining) {
                           setPartialPaymentError(
-                            `Partial payment cannot exceed $${currentRemaining.toFixed(2)}`
+                            `Partial payment cannot exceed ${CUR}${currentRemaining.toFixed(2)}`
                           );
                         } else if (value <= 0) {
                           setPartialPaymentError(
@@ -4609,7 +4471,13 @@ const MesobFinancial2 = () => {
                     <option value="">{t('financialReport.selectAssetType')}</option>
                     <option value="fixed">{t('financialReport.fixedAsset')}</option>
                     <option value="current">{t('financialReport.currentAsset')}</option>
+                    <option value="cogs">{t('financialReport.costOfGoodsExpense')}</option>
                   </Input>
+                  {assetType === "cogs" && (
+                    <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                      {t('financialReport.costOfGoodsHint')}
+                    </small>
+                  )}
                 </FormGroup>
                 {assetType && (
                   <FormGroup>
@@ -4620,6 +4488,23 @@ const MesobFinancial2 = () => {
                       value={assetNameManual}
                       onChange={(e) => setAssetNameManual(e.target.value)}
                     />
+                  </FormGroup>
+                )}
+                {assetType === "current" && (
+                  <FormGroup>
+                    <Label>{t('financialReport.quantity', 'Quantity (optional)')}:</Label>
+                    <Input
+                      className="no-number-spinner"
+                      type="number"
+                      step="1"
+                      min="0"
+                      placeholder={t('financialReport.quantityPlaceholder', 'e.g. 100 units')}
+                      value={purchaseQty}
+                      onChange={(e) => setPurchaseQty(e.target.value)}
+                    />
+                    <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                      {t('financialReport.quantityHint', "Add a count so you can sell part of it later and only the sold portion counts as cost.")}
+                    </small>
                   </FormGroup>
                 )}
 
@@ -4690,7 +4575,13 @@ const MesobFinancial2 = () => {
                     <option value="">{t('financialReport.selectAssetType')}</option>
                     <option value="fixed">{t('financialReport.fixedAsset')}</option>
                     <option value="current">{t('financialReport.currentAsset')}</option>
+                    <option value="cogs">{t('financialReport.costOfGoodsExpense')}</option>
                   </Input>
+                  {assetType === "cogs" && (
+                    <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                      {t('financialReport.costOfGoodsHint')}
+                    </small>
+                  )}
                 </FormGroup>
                 {assetType && (
                   <FormGroup>
@@ -4701,6 +4592,23 @@ const MesobFinancial2 = () => {
                       value={assetNameManual}
                       onChange={(e) => setAssetNameManual(e.target.value)}
                     />
+                  </FormGroup>
+                )}
+                {assetType === "current" && (
+                  <FormGroup>
+                    <Label>{t('financialReport.quantity', 'Quantity (optional)')}:</Label>
+                    <Input
+                      className="no-number-spinner"
+                      type="number"
+                      step="1"
+                      min="0"
+                      placeholder={t('financialReport.quantityPlaceholder', 'e.g. 100 units')}
+                      value={purchaseQty}
+                      onChange={(e) => setPurchaseQty(e.target.value)}
+                    />
+                    <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                      {t('financialReport.quantityHint', "Add a count so you can sell part of it later and only the sold portion counts as cost.")}
+                    </small>
                   </FormGroup>
                 )}
                 <FormGroup>
@@ -4723,6 +4631,8 @@ const MesobFinancial2 = () => {
                     onChange={(e) => {
                       const selectedId = e.target.value;
                       const item = getCurrentAssetItems().find(i => String(i.id) === selectedId);
+                      setSaleQty("");
+                      setSaleCostPortion("");
                       if (item) {
                         setSelectedSaleItem(item);
                         setReceiveSaleAssetName(item.name);
@@ -4740,13 +4650,80 @@ const MesobFinancial2 = () => {
                     ))}
                   </Input>
                   {selectedSaleItem && (
-                    <small style={{ color: "#aaa" }}>Cost (book value): ${parseFloat(selectedSaleItem.amount).toFixed(2)}</small>
+                    <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)" }}>
+                      {selectedSaleItem.unitCost != null
+                        ? `${t('financialReport.inStock', 'In stock')}: ${selectedSaleItem.remainingQty} @ ${CUR}${selectedSaleItem.unitCost.toFixed(2)} ${t('financialReport.each', 'each')} · ${CUR}${parseFloat(selectedSaleItem.amount).toFixed(2)} ${t('financialReport.left', 'left')}`
+                        : `${t('financialReport.costInStock', 'Cost still in stock')}: ${CUR}${parseFloat(selectedSaleItem.amount).toFixed(2)}`}
+                    </small>
                   )}
                 </FormGroup>
+
+                {selectedSaleItem && selectedSaleItem.unitCost != null && (
+                  <FormGroup>
+                    <Label>{t('financialReport.quantitySold', 'Quantity sold')}:</Label>
+                    <Input
+                      className="no-number-spinner"
+                      type="number"
+                      step="1"
+                      min="0"
+                      max={selectedSaleItem.remainingQty}
+                      value={saleQty}
+                      onChange={(e) => setSaleQty(e.target.value)}
+                      placeholder={`${t('financialReport.upTo', 'up to')} ${selectedSaleItem.remainingQty}`}
+                    />
+                  </FormGroup>
+                )}
+
+                {selectedSaleItem && selectedSaleItem.unitCost == null && (
+                  <FormGroup>
+                    <Label>{t('financialReport.costOfPortionSold', 'Cost of the portion you sold')}:</Label>
+                    <Input
+                      className="no-number-spinner"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max={selectedSaleItem.amount}
+                      value={saleCostPortion}
+                      onChange={(e) => setSaleCostPortion(limitToTwoDecimals(e.target.value))}
+                      placeholder={`${t('financialReport.upTo', 'up to')} ${CUR}${parseFloat(selectedSaleItem.amount).toFixed(2)}`}
+                    />
+                    <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                      {t('financialReport.costOfPortionHint', 'Leave blank to sell the whole remaining stock.')}
+                    </small>
+                  </FormGroup>
+                )}
+
                 <FormGroup>
-                  <Label>{t('financialReport.amount')}:</Label>
-                  <Input className="no-number-spinner" type="number" step="0.01" value={transactionAmount} onChange={(e) => setTransactionAmount(limitToTwoDecimals(e.target.value))} placeholder="e.g. 1500" />
+                  <Label>{t('financialReport.amount')} ({t('financialReport.cashReceived', 'cash received')}):</Label>
+                  <Input className="no-number-spinner" type="number" step="0.01" value={transactionAmount} onChange={(e) => setTransactionAmount(limitToTwoDecimals(e.target.value))} placeholder={t('financialReport.amountExample')} />
                 </FormGroup>
+
+                {selectedSaleItem && transactionAmount && (() => {
+                  const remaining = parseFloat(selectedSaleItem.amount) || 0;
+                  let cogs;
+                  if (selectedSaleItem.unitCost != null && saleQty !== "" && !isNaN(parseFloat(saleQty))) {
+                    cogs = Math.min(parseFloat(saleQty) * selectedSaleItem.unitCost, remaining);
+                  } else if (saleCostPortion !== "" && !isNaN(parseFloat(saleCostPortion))) {
+                    cogs = Math.min(parseFloat(saleCostPortion), remaining);
+                  } else {
+                    cogs = remaining;
+                  }
+                  const profit = parseFloat(transactionAmount) - cogs;
+                  const money = (n) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                  return (
+                    <div style={{ background: "var(--surface-3)", border: "1px solid var(--border)", borderRadius: "8px", padding: "10px 12px", marginBottom: "14px", fontSize: "13px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-2)" }}>
+                        <span>{t('financialReport.costOfGoodsSold', 'Cost of items sold')}</span>
+                        <span>{CUR}{money(cogs)}</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, marginTop: "4px", color: profit >= 0 ? "var(--green)" : "var(--red)" }}>
+                        <span>{profit >= 0 ? t('financialReport.profitOnThisSale', 'Profit on this sale') : t('financialReport.lossOnThisSale', 'Loss on this sale')}</span>
+                        <span>{profit < 0 ? "-" : ""}{CUR}{money(Math.abs(profit))}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !selectedSaleItem || !transactionAmount}>
                   {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
                 </Button>
@@ -4780,12 +4757,12 @@ const MesobFinancial2 = () => {
                     ))}
                   </Input>
                   {selectedSaleItem && (
-                    <small style={{ color: "#aaa" }}>Book value: ${parseFloat(selectedSaleItem.amount).toFixed(2)}</small>
+                    <small style={{ color: "#aaa" }}>Book value: {CUR}{parseFloat(selectedSaleItem.amount).toFixed(2)}</small>
                   )}
                 </FormGroup>
                 <FormGroup>
                   <Label>{t('financialReport.amount')}:</Label>
-                  <Input className="no-number-spinner" type="number" step="0.01" value={transactionAmount} onChange={(e) => setTransactionAmount(limitToTwoDecimals(e.target.value))} placeholder="Sale amount" />
+                  <Input className="no-number-spinner" type="number" step="0.01" value={transactionAmount} onChange={(e) => setTransactionAmount(limitToTwoDecimals(e.target.value))} placeholder={t('financialReport.saleAmount')} />
                 </FormGroup>
                 <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !selectedSaleItem || !transactionAmount}>
                   {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
@@ -4853,7 +4830,7 @@ const MesobFinancial2 = () => {
                         <FormGroup>
                           <Input
                             type="text"
-                            placeholder="Enter purpose manually"
+                            placeholder={t('financialReport.enterPurposeManually')}
                             value={manualPurpose}
                             onChange={(e) => {
                               setManualPurpose(e.target.value);
@@ -4883,7 +4860,7 @@ const MesobFinancial2 = () => {
                   </FormGroup>
                   {transactionType === "pay" && paymentMode === "new" && (
                     <FormGroup>
-                      <Label>Receipt:</Label>
+                      <Label>{t('financialReport.receipt')}:</Label>
                       <div
                         style={{
                           display: "flex",

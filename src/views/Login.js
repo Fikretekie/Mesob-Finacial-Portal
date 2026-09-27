@@ -490,6 +490,7 @@ const Login = () => {
           result.user?.valueableItems || "0"
         );
         localStorage.setItem("cashBalance", result.user?.cashBalance || "0");
+        localStorage.setItem("currency", result.user?.currency || "USD");
         localStorage.setItem("authToken", "authenticated");
 
         const path =
