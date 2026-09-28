@@ -1,5 +1,5 @@
 import axios from "axios";
-import { apiUrl, ROUTES } from "config/api";
+import { apiUrl, ROUTES, getEnv } from "config/api";
 
 const CURRENT_BUSINESS_ID_KEY = "currentBusinessId";
 const DEFAULT_BUSINESS_TYPE_KEY = "defaultBusinessType";
@@ -48,6 +48,47 @@ export async function fetchCurrentBusiness() {
 export async function deleteBusiness(businessId) {
   const userId = currentUserId();
   await axios.delete(apiUrl(ROUTES.BUSINESSES), { params: { userId, businessId } });
+}
+
+// Matches the real domain (not window.location.origin, which is an internal
+// address inside the native app) so the backend picks the right test/live
+// Stripe keys, same convention as SubscriptionPlans.js.
+function billingOrigin() {
+  return getEnv() === "production" ? "https://app.meksova.com" : "https://staging.meksova.com";
+}
+
+/** What adding one more business would cost right now, for the confirmation
+ * screen before actually charging. `eligible: false` means this account has
+ * no active card (Stripe) subscription -- e.g. it's on PayPal. */
+export async function previewBusinessSeat() {
+  const userId = currentUserId();
+  const email = localStorage.getItem("user_email");
+  const res = await axios.get(apiUrl(ROUTES.BUSINESS_SEAT), {
+    params: { userId, email, origin: billingOrigin() },
+  });
+  return res.data;
+}
+
+/** Actually adds the extra-business charge to the subscription. Call only
+ * after the user has confirmed the amount from previewBusinessSeat(). */
+export async function addBusinessSeat() {
+  const userId = currentUserId();
+  const email = localStorage.getItem("user_email");
+  const res = await axios.post(apiUrl(ROUTES.BUSINESS_SEAT), {
+    userId,
+    email,
+    origin: billingOrigin(),
+  });
+  return res.data;
+}
+
+/** Removes one extra-business charge (call when a business is deleted). */
+export async function removeBusinessSeat() {
+  const userId = currentUserId();
+  const email = localStorage.getItem("user_email");
+  await axios.delete(apiUrl(ROUTES.BUSINESS_SEAT), {
+    params: { userId, email, origin: billingOrigin() },
+  });
 }
 
 /** The currently-selected business's ID, or "" for the account's first/

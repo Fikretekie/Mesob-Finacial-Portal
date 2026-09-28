@@ -246,10 +246,10 @@ function DemoNavbar(props) {
               (color === "transparent" ? "navbar-transparent " : "")
         }
       >
-        <Container fluid style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Container fluid style={{ display: "flex", flexWrap: "nowrap", alignItems: "center", justifyContent: "space-between" }}>
 
           {/* ── LEFT: Hamburger + Language Selector ── */}
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div style={{ display: "flex", flexWrap: "nowrap", alignItems: "center", gap: "1rem", flexShrink: 0 }}>
             <div className="navbar-toggle">
               <button
                 type="button"
@@ -374,7 +374,7 @@ function DemoNavbar(props) {
           )}
 
           {/* ── RIGHT: Action Buttons + Profile ── */}
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
+          <div style={{ display: "flex", flexWrap: "nowrap", alignItems: "center", gap: "6px", flexShrink: 0 }}>
 
             {/* Download Report + Add Transaction — desktop & landscape only, dashboard pages only */}
             {showNavbarActionButtons && (
@@ -447,7 +447,7 @@ function DemoNavbar(props) {
               </>
             )}
 
-                        <BusinessSwitcher />
+            <BusinessSwitcher />
 
             {/* Profile Dropdown — always last */}
             <Nav navbar style={{ margin: 0, padding: 0 }}>
@@ -473,7 +473,7 @@ function DemoNavbar(props) {
                     </span>
                   )}
                 </DropdownToggle>
-                <DropdownMenu right style={{ backgroundColor: "white" }}>
+                <DropdownMenu end style={{ backgroundColor: "white", maxWidth: "calc(100vw - 16px)" }}>
                   <DropdownItem onClick={toggleHelpModal}>
                     <i className="now-ui-icons ui-2_settings-90 mr-2" />
                     {t("navbar.helpSupport")}

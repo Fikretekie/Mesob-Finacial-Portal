@@ -20,10 +20,20 @@ import {
   ModalFooter,
 } from "reactstrap";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 import { FaPaypal, FaCreditCard, FaCheck } from "react-icons/fa";
 import LanguageSelector from "components/Languageselector/LanguageSelector";
 import { useTranslation } from "react-i18next";
 import { authHeader } from "../../utils/apiFetch";
+
+// window.location.origin inside the native app's WebView is an internal
+// address, not a real website -- Stripe/PayPal can't redirect back to it
+// ("site can't be reached"). Use the real hosted domain instead when native.
+const getRedirectOrigin = () =>
+  Capacitor.isNativePlatform()
+    ? (getEnv() === "production" ? "https://app.meksova.com" : "https://staging.meksova.com")
+    : window.location.origin;
 
 /* ─── inline styles ─────────────────────────────────────────── */
 const styles = {
@@ -353,6 +363,15 @@ const SubscriptionPlans = () => {
 
   useEffect(() => { if (getUserId()) fetchUser(); }, []);
 
+  // Native app: PayPal opens in an in-app browser tab (has its own close
+  // button, unlike the app's WebView) -- refresh subscription status once
+  // the user closes it, whether they finished or cancelled.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const listener = Browser.addListener("browserFinished", fetchUser);
+    return () => { listener.then((l) => l.remove()); };
+  }, []);
+
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("paypal") === "success") fetchUser();
   }, [location.search]);
@@ -408,7 +427,7 @@ const SubscriptionPlans = () => {
         headers: { "Content-Type": "application/json", ...(await authHeader()) },
         body: JSON.stringify({
           planType: billingCycle,
-          redirectUrl: window.location.origin + "/customer/dashboard",
+          redirectUrl: getRedirectOrigin() + "/customer/dashboard",
           userId,
           email,
         }),
@@ -417,7 +436,11 @@ const SubscriptionPlans = () => {
       const session = await response.json();
       const url = session?.url || session?.session?.url;
       if (!url) throw new Error("Session URL missing");
-      window.location.href = url;
+      if (Capacitor.isNativePlatform()) {
+        await Browser.open({ url });
+      } else {
+        window.location.href = url;
+      }
     } catch (err) {
       setError(err.message || "Failed to create Stripe subscription session");
     }
@@ -760,13 +783,17 @@ const SubscriptionPlans = () => {
                                   headers: { "Content-Type": "application/json", ...(await authHeader()) },
                                   body: JSON.stringify({
                                     planId, userId, email,
-                                    redirectUrl: window.location.origin + "/customer/subscription",
+                                    redirectUrl: getRedirectOrigin() + "/customer/subscription",
                                   }),
                                 }
                               );
                               const data = await res.json();
                               if (data.success && data.approvalLink) {
-                                window.location.href = data.approvalLink;
+                                if (Capacitor.isNativePlatform()) {
+                                  await Browser.open({ url: data.approvalLink });
+                                } else {
+                                  window.location.href = data.approvalLink;
+                                }
                               } else {
                                 setError("Failed to create PayPal subscription.");
                               }
