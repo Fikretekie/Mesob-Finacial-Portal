@@ -12,6 +12,15 @@
   font-family: var(--font-sans);
   background: var(--bg);
   color: var(--text-1);
+  position: relative;
+}
+
+/* Language toggle pinned to the top-right of the auth shell (all auth pages) */
+.auth__lang {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 20;
 }
 
 /* ---- Left: brand panel ---------------------------------------------- */

@@ -9,6 +9,7 @@ import { Helmet } from "react-helmet";
 import { resetPassword, confirmResetPassword } from "aws-amplify/auth";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
 import "../assets/css/Login.css";
+import LanguageSelector from "components/Languageselector/LanguageSelector";
 
 const logo = "/transparent.png";
 
@@ -177,6 +178,9 @@ const ForgotPassword = () => {
       </Helmet>
       <NotificationAlert ref={notificationAlertRef} />
       <div className="auth">
+        <div className="auth__lang">
+          <LanguageSelector />
+        </div>
         <aside className="auth__brand">
           <div className="auth__logo">
             <img src={logo} alt="Meksova Finance" />

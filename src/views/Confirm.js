@@ -10,6 +10,7 @@ import axios from "axios";
 import { apiUrl, ROUTES, STAGING_API_URL, CURRENT_ENV } from "../config/api";
 import { authHeader } from "../utils/apiFetch";
 import "../assets/css/Login.css";
+import LanguageSelector from "components/Languageselector/LanguageSelector";
 
 const logo = "/transparent.png";
 const CODE_LENGTH = 6;
@@ -252,6 +253,9 @@ const Confirm = () => {
       </Helmet>
       <NotificationAlert ref={notificationAlertRef} />
       <div className="auth">
+        <div className="auth__lang">
+          <LanguageSelector />
+        </div>
         <aside className="auth__brand">
           <div className="auth__logo">
             <img src={logo} alt="Meksova Finance" />

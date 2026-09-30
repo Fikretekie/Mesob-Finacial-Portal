@@ -347,9 +347,12 @@ import { authHeader } from "utils/apiFetch";
 import getUserInfo from "utils/Getuser";
 import NotificationAlert from "react-notification-alert";
 import { apiUrl, ROUTES, CURRENT_ENV } from "../config/api";
+import LanguageSelector from "components/Languageselector/LanguageSelector";
+import { useTranslation } from "react-i18next";
 const logo = "/transparent.png";
 
 const Login = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -526,41 +529,41 @@ const Login = () => {
       </Helmet>
       <NotificationAlert ref={notificationAlertRef} />
       <div className="auth">
+        <div className="auth__lang">
+          <LanguageSelector />
+        </div>
         <aside className="auth__brand">
           <div className="auth__logo">
             <img src={logo} alt="Meksova Finance" />
           </div>
           <div className="auth__brand-body">
-            <p className="auth__eyebrow">Meksova Finance</p>
+            <p className="auth__eyebrow">{t("auth.login.eyebrow")}</p>
             <h1 className="auth__headline">
-              Your books, <span>always current.</span>
+              {t("auth.login.headline1")} <span>{t("auth.login.headline2")}</span>
             </h1>
-            <p className="auth__sub">
-              Track revenue, expenses, and cash in one place — reviewed and
-              ready when you sit down to make a decision.
-            </p>
+            <p className="auth__sub">{t("auth.login.sub")}</p>
             <div className="auth__glimpse" aria-hidden="true">
               <div className="auth__tile">
-                <span className="auth__tile-label">Cash on hand</span>
+                <span className="auth__tile-label">{t("auth.login.cashOnHand")}</span>
                 <span className="auth__tile-num">$87,091</span>
                 <span className="auth__tile-delta up">↗ 12.4%</span>
               </div>
               <div className="auth__tile">
-                <span className="auth__tile-label">Net this month</span>
+                <span className="auth__tile-label">{t("auth.login.netThisMonth")}</span>
                 <span className="auth__tile-num">+$61,720</span>
                 <span className="auth__tile-delta up">↗ 9.8%</span>
               </div>
             </div>
           </div>
           <div className="auth__brand-foot">
-            <span>Bilingual</span><span>·</span><span>Built for small business</span>
+            <span>{t("auth.common.bilingual")}</span><span>·</span><span>{t("auth.login.builtFor")}</span>
           </div>
         </aside>
         <main className="auth__panel">
         <div className="login-box">
           <img src={logo} alt="Logo" className="logo_img" />
-          <h2>Login</h2>
-          <p className="login-welcome">Welcome! Login to access the <span className="login-brand">Meksova</span></p>
+          <h2>{t("auth.login.title")}</h2>
+          <p className="login-welcome">{t("auth.login.welcome")} <span className="login-brand">Meksova</span></p>
           {loading && (
             <div
               className="loading-message"
@@ -568,19 +571,19 @@ const Login = () => {
             >
               {socialAuth === "google" && (
                 <>
-                  Processing Google sign-in...{" "}
+                  {t("auth.login.processingGoogle")}{" "}
                   <Spinner color="secondary" size="sm" />
                 </>
               )}
               {socialAuth === "apple" && (
                 <>
-                  Processing Apple sign-in...{" "}
+                  {t("auth.login.processingApple")}{" "}
                   <Spinner color="secondary" size="sm" />
                 </>
               )}
               {!socialAuth && (
                 <>
-                  Processing... <Spinner color="secondary" size="sm" />
+                  {t("auth.login.processing")} <Spinner color="secondary" size="sm" />
                 </>
               )}
             </div>
@@ -589,18 +592,18 @@ const Login = () => {
             <>
               <form onSubmit={handleSubmit}>
                 <div className="login-input-group">
-                  <label>Email</label>
+                  <label>{t("auth.login.email")}</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     autoComplete="email"
-                    placeholder="Enter your email"
+                    placeholder={t("auth.login.emailPlaceholder")}
                   />
                 </div>
                 <div className="login-input-group">
-                  <label>Password</label>
+                  <label>{t("auth.login.password")}</label>
                   <div className="password-container">
                     <input
                       type={showPassword ? "text" : "password"}
@@ -608,7 +611,7 @@ const Login = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       autoComplete="current-password"
-                      placeholder="Enter your password"
+                      placeholder={t("auth.login.passwordPlaceholder")}
                     />
                     <button
                       type="button"
@@ -625,20 +628,20 @@ const Login = () => {
                   </div>
                 </div>
                 <div className="forgot-password-link">
-                  <Link to="/forgot-password">Forgot Password?</Link>
+                  <Link to="/forgot-password">{t("auth.login.forgot")}</Link>
                 </div>
                 <button type="submit" className="login-btn" disabled={loading}>
                   {loading ? (
                     <>
-                      <Spinner color="secondary" size="sm" /> Please wait
+                      <Spinner color="secondary" size="sm" /> {t("auth.login.pleaseWait")}
                     </>
                   ) : (
-                    "Login"
+                    t("auth.login.loginBtn")
                   )}
                 </button>
               </form>
               <div className="separator">
-                <span>OR</span>
+                <span>{t("auth.login.or")}</span>
               </div>
               <button
                 onClick={handleGoogleSignIn}
@@ -647,7 +650,7 @@ const Login = () => {
               >
                 {socialAuth === "google" && loading ? (
                   <>
-                    <Spinner color="light" size="sm" /> Processing...
+                    <Spinner color="light" size="sm" /> {t("auth.login.processing")}
                   </>
                 ) : (
                   <>
@@ -656,7 +659,7 @@ const Login = () => {
                       alt="Google"
                       className="social-icon"
                     />
-                    Continue with Google
+                    {t("auth.login.google")}
                   </>
                 )}
               </button>
@@ -668,7 +671,7 @@ const Login = () => {
               >
                 {socialAuth === "apple" && loading ? (
                   <>
-                    <Spinner color="light" size="sm" /> Processing...
+                    <Spinner color="light" size="sm" /> {t("auth.login.processing")}
                   </>
                 ) : (
                   <>
@@ -677,12 +680,12 @@ const Login = () => {
                       className="social-icon"
                       style={{ color: "#ffffff" }}
                     />
-                    Continue with Apple
+                    {t("auth.login.apple")}
                   </>
                 )}
               </button>
               <p className="login-signup-prompt">
-                Don't have an account yet? <Link to="/signup">Sign up</Link>
+                {t("auth.login.noAccount")} <Link to="/signup">{t("auth.login.signup")}</Link>
               </p>
             </>
           )}

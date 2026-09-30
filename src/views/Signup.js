@@ -19,6 +19,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faApple } from "@fortawesome/free-brands-svg-icons";
 import { Spinner } from "reactstrap";
 import "../assets/css/Login.css";
+import LanguageSelector from "components/Languageselector/LanguageSelector";
 
 const logo = "/transparent.png";
 
@@ -984,6 +985,9 @@ const SignupPage = () => {
       </Helmet>
       <NotificationAlert ref={notificationAlertRef} />
       <div className="auth">
+        <div className="auth__lang">
+          <LanguageSelector />
+        </div>
         <aside className="auth__brand">
           <div className="auth__logo">
             <img src={logo} alt="Meksova Finance" />
