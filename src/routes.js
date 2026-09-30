@@ -13,9 +13,6 @@ import TripHistory from "views/TripHistory";
 import FuelPurchase from "views/FuelPurchase";
 import IftaReport from "views/IftaReport";
 
-const userRole = parseInt(localStorage.getItem("role"), 10);
-const userBusinessType = localStorage.getItem("businessType");
-
 const adminRoutes = [
   {
     path: "/dashboard",
@@ -77,7 +74,12 @@ const adminRoutes = [
   },
 ];
 
-const customerRoutes = [
+// Read businessType/role at CALL time (not module load) so newly-set values
+// after login are reflected without a full page reload.
+const getCustomerRoutes = () => {
+  const userRole = parseInt(localStorage.getItem("role"), 10);
+  const userBusinessType = localStorage.getItem("businessType");
+  return [
   {
     path: "/dashboard",
     name: "Dashboard",
@@ -176,7 +178,12 @@ const customerRoutes = [
         },
       ]
     : []),
-];
+  ];
+};
 
-export { adminRoutes, customerRoutes };
+// Backward-compatible static snapshot (evaluated once at import). Prefer
+// getCustomerRoutes() in components so post-login businessType/role apply.
+const customerRoutes = getCustomerRoutes();
+
+export { adminRoutes, customerRoutes, getCustomerRoutes };
 export default adminRoutes;

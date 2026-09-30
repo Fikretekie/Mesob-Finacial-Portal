@@ -24,7 +24,7 @@ import { apiUrl, ROUTES } from "../../config/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faDownload } from "@fortawesome/free-solid-svg-icons";
 
-import { adminRoutes, customerRoutes } from "routes.js";
+import { adminRoutes, getCustomerRoutes } from "routes.js";
 import { setCurrency } from "store/currencySlice";
 import { signOut } from "aws-amplify/auth";
 import { useTranslation } from "react-i18next";
@@ -195,7 +195,7 @@ function DemoNavbar(props) {
     }
   };
 
-  const allRoutes = [...adminRoutes, ...customerRoutes];
+  const allRoutes = [...adminRoutes, ...getCustomerRoutes()];
   const getBrand = () => {
     let brand;
     allRoutes.forEach((prop) => {
