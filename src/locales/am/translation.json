@@ -219,7 +219,9 @@
     "totalFixedAssets": "ጠቅላላ ቋሚ ንብረቶች",
     "totalInventory": "ጠቅላላ ክምችት",
     "totalOtherExpense": "ጠቅላላ ሌላ ወጪ",
-    "totalOtherIncome": "ጠቅላላ ሌላ ገቢ"
+    "totalOtherIncome": "ጠቅላላ ሌላ ገቢ",
+    "logFuelForIfta": "ለIFTA ነዳጅ ይመዝግቡ (አማራጭ)",
+    "logFuelHint": "ይህ ነዳጅ በIFTA ሪፖርትዎ ውስጥ እንዲቆጠር ግዛቱንና ጋሎኑን ያክሉ።"
   },
   "receipts": {
     "title": "ደረሰኞች",

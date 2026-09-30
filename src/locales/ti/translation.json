@@ -219,7 +219,9 @@
     "totalFixedAssets": "ጠቕላላ ቀዋሚ ንብረታት",
     "totalInventory": "ጠቕላላ ዕቑር",
     "totalOtherExpense": "ጠቕላላ ካልእ ወጻኢ",
-    "totalOtherIncome": "ጠቕላላ ካልእ ኣታዊ"
+    "totalOtherIncome": "ጠቕላላ ካልእ ኣታዊ",
+    "logFuelForIfta": "ንIFTA ነዳዲ ምዝግቡ (ኣማራጺ)",
+    "logFuelHint": "እዚ ነዳዲ ኣብ ናይ IFTA ሪፖርትኹም ክቑጸር ግዝኣትን ጋሎንን ወስኹ።"
   },
   "receipts": {
     "title": "ደረሰኝታት",

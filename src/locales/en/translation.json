@@ -219,7 +219,9 @@
     "costOfPortionHint": "Leave blank to sell the whole remaining stock.",
     "cashReceived": "cash received",
     "profitOnThisSale": "Profit on this sale",
-    "lossOnThisSale": "Loss on this sale"
+    "lossOnThisSale": "Loss on this sale",
+    "logFuelForIfta": "Log fuel for IFTA (optional)",
+    "logFuelHint": "Add the state and gallons so this fuel counts toward your IFTA report."
   },
   "receipts": {
     "title": "Receipts",

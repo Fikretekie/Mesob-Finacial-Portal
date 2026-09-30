@@ -219,7 +219,9 @@
     "totalFixedAssets": "Total de activos fijos",
     "totalInventory": "Inventario total",
     "totalOtherExpense": "Total de otros gastos",
-    "totalOtherIncome": "Total de otros ingresos"
+    "totalOtherIncome": "Total de otros ingresos",
+    "logFuelForIfta": "Registrar combustible para IFTA (opcional)",
+    "logFuelHint": "Añade el estado y los galones para que este combustible cuente en tu informe IFTA."
   },
   "receipts": {
     "title": "Recibos",

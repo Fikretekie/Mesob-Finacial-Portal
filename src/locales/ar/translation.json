@@ -219,7 +219,9 @@
     "totalFixedAssets": "إجمالي الأصول الثابتة",
     "totalInventory": "إجمالي المخزون",
     "totalOtherExpense": "إجمالي المصروفات الأخرى",
-    "totalOtherIncome": "إجمالي الإيرادات الأخرى"
+    "totalOtherIncome": "إجمالي الإيرادات الأخرى",
+    "logFuelForIfta": "تسجيل الوقود لـ IFTA (اختياري)",
+    "logFuelHint": "أضف الولاية والجالونات ليُحتسب هذا الوقود في تقرير IFTA."
   },
   "receipts": {
     "title": "الإيصالات",

@@ -219,7 +219,9 @@
     "totalFixedAssets": "Wadarta hantida go'an",
     "totalInventory": "Wadarta bakhaarka",
     "totalOtherExpense": "Wadarta kharashka kale",
-    "totalOtherIncome": "Wadarta dakhliga kale"
+    "totalOtherIncome": "Wadarta dakhliga kale",
+    "logFuelForIfta": "Diiwaangeli shidaalka IFTA (ikhtiyaari)",
+    "logFuelHint": "Ku dar gobolka iyo galaanka si shidaalkan loogu tiriyo warbixintaada IFTA."
   },
   "receipts": {
     "title": "Rasiidada",

@@ -47,6 +47,8 @@ import UserSubscriptionInfo from "./Payment/UserSubscriptionInfo";
 import { useTranslation } from "react-i18next";
 import i18n from "../i18n";
 import { getTranslatedBusinessPurposes, translatePurpose } from "utils/translatedBusinessTypes";
+import { saveFuelPurchase } from "utils/fuelStorage";
+import { US_STATES } from "utils/usStates";
 import BalanceValue from "components/BalanceValue";
 import {
   FINANCIAL_COLORS,
@@ -182,6 +184,10 @@ const MesobFinancial2 = () => {
   const [transactionType, setTransactionType] = useState("");
   const [transactionPurpose, setTransactionPurpose] = useState("");
   const [transactionAmount, setTransactionAmount] = useState("");
+  // IFTA: optional state + gallons on a manual fuel expense (Trucking), so typed
+  // fuel feeds the IFTA report just like scanned fuel receipts do.
+  const [iftaState, setIftaState] = useState("");
+  const [iftaGallons, setIftaGallons] = useState("");
   const [isAddingTransaction, setIsAddingTransaction] = useState(false);
   const [isUpdatingTransaction, setIsUpdatingTransaction] = useState(false);
   const [manualPurpose, setManualPurpose] = useState("");
@@ -779,6 +785,24 @@ const MesobFinancial2 = () => {
       );
 
       if (response.status === 200) {
+        // IFTA: if the user tagged this expense with a state + gallons, also
+        // record a FuelPurchase so it flows into the IFTA report (same as scans).
+        if (iftaState && iftaGallons && !isNaN(parseFloat(iftaGallons))) {
+          try {
+            const d = new Date();
+            const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+            await saveFuelPurchase({
+              dateKey,
+              date: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+              state: iftaState,
+              gallons: parseFloat(iftaGallons),
+              totalCost: parseFloat(transactionAmount) || 0,
+              source: "manual",
+            });
+          } catch (fuelErr) {
+            console.warn("IFTA fuel purchase not recorded:", fuelErr);
+          }
+        }
         const successMessage =
           isPayableBoughtItem
             ? t("financialReport.newItemSuccess")
@@ -802,6 +826,8 @@ const MesobFinancial2 = () => {
     setTransactionType("");
     setTransactionPurpose("");
     setTransactionAmount("");
+    setIftaState("");
+    setIftaGallons("");
     setManualPurpose("");
     setsubType("");
     setPayableSubMode(null);
@@ -4879,6 +4905,39 @@ const MesobFinancial2 = () => {
                       onChange={(e) => setTransactionAmount(limitToTwoDecimals(e.target.value))}
                     />
                   </FormGroup>
+                  {selectedBusinessType === "Trucking" && (
+                    <FormGroup>
+                      <Label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <span aria-hidden="true">⛽</span> {t('financialReport.logFuelForIfta')}
+                      </Label>
+                      <div style={{ display: "flex", gap: "10px" }}>
+                        <Input
+                          type="select"
+                          value={iftaState}
+                          onChange={(e) => setIftaState(e.target.value)}
+                          style={{ flex: 1 }}
+                        >
+                          <option value="">{t('fuelPurchase.selectState')}</option>
+                          {US_STATES.map((s) => (
+                            <option key={s.abbr} value={s.abbr}>{s.name}</option>
+                          ))}
+                        </Input>
+                        <Input
+                          className="no-number-spinner"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          style={{ flex: 1 }}
+                          placeholder={t('fuelPurchase.gallons')}
+                          value={iftaGallons}
+                          onChange={(e) => setIftaGallons(e.target.value)}
+                        />
+                      </div>
+                      <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                        {t('financialReport.logFuelHint')}
+                      </small>
+                    </FormGroup>
+                  )}
                   {transactionType === "pay" && paymentMode === "new" && (
                     <FormGroup>
                       <Label>{t('financialReport.receipt')}:</Label>
