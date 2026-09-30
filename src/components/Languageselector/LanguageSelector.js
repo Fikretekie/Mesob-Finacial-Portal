@@ -91,9 +91,9 @@ return (
       setDropdownOpen(prev => !prev);
     }}
     style={{
-      backgroundColor: "#5e72e4",
-      borderColor: "#5e72e4",
-      color: "var(--text-1)",
+      backgroundColor: "var(--accent-solid)",
+      borderColor: "var(--accent-solid)",
+      color: "var(--accent-ink)",
       padding: isMobile ? "6px 10px" : "2px 14px",
       borderRadius: "6px",
       fontSize: isMobile ? "12px" : "13px",

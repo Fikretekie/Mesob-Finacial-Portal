@@ -26,9 +26,13 @@
 }
 
 .language-dropdown .dropdown-toggle:hover {
-  background-color: #4c63d2 !important;
+  background-color: var(--accent-hover) !important;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+/* keep the auth-page + navbar toggle on the app's blue accent, not the old purple */
+.language-toggle:hover {
+  background-color: var(--accent-hover) !important;
 }
 
 .language-dropdown .dropdown-toggle:active {
