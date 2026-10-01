@@ -118,6 +118,21 @@
   border-color: rgba(59, 130, 246, 0.35);
 }
 
+.team-seat-note {
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  background: var(--accent-soft);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: var(--text-1);
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+}
+.team-seat-note--warn {
+  background: rgba(230, 178, 95, 0.12);
+  border-color: rgba(230, 178, 95, 0.4);
+  color: var(--amber, #e6b25f);
+}
+
 .team-log { margin-top: 18px; }
 .team-log__head {
   padding: 14px 16px;

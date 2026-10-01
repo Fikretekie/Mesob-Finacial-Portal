@@ -1003,7 +1003,9 @@
     "activity": "እንቅስቃሴ",
     "verbAdded": "አክሏል",
     "verbUpdated": "አዘምኗል",
-    "verbDeleted": "ሰርዟል"
+    "verbDeleted": "ሰርዟል",
+    "seatNote": "እያንዳንዱ የቡድን አባል በወር $9.99 ወደ ምዝገባዎ ይጨምራል።",
+    "needSubscription": "የቡድን አባላት ለመጨመር በካርድ ይመዝገቡ ($9.99 በተጠቃሚ/ወር)።"
   },
   "connections": {
     "title": "ግንኙነቶች",

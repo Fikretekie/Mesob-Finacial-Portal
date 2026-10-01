@@ -1003,7 +1003,9 @@
     "activity": "Dhaqdhaqaaq",
     "verbAdded": "ku daray",
     "verbUpdated": "cusboonaysiiyay",
-    "verbDeleted": "tirtiray"
+    "verbDeleted": "tirtiray",
+    "seatNote": "Xubin kasta oo kooxeed waxay ku dartaa $9.99/bishii rukunkaaga.",
+    "needSubscription": "Ku isdiiwaangeli kaadh si aad u darto xubno ($9.99 qofkii/bishii)."
   },
   "connections": {
     "title": "Xiriirrada",

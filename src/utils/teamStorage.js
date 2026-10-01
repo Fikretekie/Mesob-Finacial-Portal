@@ -25,7 +25,7 @@ export async function fetchTeam() {
 /** Add a teammate: creates a real login (email + password) scoped to this
  * owner's account, with a role ("accountant" | "member" | "viewer").
  * Backend provisions the Cognito user + membership record. */
-export async function inviteTeamMember({ email, role, password, businessIds }) {
+export async function inviteTeamMember({ email, role, password, businessIds, subscriptionId }) {
   const res = await axios.post(
     apiUrl(ROUTES.TEAM),
     {
@@ -34,10 +34,27 @@ export async function inviteTeamMember({ email, role, password, businessIds }) {
       role: role || "member",
       password: password || "",
       businessIds: Array.isArray(businessIds) ? businessIds : [],
+      subscriptionId: subscriptionId || "",
     },
     { headers: await authHeader() }
   );
   return res.data;
+}
+
+/** The owner's billing status — used to gate paid teammate seats. */
+export async function fetchOwnerBilling() {
+  try {
+    const res = await axios.get(apiUrl(`${ROUTES.USERS}/${ownerId()}`), { headers: await authHeader() });
+    const u = res.data?.user || res.data || {};
+    return {
+      subscription: u.subscription === true || u.subscription === "true",
+      isPaid: u.isPaid === true || u.isPaid === "true",
+      subscriptionId: u.subscriptionId || "",
+      paymentType: (u.paymentType || "").toUpperCase(),
+    };
+  } catch (err) {
+    return { subscription: false, isPaid: false, subscriptionId: "", paymentType: "" };
+  }
 }
 
 /** Update a teammate's role (and later business access). Owner-only. */

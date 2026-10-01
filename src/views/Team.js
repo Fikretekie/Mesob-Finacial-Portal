@@ -18,6 +18,7 @@ import {
   updateTeamMember,
   removeTeamMember,
   fetchTeamLog,
+  fetchOwnerBilling,
   TEAM_ROLES,
 } from "utils/teamStorage";
 import { fetchBusinesses, getDefaultBusinessName } from "utils/businessStorage";
@@ -52,6 +53,16 @@ function Team() {
   const [inviteBiz, setInviteBiz] = useState([]); // selected business ids (add)
   const [editBiz, setEditBiz] = useState([]); // selected business ids (edit)
   const [log, setLog] = useState([]); // recent teammate activity (owner only)
+  const [billing, setBilling] = useState(null); // owner's subscription status
+
+  // Teammates are a paid add-on: each extra user needs an active card subscription.
+  const canCharge = !!(
+    billing &&
+    billing.subscription &&
+    billing.isPaid &&
+    billing.paymentType === "STRIPE" &&
+    billing.subscriptionId
+  );
 
   const fmtDateTime = (s) => {
     const d = new Date(s);
@@ -147,7 +158,10 @@ function Team() {
       setBizOptions(opts);
       setInviteBiz(opts.map((o) => o.id)); // default: access to all
     })();
-    if (canManage) fetchTeamLog().then(setLog).catch(() => setLog([]));
+    if (canManage) {
+      fetchTeamLog().then(setLog).catch(() => setLog([]));
+      fetchOwnerBilling().then(setBilling).catch(() => setBilling({}));
+    }
   }, []);
 
   const resetInvite = () => {
@@ -182,10 +196,20 @@ function Team() {
       setError(t("team.selectBusiness"));
       return;
     }
+    if (!canCharge) {
+      setError(t("team.needSubscription"));
+      return;
+    }
     setSending(true);
     setError("");
     try {
-      await inviteTeamMember({ email, role, password, businessIds: inviteBiz });
+      await inviteTeamMember({
+        email,
+        role,
+        password,
+        businessIds: inviteBiz,
+        subscriptionId: billing.subscriptionId,
+      });
       resetInvite();
       load();
     } catch (err) {
@@ -333,6 +357,12 @@ function Team() {
         </ModalHeader>
         <ModalBody>
           {error && <div className="alert alert-danger" role="alert">{error}</div>}
+          {billing &&
+            (canCharge ? (
+              <div className="team-seat-note">{t("team.seatNote")}</div>
+            ) : (
+              <div className="team-seat-note team-seat-note--warn">{t("team.needSubscription")}</div>
+            ))}
           <FormGroup>
             <Label>{t("team.emailLabel")}</Label>
             <Input

@@ -1003,7 +1003,9 @@
     "activity": "ንጥፈት",
     "verbAdded": "ወሲኹ",
     "verbUpdated": "ኣሐዲሱ",
-    "verbDeleted": "ሰሪዙ"
+    "verbDeleted": "ሰሪዙ",
+    "seatNote": "ነፍሲ ወከፍ ናይ ጋንታ ኣባል ኣብ ወርሒ $9.99 ናብ ምዝገባኹም ይውስኽ።",
+    "needSubscription": "ናይ ጋንታ ኣባላት ንምውሳኽ ብካርድ ተመዝገቡ ($9.99 ንነፍሲ ወከፍ ተጠቃሚ/ወርሒ)።"
   },
   "connections": {
     "title": "ርክባት",

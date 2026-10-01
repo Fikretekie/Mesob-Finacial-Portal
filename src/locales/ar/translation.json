@@ -1003,7 +1003,9 @@
     "activity": "النشاط",
     "verbAdded": "أضاف",
     "verbUpdated": "حدّث",
-    "verbDeleted": "حذف"
+    "verbDeleted": "حذف",
+    "seatNote": "كل عضو فريق يضيف 9.99 دولار/شهر إلى اشتراكك.",
+    "needSubscription": "اشترك ببطاقة لإضافة أعضاء الفريق (9.99 دولار لكل مستخدم/شهر)."
   },
   "connections": {
     "title": "التكاملات",

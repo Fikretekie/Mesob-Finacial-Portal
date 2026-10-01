@@ -1003,7 +1003,9 @@
     "activity": "Actividad",
     "verbAdded": "agregó",
     "verbUpdated": "actualizó",
-    "verbDeleted": "eliminó"
+    "verbDeleted": "eliminó",
+    "seatNote": "Cada compañero añade $9.99/mes a tu suscripción.",
+    "needSubscription": "Suscríbete con tarjeta para agregar compañeros ($9.99/usuario/mes)."
   },
   "connections": {
     "title": "Conexiones",
