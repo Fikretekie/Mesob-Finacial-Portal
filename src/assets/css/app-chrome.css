@@ -123,6 +123,35 @@ h1, h2, h3, h4, h5, h6,
   box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.40) !important;
 }
 .sidebar .nav li.active > .nav-link i { color: var(--accent); }
+
+/* PerfectScrollbar rail — the library ships a chunky light-grey (#eee) rail
+   that clashes with the dark sidebar. Make it a thin, subtle, themed thumb
+   with a transparent rail (visible on both dark + light sidebars). */
+.sidebar .ps__rail-y,
+.sidebar .ps__rail-x {
+  background: transparent !important;
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+}
+.sidebar:hover .ps__rail-y,
+.sidebar .ps__rail-y.ps--clicking,
+.sidebar .ps__rail-y:focus,
+.sidebar .ps__rail-y:hover { opacity: 1; }
+.sidebar .ps__rail-y { width: 10px !important; }
+.sidebar .ps__thumb-y {
+  background: rgba(148, 163, 184, 0.45) !important;
+  width: 5px !important;
+  right: 2px;
+  border-radius: 999px;
+}
+.sidebar .ps__rail-y:hover .ps__thumb-y,
+.sidebar .ps__rail-y:focus .ps__thumb-y,
+.sidebar .ps__rail-y.ps--clicking .ps__thumb-y,
+.sidebar .ps__thumb-y:hover {
+  background: rgba(148, 163, 184, 0.75) !important;
+  width: 6px !important;
+}
+.sidebar .ps__rail-x { display: none !important; }
 /* Neutralise Now UI's own active pseudo-backgrounds. */
 .sidebar .nav li.active > a::before,
 .sidebar .nav li.active > a::after { opacity: 0 !important; }
