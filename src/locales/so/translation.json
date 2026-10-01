@@ -1007,7 +1007,13 @@
     "seatNote": "Xubin kasta oo kooxeed waxay ku dartaa $9.99/bishii rukunkaaga.",
     "needSubscription": "Ku isdiiwaangeli kaadh si aad u darto xubno ($9.99 qofkii/bishii).",
     "firstFree": "Xubintaada koowaad ee kooxeed waa bilaash. Xubnaha dheeraadka ah waa $9.99 bishii mid kasta.",
-    "activityEmpty": "Weli ma jiro dhaqdhaqaaq. Ficilada xubnaha kooxda halkan ayay ka muuqan doonaan."
+    "activityEmpty": "Weli ma jiro dhaqdhaqaaq. Ficilada xubnaha kooxda halkan ayay ka muuqan doonaan.",
+    "permissions": "Oggolaanshaha",
+    "perm_add": "Ku dar",
+    "perm_edit": "Wax ka beddel",
+    "perm_delete": "Tirtir",
+    "permsHint": "Daawashada had iyo jeer waa la oggol yahay. Calaamadee waxa xubintani beddeli karto.",
+    "viewOnly": "daawo kaliya"
   },
   "connections": {
     "title": "Xiriirrada",

@@ -4,6 +4,7 @@ import { BsTrashFill, BsReceipt, BsPencilFill } from "react-icons/bs";
 import "./TransactionTable.css";
 import { useTranslation } from "react-i18next";
 import { translatePurpose } from "utils/translatedBusinessTypes";
+import { can } from "utils/permissions";
 import {
   FINANCIAL_COLORS,
   SALE_LINE_COLORS,
@@ -131,8 +132,8 @@ const TransactionTable = ({
         </td>
         <td className="transaction-table-actions" style={{ verticalAlign: "top", paddingTop: "8px" }}>
           <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center" }}>
-            {handleEdit && <BsPencilFill className="edit-btn" onClick={() => isFeatureEnabled() && handleEdit(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#4a90e2" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5 }} />}
-            <BsTrashFill className="delete-btn" onClick={() => isFeatureEnabled() && handleDelete(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#e10d05" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5 }} />
+            {handleEdit && can("edit") && <BsPencilFill className="edit-btn" onClick={() => isFeatureEnabled() && handleEdit(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#4a90e2" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5 }} />}
+            {can("delete") && <BsTrashFill className="delete-btn" onClick={() => isFeatureEnabled() && handleDelete(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#e10d05" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5 }} />}
             {transaction.receiptUrl && <BsReceipt className="receipt-btn" onClick={() => isFeatureEnabled() && handleReceiptClick(transaction.receiptUrl)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#007bff" : "#ccc" }} />}
           </div>
         </td>
@@ -283,8 +284,8 @@ const TransactionTable = ({
                   </td>
                   <td className="transaction-table-actions" style={{ verticalAlign: "middle" }}>
                     <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center" }}>
-                      {handleEdit && <BsPencilFill className="edit-btn" onClick={() => isFeatureEnabled() && handleEdit(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#4a90e2" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5, display: "flex", alignItems: "center", justifyContent: "center" }} />}
-                      <BsTrashFill className="delete-btn" onClick={() => isFeatureEnabled() && handleDelete(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#e10d05" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5, display: "flex", alignItems: "center", justifyContent: "center" }} />
+                      {handleEdit && can("edit") && <BsPencilFill className="edit-btn" onClick={() => isFeatureEnabled() && handleEdit(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#4a90e2" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5, display: "flex", alignItems: "center", justifyContent: "center" }} />}
+                      {can("delete") && <BsTrashFill className="delete-btn" onClick={() => isFeatureEnabled() && handleDelete(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#e10d05" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5, display: "flex", alignItems: "center", justifyContent: "center" }} />}
                       {transaction.receiptUrl && <BsReceipt className="receipt-btn" onClick={() => isFeatureEnabled() && handleReceiptClick(transaction.receiptUrl)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#007bff" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5, display: "flex", alignItems: "center", justifyContent: "center" }} />}
                     </div>
                   </td>

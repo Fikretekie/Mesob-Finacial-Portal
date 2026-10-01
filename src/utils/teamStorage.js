@@ -25,7 +25,10 @@ export async function fetchTeam() {
 /** Add a teammate: creates a real login (email + password) scoped to this
  * owner's account, with a role ("accountant" | "member" | "viewer").
  * Backend provisions the Cognito user + membership record. */
-export async function inviteTeamMember({ email, role, password, businessIds, subscriptionId }) {
+/** Default capabilities for a new teammate (view is always implied). */
+export const DEFAULT_PERMS = { add: true, edit: true, delete: false };
+
+export async function inviteTeamMember({ email, role, password, businessIds, subscriptionId, perms }) {
   const res = await axios.post(
     apiUrl(ROUTES.TEAM),
     {
@@ -35,6 +38,7 @@ export async function inviteTeamMember({ email, role, password, businessIds, sub
       password: password || "",
       businessIds: Array.isArray(businessIds) ? businessIds : [],
       subscriptionId: subscriptionId || "",
+      perms: perms && typeof perms === "object" ? perms : DEFAULT_PERMS,
     },
     { headers: await authHeader() }
   );

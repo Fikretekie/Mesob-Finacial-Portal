@@ -480,6 +480,7 @@ const Login = () => {
         let teamRole = null;
         let memberEmail = null;
         let memberBiz = null;
+        let memberPerms = null;
 
         if (!response.ok || !result.user) {
           const who = await getMyOwner();
@@ -499,6 +500,7 @@ const Login = () => {
               teamRole = who.role || "member";
               memberEmail = user?.signInDetails?.loginId || email;
               memberBiz = Array.isArray(who.businessIds) ? who.businessIds : [];
+              memberPerms = who.perms && typeof who.perms === "object" ? who.perms : {};
             }
           }
           if (!acct) {
@@ -529,6 +531,7 @@ const Login = () => {
           localStorage.setItem("memberId", user.userId);
           localStorage.setItem("memberEmail", memberEmail || "");
           localStorage.setItem("allowedBusinessIds", JSON.stringify(memberBiz || []));
+          localStorage.setItem("teamPerms", JSON.stringify(memberPerms || {}));
         }
 
         const path =

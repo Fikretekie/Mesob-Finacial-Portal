@@ -49,6 +49,7 @@ import i18n from "../i18n";
 import { getTranslatedBusinessPurposes, translatePurpose } from "utils/translatedBusinessTypes";
 import { saveFuelPurchase } from "utils/fuelStorage";
 import { US_STATES } from "utils/usStates";
+import { can } from "utils/permissions";
 import BalanceValue from "components/BalanceValue";
 import {
   FINANCIAL_COLORS,
@@ -2842,7 +2843,7 @@ const MesobFinancial2 = () => {
                       />
                       {t('financialReport.downloadReport')}
                     </Button>
-                    {userRole !== 0 && (
+                    {userRole !== 0 && can("add") && (
                       <Button
                         type="button"
                         title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : undefined}

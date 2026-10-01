@@ -8,6 +8,7 @@ import { businessTypes } from "views/BusinessTypes";
 import { getCurrentBusinessId } from "utils/businessStorage";
 import { getStateAtPoint } from "utils/geoState";
 import { US_STATES } from "utils/usStates";
+import { can } from "utils/permissions";
 
 const FUEL_VENDOR_KEYWORDS = [
   "shell", "chevron", "exxon", "mobil", "bp", "marathon", "citgo", "sunoco",
@@ -234,6 +235,9 @@ function QuickScanReceipt() {
       setIsSaving(false);
     }
   };
+
+  // Scanning a receipt creates a transaction — hide it from teammates without "add".
+  if (!can("add")) return null;
 
   return (
     <>

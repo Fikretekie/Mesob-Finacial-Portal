@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { can } from "utils/permissions";
 import {
   Collapse,
   Navbar,
@@ -413,7 +414,7 @@ function DemoNavbar(props) {
                   {!isLandscapeMobile && t("financialReport.downloadReport")}
                 </button>
 
-                {userRole !== 0 && (
+                {userRole !== 0 && can("add") && (
                   <button
                     type="button"
                     onClick={handleAddTransactionClick}

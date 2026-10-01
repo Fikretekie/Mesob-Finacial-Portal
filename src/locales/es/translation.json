@@ -1007,7 +1007,13 @@
     "seatNote": "Cada compañero añade $9.99/mes a tu suscripción.",
     "needSubscription": "Suscríbete con tarjeta para agregar compañeros ($9.99/usuario/mes).",
     "firstFree": "Tu primer compañero es gratis. Cada compañero adicional cuesta $9.99/mes.",
-    "activityEmpty": "Aún no hay actividad. Las acciones de los compañeros aparecerán aquí."
+    "activityEmpty": "Aún no hay actividad. Las acciones de los compañeros aparecerán aquí.",
+    "permissions": "Permisos",
+    "perm_add": "Agregar",
+    "perm_edit": "Editar",
+    "perm_delete": "Eliminar",
+    "permsHint": "Ver siempre está permitido. Marca lo que este compañero puede cambiar.",
+    "viewOnly": "solo ver"
   },
   "connections": {
     "title": "Conexiones",

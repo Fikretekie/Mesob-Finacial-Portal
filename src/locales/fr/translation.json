@@ -1007,7 +1007,13 @@
     "seatNote": "Chaque collègue ajoute 9,99 $/mois à votre abonnement.",
     "needSubscription": "Abonnez-vous par carte pour ajouter des collègues (9,99 $/utilisateur/mois).",
     "firstFree": "Votre premier collègue est gratuit. Chaque collègue supplémentaire coûte 9,99 $/mois.",
-    "activityEmpty": "Aucune activité pour le moment. Les actions des collègues apparaîtront ici."
+    "activityEmpty": "Aucune activité pour le moment. Les actions des collègues apparaîtront ici.",
+    "permissions": "Autorisations",
+    "perm_add": "Ajouter",
+    "perm_edit": "Modifier",
+    "perm_delete": "Supprimer",
+    "permsHint": "La consultation est toujours autorisée. Cochez ce que ce collègue peut modifier.",
+    "viewOnly": "lecture seule"
   },
   "connections": {
     "title": "Connexions",

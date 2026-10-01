@@ -19,6 +19,7 @@ import {
   removeTeamMember,
   fetchTeamLog,
   fetchOwnerBilling,
+  DEFAULT_PERMS,
   TEAM_ROLES,
 } from "utils/teamStorage";
 import { fetchBusinesses, getDefaultBusinessName } from "utils/businessStorage";
@@ -52,6 +53,14 @@ function Team() {
   const [bizOptions, setBizOptions] = useState([]); // [{id,name}] incl default (id "")
   const [inviteBiz, setInviteBiz] = useState([]); // selected business ids (add)
   const [editBiz, setEditBiz] = useState([]); // selected business ids (edit)
+  const [invitePerms, setInvitePerms] = useState({ ...DEFAULT_PERMS });
+  const [editPerms, setEditPerms] = useState({ ...DEFAULT_PERMS });
+
+  const permSummary = (p) => {
+    if (!p || typeof p !== "object") return t("team.viewOnly");
+    const on = ["add", "edit", "delete"].filter((k) => p[k]).map((k) => t("team.perm_" + k));
+    return on.length ? on.join(", ") : t("team.viewOnly");
+  };
   const [log, setLog] = useState([]); // recent teammate activity (owner only)
   const [billing, setBilling] = useState(null); // owner's subscription status
 
@@ -104,6 +113,11 @@ function Team() {
         ? m.businessIds
         : bizOptions.map((o) => o.id)
     );
+    setEditPerms(
+      m.perms && typeof m.perms === "object"
+        ? { add: !!m.perms.add, edit: !!m.perms.edit, delete: !!m.perms.delete }
+        : { ...DEFAULT_PERMS }
+    );
     setError("");
   };
 
@@ -112,7 +126,7 @@ function Team() {
     setSavingEdit(true);
     setError("");
     try {
-      await updateTeamMember(editing.memberId || editing.id, { role: editRole, businessIds: editBiz });
+      await updateTeamMember(editing.memberId || editing.id, { role: editRole, businessIds: editBiz, perms: editPerms });
       setEditing(null);
       load();
     } catch (err) {
@@ -173,6 +187,7 @@ function Team() {
     setShowPw(false);
     setRole("accountant");
     setInviteBiz(bizOptions.map((o) => o.id));
+    setInvitePerms({ ...DEFAULT_PERMS });
     setError("");
   };
 
@@ -211,6 +226,7 @@ function Team() {
         password,
         businessIds: inviteBiz,
         subscriptionId: paidSeat ? billing?.subscriptionId || "" : "",
+        perms: invitePerms,
       });
       resetInvite();
       load();
@@ -305,6 +321,7 @@ function Team() {
                     m.businessIds.length < bizOptions.length
                       ? ` · ${bizNames(m.businessIds)}`
                       : ""}
+                    {` · ${permSummary(m.perms)}`}
                   </span>
                 </div>
                 {canManage && (
@@ -429,6 +446,18 @@ function Team() {
               <small className="team-role-hint">{t("team.businessAccessHint")}</small>
             </FormGroup>
           )}
+          <FormGroup>
+            <Label>{t("team.permissions")}</Label>
+            <div className="team-biz-list">
+              {["add", "edit", "delete"].map((k) => (
+                <label key={k} className="team-biz-item">
+                  <input type="checkbox" checked={!!invitePerms[k]} onChange={() => setInvitePerms((p) => ({ ...p, [k]: !p[k] }))} />
+                  <span>{t("team.perm_" + k)}</span>
+                </label>
+              ))}
+            </div>
+            <small className="team-role-hint">{t("team.permsHint")}</small>
+          </FormGroup>
         </ModalBody>
         <ModalFooter>
           <Button color="secondary" onClick={resetInvite} disabled={sending}>
@@ -474,6 +503,18 @@ function Team() {
               <small className="team-role-hint">{t("team.businessAccessHint")}</small>
             </FormGroup>
           )}
+          <FormGroup>
+            <Label>{t("team.permissions")}</Label>
+            <div className="team-biz-list">
+              {["add", "edit", "delete"].map((k) => (
+                <label key={k} className="team-biz-item">
+                  <input type="checkbox" checked={!!editPerms[k]} onChange={() => setEditPerms((p) => ({ ...p, [k]: !p[k] }))} />
+                  <span>{t("team.perm_" + k)}</span>
+                </label>
+              ))}
+            </div>
+            <small className="team-role-hint">{t("team.permsHint")}</small>
+          </FormGroup>
         </ModalBody>
         <ModalFooter>
           <Button color="secondary" onClick={() => setEditing(null)} disabled={savingEdit}>
