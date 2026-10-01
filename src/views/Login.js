@@ -344,6 +344,7 @@ import { signIn, signInWithRedirect, signOut } from "aws-amplify/auth";
 import { isNativeApp, openNativeSocialSignIn, nativeOAuthState } from "utils/nativeOAuth";
 import { clearAppStorageKeepingSession } from "utils/authStorage";
 import { authHeader } from "utils/apiFetch";
+import { getMyOwner } from "utils/teamStorage";
 import getUserInfo from "utils/Getuser";
 import NotificationAlert from "react-notification-alert";
 import { apiUrl, ROUTES, CURRENT_ENV } from "../config/api";
@@ -470,36 +471,67 @@ const Login = () => {
 
         const result = await response.json();
         console.log("🔍 User data:", result);
+
+        // Resolve which account to load. Normally it's the user's own record.
+        // A team member has no Users record of their own — resolve the owner
+        // they belong to and load THAT account (so they work on the owner's books).
+        let acct = result.user;
+        let acctId = user.userId;
+        let teamRole = null;
+        let memberEmail = null;
+
         if (!response.ok || !result.user) {
-          await signOut();
-          notify("danger", "Account not found. Please sign up or contact support.");
-          setLoading(false);
-          return;
+          const who = await getMyOwner();
+          if (who?.ownerId) {
+            const oRes = await fetch(apiUrl(`${ROUTES.USERS}/${who.ownerId}`), {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                ...(await authHeader()),
+              },
+            });
+            const oData = await oRes.json();
+            if (oRes.ok && oData.user) {
+              acct = oData.user;
+              acctId = who.ownerId;
+              teamRole = who.role || "member";
+              memberEmail = user?.signInDetails?.loginId || email;
+            }
+          }
+          if (!acct) {
+            await signOut();
+            notify("danger", "Account not found. Please sign up or contact support.");
+            setLoading(false);
+            return;
+          }
         }
+
         // Keep the Cognito session Amplify just stored (was localStorage.clear()).
         clearAppStorageKeepingSession();
         localStorage.setItem("provider", "Email");
-        localStorage.setItem("userId", user.userId);
-        localStorage.setItem("user_email", result.user?.email || "");
-        localStorage.setItem("user_name", result.user?.name || "");
-        localStorage.setItem("role", result.user?.role?.toString() || "2");
-        localStorage.setItem("businessType", result.user?.businessType || "");
-        localStorage.setItem(
-          "outstandingDebt",
-          result.user?.outstandingDebt || "0"
-        );
-        localStorage.setItem(
-          "valueableItems",
-          result.user?.valueableItems || "0"
-        );
-        localStorage.setItem("cashBalance", result.user?.cashBalance || "0");
-        localStorage.setItem("currency", result.user?.currency || "USD");
+        localStorage.setItem("userId", acctId);
+        localStorage.setItem("user_email", acct?.email || "");
+        localStorage.setItem("user_name", acct?.name || "");
+        localStorage.setItem("role", acct?.role?.toString() || "2");
+        localStorage.setItem("businessType", acct?.businessType || "");
+        localStorage.setItem("outstandingDebt", acct?.outstandingDebt || "0");
+        localStorage.setItem("valueableItems", acct?.valueableItems || "0");
+        localStorage.setItem("cashBalance", acct?.cashBalance || "0");
+        localStorage.setItem("currency", acct?.currency || "USD");
         localStorage.setItem("authToken", "authenticated");
+        if (teamRole) {
+          // Signed in as a teammate on someone else's account.
+          localStorage.setItem("isTeamMember", "true");
+          localStorage.setItem("teamRole", teamRole);
+          localStorage.setItem("memberId", user.userId);
+          localStorage.setItem("memberEmail", memberEmail || "");
+        }
 
         const path =
-          result.user?.role === 2
+          acct?.role === 2
             ? "/customer/dashboard"
-            : result.user?.role === 0
+            : acct?.role === 0
               ? "/admin/dashboard"
               : "/customer/dashboard";
         navigate(path, { replace: true });
