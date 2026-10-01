@@ -17,13 +17,15 @@ export async function fetchTeam() {
   }
 }
 
-/** Invite a teammate by email with a role ("accountant" | "member").
- * Backend sends the invite + creates a pending seat. */
-export async function inviteTeamMember({ email, role }) {
+/** Add a teammate: creates a real login (email + password) scoped to this
+ * owner's account, with a role ("accountant" | "member" | "viewer").
+ * Backend provisions the Cognito user + membership record. */
+export async function inviteTeamMember({ email, role, password }) {
   const res = await axios.post(apiUrl(ROUTES.TEAM), {
     userId: ownerId(),
     email: (email || "").trim().toLowerCase(),
     role: role || "member",
+    password: password || "",
   });
   return res.data;
 }

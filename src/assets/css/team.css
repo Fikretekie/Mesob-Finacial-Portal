@@ -137,3 +137,26 @@
 .team-empty__sub { font-size: 0.85rem; margin: 0; }
 
 .team-role-hint { display: block; margin-top: 6px; color: var(--text-3); font-size: 12px; }
+
+.team-pw-row { display: flex; gap: 8px; align-items: stretch; }
+.team-pw-row > .form-control,
+.team-pw-row > input { flex: 1 1 auto; min-width: 0; }
+.team-pw-btn {
+  flex: 0 0 auto;
+  padding: 0 12px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-3);
+  color: var(--text-2);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.team-pw-btn:hover { color: var(--text-1); border-color: var(--accent); }
+.team-pw-btn--gen {
+  color: var(--accent);
+  border-color: rgba(59, 130, 246, 0.35);
+  background: var(--accent-soft);
+}
+.team-pw-btn--gen:hover { color: var(--accent-ink); background: var(--accent-solid); border-color: var(--accent-solid); }

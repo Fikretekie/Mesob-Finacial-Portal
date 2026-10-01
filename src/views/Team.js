@@ -36,10 +36,24 @@ function Team() {
   const [loading, setLoading] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [role, setRole] = useState("accountant");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [removingId, setRemovingId] = useState(null);
+
+  // Strong random password so the owner doesn't have to invent one.
+  const generatePassword = () => {
+    const sets = ["ABCDEFGHJKLMNPQRSTUVWXYZ", "abcdefghijkmnpqrstuvwxyz", "23456789", "!@#$%*?"];
+    const all = sets.join("");
+    const rnd = (s) => s[Math.floor(Math.random() * s.length)];
+    let out = sets.map(rnd); // guarantee one from each set
+    for (let i = out.length; i < 12; i++) out.push(rnd(all));
+    const shuffled = out.sort(() => Math.random() - 0.5).join("");
+    setPassword(shuffled);
+    setShowPw(true);
+  };
 
   const ownerEmail = localStorage.getItem("user_email") || "";
 
@@ -58,6 +72,8 @@ function Team() {
   const resetInvite = () => {
     setShowInvite(false);
     setEmail("");
+    setPassword("");
+    setShowPw(false);
     setRole("accountant");
     setError("");
   };
@@ -67,14 +83,18 @@ function Team() {
       setError(t("team.invalidEmail"));
       return;
     }
+    if ((password || "").length < 8) {
+      setError(t("team.passwordShort"));
+      return;
+    }
     setSending(true);
     setError("");
     try {
-      await inviteTeamMember({ email, role });
+      await inviteTeamMember({ email, role, password });
       resetInvite();
       load();
     } catch (err) {
-      console.error("Invite failed:", err);
+      console.error("Add user failed:", err);
       setError(t("team.inviteError"));
     } finally {
       setSending(false);
@@ -183,6 +203,25 @@ function Team() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t("team.emailPlaceholder")}
             />
+          </FormGroup>
+          <FormGroup>
+            <Label>{t("team.passwordLabel")}</Label>
+            <div className="team-pw-row">
+              <Input
+                type={showPw ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t("team.passwordPlaceholder")}
+                autoComplete="new-password"
+              />
+              <button type="button" className="team-pw-btn" onClick={() => setShowPw((s) => !s)}>
+                {showPw ? t("team.hide") : t("team.show")}
+              </button>
+              <button type="button" className="team-pw-btn team-pw-btn--gen" onClick={generatePassword}>
+                {t("team.generate")}
+              </button>
+            </div>
+            <small className="team-role-hint">{t("team.passwordHint")}</small>
           </FormGroup>
           <FormGroup>
             <Label>{t("team.roleLabel")}</Label>
