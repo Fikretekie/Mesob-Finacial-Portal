@@ -159,14 +159,19 @@ const getCustomerRoutes = () => {
     component: <Connections />,
     layout: "/customer",
   },
-  {
-    path: "/team",
-    name: "Team",
-    nameKey: "nav.team",
-    icon: "users_single-02",
-    component: <Team />,
-    layout: "/customer",
-  },
+  // Team management is owner-only — teammates can't add/remove users.
+  ...(localStorage.getItem("isTeamMember") !== "true"
+    ? [
+        {
+          path: "/team",
+          name: "Team",
+          nameKey: "nav.team",
+          icon: "users_single-02",
+          component: <Team />,
+          layout: "/customer",
+        },
+      ]
+    : []),
   {
     path: "/profile",
     name: "Account",

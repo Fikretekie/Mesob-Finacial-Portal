@@ -56,6 +56,8 @@ function Team() {
   };
 
   const ownerEmail = localStorage.getItem("user_email") || "";
+  // Teammates can't manage the team — only the account owner.
+  const canManage = localStorage.getItem("isTeamMember") !== "true";
 
   const load = () => {
     setLoading(true);
@@ -141,15 +143,17 @@ function Team() {
           <h2 className="team-title">{t("team.title")}</h2>
           <p className="team-sub">{t("team.subtitle")}</p>
         </div>
-        <button className="team-invite-btn" onClick={() => setShowInvite(true)}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <line x1="19" y1="8" x2="19" y2="14" />
-            <line x1="22" y1="11" x2="16" y2="11" />
-          </svg>
-          {t("team.invite")}
-        </button>
+        {canManage && (
+          <button className="team-invite-btn" onClick={() => setShowInvite(true)}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <line x1="19" y1="8" x2="19" y2="14" />
+              <line x1="22" y1="11" x2="16" y2="11" />
+            </svg>
+            {t("team.invite")}
+          </button>
+        )}
       </div>
 
       <div className="team-card">
@@ -186,14 +190,16 @@ function Team() {
                     </span>
                   </span>
                 </div>
-                <button
-                  className="team-remove"
-                  title={t("team.remove")}
-                  onClick={() => handleRemove(m)}
-                  disabled={removingId === mid}
-                >
-                  {removingId === mid ? <Spinner size="sm" /> : "✕"}
-                </button>
+                {canManage && (
+                  <button
+                    className="team-remove"
+                    title={t("team.remove")}
+                    onClick={() => handleRemove(m)}
+                    disabled={removingId === mid}
+                  >
+                    {removingId === mid ? <Spinner size="sm" /> : "✕"}
+                  </button>
+                )}
               </div>
             );
           })
