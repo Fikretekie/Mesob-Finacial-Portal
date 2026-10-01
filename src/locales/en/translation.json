@@ -975,5 +975,20 @@
     "loading": "Loading team…",
     "emptyTitle": "No teammates yet",
     "emptySub": "Invite your accountant or a teammate to collaborate."
+  },
+  "connections": {
+    "title": "Connections",
+    "subtitle": "Connect your bank and point of sale so transactions flow in automatically.",
+    "plaidName": "Bank account",
+    "squareName": "Square POS",
+    "plaidDesc": "Securely link your bank through Plaid to auto-import transactions.",
+    "squareDesc": "Sync your Square sales as income automatically.",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "connected": "Connected",
+    "notConnected": "Not connected",
+    "comingSoonHint": "Available soon — we're finishing the setup.",
+    "securityNote": "Bank-grade security. We never see or store your login credentials.",
+    "loading": "Checking connections…"
   }
 }

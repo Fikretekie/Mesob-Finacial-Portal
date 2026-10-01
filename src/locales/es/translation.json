@@ -983,5 +983,20 @@
     "loading": "Cargando equipo…",
     "emptyTitle": "Aún no hay compañeros",
     "emptySub": "Invita a tu contador o a un compañero para colaborar."
+  },
+  "connections": {
+    "title": "Conexiones",
+    "subtitle": "Conecta tu banco y punto de venta para que las transacciones entren automáticamente.",
+    "plaidName": "Cuenta bancaria",
+    "squareName": "Square POS",
+    "plaidDesc": "Vincula tu banco de forma segura con Plaid para importar transacciones automáticamente.",
+    "squareDesc": "Sincroniza tus ventas de Square como ingresos automáticamente.",
+    "connect": "Conectar",
+    "disconnect": "Desconectar",
+    "connected": "Conectado",
+    "notConnected": "No conectado",
+    "comingSoonHint": "Disponible pronto — estamos terminando la configuración.",
+    "securityNote": "Seguridad de nivel bancario. Nunca vemos ni guardamos tus credenciales.",
+    "loading": "Verificando conexiones…"
   }
 }

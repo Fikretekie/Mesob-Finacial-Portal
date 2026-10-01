@@ -983,5 +983,20 @@
     "loading": "ጋንታ ይጽዓን ኣሎ…",
     "emptyTitle": "ክሳብ ሕጂ መሳርሕተኛታት የለዉን",
     "emptySub": "ንምትሕብባር ናይ ሕሳብ ክኢላኹም ወይ መሳርሕተኛ ዓድሙ።"
+  },
+  "connections": {
+    "title": "ርክባት",
+    "subtitle": "ግብይታት ብኣውቶማቲክ ምእንቲ ክኣትዉ ባንክኹምን ናይ ሽያጭ ነጥብኹምን ኣራኽቡ።",
+    "plaidName": "ናይ ባንክ ሕሳብ",
+    "squareName": "Square POS",
+    "plaidDesc": "ግብይታት ብኣውቶማቲክ ንምእታው ባንክኹም ብPlaid ኣቢልኩም ብውሕስነት ኣራኽቡ።",
+    "squareDesc": "ናይ Square ሽያጣትኩም ከም ኣታዊ ብኣውቶማቲክ ኣመሳስሉ።",
+    "connect": "ኣራኽብ",
+    "disconnect": "ኣቋርጽ",
+    "connected": "ተራኺቡ",
+    "notConnected": "ኣይተራኸበን",
+    "comingSoonHint": "ኣብ ቀረባ ይርከብ — ነቲ ምድላው ንውድኦ ኣለና።",
+    "securityNote": "ናይ ባንክ ደረጃ ውሕስነት። ናይ መእተዊ ሓበሬታኹም ፈጺምና ኣይንርእን ኣይነቐምጥን።",
+    "loading": "ርክባት ይረጋገጽ ኣሎ…"
   }
 }

@@ -983,5 +983,20 @@
     "loading": "Kooxda waa la soo rarayaa…",
     "emptyTitle": "Weli saaxiibo ma jiraan",
     "emptySub": "Ku casuun xisaabiyahaaga ama saaxiib si aad ula shaqaysaan."
+  },
+  "connections": {
+    "title": "Xiriirrada",
+    "subtitle": "Ku xir bangigaaga iyo meesha iibka si macaamilladu si toos ah u soo galaan.",
+    "plaidName": "Akoonka bangiga",
+    "squareName": "Square POS",
+    "plaidDesc": "Si ammaan ah ugu xir bangigaaga Plaid si aad si toos ah u soo dejiso macaamilada.",
+    "squareDesc": "Si toos ah u isku xir iibkaaga Square sida dakhli.",
+    "connect": "Xir",
+    "disconnect": "Ka xir",
+    "connected": "La xiray",
+    "notConnected": "Lama xirin",
+    "comingSoonHint": "Dhawaan la heli doono — waxaan dhammaynaynaa dejinta.",
+    "securityNote": "Amniga heerka bangiga. Marnaba ma aragno mana kaydinno xogtaada gelitaanka.",
+    "loading": "Hubinta xiriirrada…"
   }
 }

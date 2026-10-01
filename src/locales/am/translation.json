@@ -983,5 +983,20 @@
     "loading": "ቡድን በመጫን ላይ…",
     "emptyTitle": "እስካሁን አባላት የሉም",
     "emptySub": "ለመተባበር የሂሳብ ባለሙያዎን ወይም አባልን ይጋብዙ።"
+  },
+  "connections": {
+    "title": "ግንኙነቶች",
+    "subtitle": "ግብይቶች በራስ-ሰር እንዲገቡ ባንክዎንና የሽያጭ ነጥብዎን ያገናኙ።",
+    "plaidName": "የባንክ ሂሳብ",
+    "squareName": "Square POS",
+    "plaidDesc": "ግብይቶችን በራስ-ሰር ለማስገባት ባንክዎን በPlaid በኩል በደህንነት ያገናኙ።",
+    "squareDesc": "የSquare ሽያጮችዎን እንደ ገቢ በራስ-ሰር ያመሳስሉ።",
+    "connect": "አገናኝ",
+    "disconnect": "አቋርጥ",
+    "connected": "ተገናኝቷል",
+    "notConnected": "አልተገናኘም",
+    "comingSoonHint": "በቅርቡ ይገኛል — ዝግጅቱን እያጠናቀቅን ነው።",
+    "securityNote": "የባንክ ደረጃ ደህንነት። የመግቢያ መረጃዎን ፈጽሞ አናይም ወይም አናስቀምጥም።",
+    "loading": "ግንኙነቶችን በማረጋገጥ ላይ…"
   }
 }

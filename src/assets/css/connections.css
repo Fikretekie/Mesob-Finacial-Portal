@@ -1,0 +1,83 @@
+.conn-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@media (min-width: 640px) {
+  .conn-grid { grid-template-columns: 1fr 1fr; }
+}
+
+.conn-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.conn-ico {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.28);
+}
+.conn-ico--pos { color: var(--green, #34d399); background: rgba(52, 196, 137, 0.12); border-color: rgba(52, 196, 137, 0.3); }
+
+.conn-body { flex: 1; min-width: 0; }
+.conn-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.conn-name { font-weight: 700; font-size: 0.98rem; color: var(--text-1); }
+.conn-desc { color: var(--text-2); font-size: 0.85rem; margin: 6px 0 0; line-height: 1.45; }
+.conn-meta { color: var(--text-3); font-size: 0.78rem; margin: 6px 0 0; }
+
+.conn-chip {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: var(--text-3);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+}
+.conn-chip--soon { color: var(--amber, #e6b25f); background: rgba(230, 178, 95, 0.12); border-color: rgba(230, 178, 95, 0.3); }
+.conn-chip--on { color: var(--green, #34d399); background: rgba(52, 196, 137, 0.12); border-color: rgba(52, 196, 137, 0.3); }
+
+.conn-action { flex: 0 0 auto; align-self: center; }
+.conn-btn {
+  height: 36px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-solid) 100%);
+  transition: transform .15s ease, filter .15s ease;
+}
+.conn-btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.06); }
+.conn-btn--ghost {
+  background: transparent;
+  color: var(--text-2);
+  border: 1px solid var(--border-strong);
+}
+.conn-btn:disabled { opacity: .6; cursor: default; }
+
+.conn-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 20px;
+  color: var(--text-3);
+  font-size: 0.8rem;
+}
+.conn-note svg { color: var(--text-3); flex: 0 0 auto; }

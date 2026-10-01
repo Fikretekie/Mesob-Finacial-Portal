@@ -13,6 +13,7 @@ import TripHistory from "views/TripHistory";
 import FuelPurchase from "views/FuelPurchase";
 import IftaReport from "views/IftaReport";
 import Team from "views/Team";
+import Connections from "views/Connections";
 
 const adminRoutes = [
   {
@@ -150,6 +151,16 @@ const getCustomerRoutes = () => {
         },
       ]
     : []),
+  {
+    path: "/connections",
+    name: "Connections",
+    nameKey: "nav.connections",
+    badge: "nav.badgeSoon",
+    badgeTone: "soon",
+    icon: "ui-1_settings-gear-63",
+    component: <Connections />,
+    layout: "/customer",
+  },
   {
     path: "/team",
     name: "Team",
