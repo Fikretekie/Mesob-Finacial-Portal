@@ -999,7 +999,11 @@
     "businessAccess": "የንግድ መዳረሻ",
     "businessAccessHint": "ይህ የቡድን አባል የትኞቹን ንግዶች ማየት እንደሚችል ይምረጡ።",
     "selectBusiness": "ቢያንስ አንድ ንግድ ይምረጡ።",
-    "allBusinesses": "ሁሉም ንግዶች"
+    "allBusinesses": "ሁሉም ንግዶች",
+    "activity": "እንቅስቃሴ",
+    "verbAdded": "አክሏል",
+    "verbUpdated": "አዘምኗል",
+    "verbDeleted": "ሰርዟል"
   },
   "connections": {
     "title": "ግንኙነቶች",

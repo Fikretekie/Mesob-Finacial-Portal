@@ -999,7 +999,11 @@
     "businessAccess": "الوصول إلى الأنشطة",
     "businessAccessHint": "اختر الأنشطة التجارية التي يمكن لعضو الفريق الوصول إليها.",
     "selectBusiness": "اختر نشاطًا واحدًا على الأقل.",
-    "allBusinesses": "كل الأنشطة"
+    "allBusinesses": "كل الأنشطة",
+    "activity": "النشاط",
+    "verbAdded": "أضاف",
+    "verbUpdated": "حدّث",
+    "verbDeleted": "حذف"
   },
   "connections": {
     "title": "التكاملات",

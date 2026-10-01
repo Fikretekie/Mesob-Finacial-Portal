@@ -999,7 +999,11 @@
     "businessAccess": "Acceso a negocios",
     "businessAccessHint": "Elige a qué negocios puede acceder este compañero.",
     "selectBusiness": "Selecciona al menos un negocio.",
-    "allBusinesses": "Todos los negocios"
+    "allBusinesses": "Todos los negocios",
+    "activity": "Actividad",
+    "verbAdded": "agregó",
+    "verbUpdated": "actualizó",
+    "verbDeleted": "eliminó"
   },
   "connections": {
     "title": "Conexiones",

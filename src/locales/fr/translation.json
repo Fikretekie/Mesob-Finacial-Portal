@@ -999,7 +999,11 @@
     "businessAccess": "Accès aux entreprises",
     "businessAccessHint": "Choisissez les entreprises auxquelles ce collègue a accès.",
     "selectBusiness": "Sélectionnez au moins une entreprise.",
-    "allBusinesses": "Toutes les entreprises"
+    "allBusinesses": "Toutes les entreprises",
+    "activity": "Activité",
+    "verbAdded": "a ajouté",
+    "verbUpdated": "a modifié",
+    "verbDeleted": "a supprimé"
   },
   "connections": {
     "title": "Connexions",

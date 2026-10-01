@@ -999,7 +999,11 @@
     "businessAccess": "ናይ ንግዲ መእተዊ",
     "businessAccessHint": "እዚ ናይ ጋንታ ኣባል ኣየኖት ንግድታት ክርኢ ከም ዝኽእል ምረጹ።",
     "selectBusiness": "ብውሑዱ ሓደ ንግዲ ምረጹ።",
-    "allBusinesses": "ኩሎም ንግድታት"
+    "allBusinesses": "ኩሎም ንግድታት",
+    "activity": "ንጥፈት",
+    "verbAdded": "ወሲኹ",
+    "verbUpdated": "ኣሐዲሱ",
+    "verbDeleted": "ሰሪዙ"
   },
   "connections": {
     "title": "ርክባት",

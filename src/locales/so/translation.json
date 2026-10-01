@@ -999,7 +999,11 @@
     "businessAccess": "Gelitaanka ganacsiga",
     "businessAccessHint": "Dooro ganacsiyada xubintani arki karto.",
     "selectBusiness": "Dooro ugu yaraan hal ganacsi.",
-    "allBusinesses": "Dhammaan ganacsiyada"
+    "allBusinesses": "Dhammaan ganacsiyada",
+    "activity": "Dhaqdhaqaaq",
+    "verbAdded": "ku daray",
+    "verbUpdated": "cusboonaysiiyay",
+    "verbDeleted": "tirtiray"
   },
   "connections": {
     "title": "Xiriirrada",

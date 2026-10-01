@@ -74,6 +74,16 @@ export async function getMyOwner() {
   }
 }
 
+/** Owner-only: recent teammate activity (add/edit/delete) for the account. */
+export async function fetchTeamLog() {
+  try {
+    const res = await axios.get(apiUrl(`${ROUTES.TEAM}/log`), { headers: await authHeader() });
+    return Array.isArray(res.data) ? res.data : [];
+  } catch (err) {
+    return [];
+  }
+}
+
 export const TEAM_ROLES = [
   { value: "accountant", labelKey: "team.roleAccountant" },
   { value: "member", labelKey: "team.roleMember" },

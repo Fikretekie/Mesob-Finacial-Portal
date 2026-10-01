@@ -991,7 +991,11 @@
     "businessAccess": "Business access",
     "businessAccessHint": "Choose which businesses this teammate can see.",
     "selectBusiness": "Select at least one business.",
-    "allBusinesses": "All businesses"
+    "allBusinesses": "All businesses",
+    "activity": "Activity",
+    "verbAdded": "added",
+    "verbUpdated": "updated",
+    "verbDeleted": "deleted"
   },
   "connections": {
     "title": "Connections",

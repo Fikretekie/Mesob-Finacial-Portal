@@ -17,6 +17,7 @@ import {
   inviteTeamMember,
   updateTeamMember,
   removeTeamMember,
+  fetchTeamLog,
   TEAM_ROLES,
 } from "utils/teamStorage";
 import { fetchBusinesses, getDefaultBusinessName } from "utils/businessStorage";
@@ -50,6 +51,23 @@ function Team() {
   const [bizOptions, setBizOptions] = useState([]); // [{id,name}] incl default (id "")
   const [inviteBiz, setInviteBiz] = useState([]); // selected business ids (add)
   const [editBiz, setEditBiz] = useState([]); // selected business ids (edit)
+  const [log, setLog] = useState([]); // recent teammate activity (owner only)
+
+  const fmtDateTime = (s) => {
+    const d = new Date(s);
+    return isNaN(d) ? "" : d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  };
+
+  const actionLabel = (ev) => {
+    const verb =
+      ev.method === "POST" ? t("team.verbAdded")
+      : ev.method === "PUT" ? t("team.verbUpdated")
+      : ev.method === "DELETE" ? t("team.verbDeleted")
+      : ev.method;
+    const parts = (ev.resource || "").split("/").filter((p) => p && !p.startsWith("{"));
+    const entity = parts[parts.length - 1] || "item";
+    return `${verb} ${entity}`;
+  };
 
   const toggleId = (arr, id) => (arr.includes(id) ? arr.filter((x) => x !== id) : [...arr, id]);
 
@@ -129,6 +147,7 @@ function Team() {
       setBizOptions(opts);
       setInviteBiz(opts.map((o) => o.id)); // default: access to all
     })();
+    if (canManage) fetchTeamLog().then(setLog).catch(() => setLog([]));
   }, []);
 
   const resetInvite = () => {
@@ -289,6 +308,23 @@ function Team() {
           })
         )}
       </div>
+
+      {canManage && log.length > 0 && (
+        <div className="team-card team-log">
+          <div className="team-log__head">{t("team.activity")}</div>
+          {log.map((ev, i) => (
+            <div className="team-row" key={i}>
+              <div className="team-ava team-ava--log">{initials(ev.actorEmail || "?")}</div>
+              <div className="team-row__main">
+                <span className="team-row__email">{ev.actorEmail || ev.actorSub}</span>
+                <span className="team-row__meta">
+                  {actionLabel(ev)} · {fmtDateTime(ev.at)}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <Modal isOpen={showInvite} toggle={() => !sending && resetInvite()} className="add-transaction-modal add-business-modal">
         <ModalHeader toggle={() => !sending && resetInvite()}>
