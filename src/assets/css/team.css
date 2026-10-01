@@ -118,6 +118,21 @@
   border-color: rgba(59, 130, 246, 0.35);
 }
 
+.team-row__actions { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.team-edit {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all .15s ease;
+}
+.team-edit:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+
 .team-remove {
   flex: 0 0 auto;
   width: 30px;

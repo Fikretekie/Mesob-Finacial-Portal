@@ -991,7 +991,11 @@
     "hide": "Qari",
     "passwordShort": "Furaha waa inuu ahaadaa ugu yaraan 8 xaraf.",
     "emailTaken": "Iimaylkan horey ayuu u lahaa akoon Meksova — isticmaal iimayl kale xubinta kooxda.",
-    "passwordWeak": "Furahani ma buuxiyo shuruudaha — isku day mid xoog badan ama taabo Samee."
+    "passwordWeak": "Furahani ma buuxiyo shuruudaha — isku day mid xoog badan ama taabo Samee.",
+    "edit": "Wax ka beddel",
+    "editTitle": "Wax ka beddel xubinta",
+    "save": "Kaydi isbeddelada",
+    "added": "lagu daray"
   },
   "connections": {
     "title": "Xiriirrada",

@@ -39,6 +39,16 @@ export async function inviteTeamMember({ email, role, password }) {
   return res.data;
 }
 
+/** Update a teammate's role (and later business access). Owner-only. */
+export async function updateTeamMember(memberId, fields) {
+  const res = await axios.put(
+    apiUrl(`${ROUTES.TEAM}/${encodeURIComponent(memberId)}`),
+    { ...fields },
+    { headers: await authHeader() }
+  );
+  return res.data;
+}
+
 /** Remove / revoke a teammate by their member id. */
 export async function removeTeamMember(memberId) {
   const res = await axios.delete(apiUrl(`${ROUTES.TEAM}/${memberId}`), {

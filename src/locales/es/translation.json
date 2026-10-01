@@ -991,7 +991,11 @@
     "hide": "Ocultar",
     "passwordShort": "La contraseña debe tener al menos 8 caracteres.",
     "emailTaken": "Ese correo ya tiene una cuenta de Meksova — usa otro correo para el compañero.",
-    "passwordWeak": "Esa contraseña no cumple los requisitos — usa una más segura o toca Generar."
+    "passwordWeak": "Esa contraseña no cumple los requisitos — usa una más segura o toca Generar.",
+    "edit": "Editar",
+    "editTitle": "Editar compañero",
+    "save": "Guardar cambios",
+    "added": "añadido"
   },
   "connections": {
     "title": "Conexiones",

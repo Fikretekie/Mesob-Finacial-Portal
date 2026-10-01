@@ -15,6 +15,7 @@ import {
 import {
   fetchTeam,
   inviteTeamMember,
+  updateTeamMember,
   removeTeamMember,
   TEAM_ROLES,
 } from "utils/teamStorage";
@@ -42,6 +43,37 @@ function Team() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [removingId, setRemovingId] = useState(null);
+  const [editing, setEditing] = useState(null); // member being edited
+  const [editRole, setEditRole] = useState("accountant");
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const fmtDate = (s) => {
+    if (!s) return "";
+    const d = new Date(s);
+    return isNaN(d) ? "" : d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  };
+
+  const openEdit = (m) => {
+    setEditing(m);
+    setEditRole(m.role || "member");
+    setError("");
+  };
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    setSavingEdit(true);
+    setError("");
+    try {
+      await updateTeamMember(editing.memberId || editing.id, { role: editRole });
+      setEditing(null);
+      load();
+    } catch (err) {
+      console.error("Update member failed:", err);
+      setError(t("team.inviteError"));
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   // Strong random password so the owner doesn't have to invent one.
   const generatePassword = () => {
@@ -188,17 +220,30 @@ function Team() {
                     <span className={status === "active" ? "team-status--active" : "team-status--pending"}>
                       {status === "active" ? t("team.active") : t("team.invited")}
                     </span>
+                    {m.createdAt ? ` · ${t("team.added")} ${fmtDate(m.createdAt)}` : ""}
                   </span>
                 </div>
                 {canManage && (
-                  <button
-                    className="team-remove"
-                    title={t("team.remove")}
-                    onClick={() => handleRemove(m)}
-                    disabled={removingId === mid}
-                  >
-                    {removingId === mid ? <Spinner size="sm" /> : "✕"}
-                  </button>
+                  <div className="team-row__actions">
+                    <button
+                      className="team-edit"
+                      title={t("team.edit")}
+                      onClick={() => openEdit(m)}
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+                      </svg>
+                    </button>
+                    <button
+                      className="team-remove"
+                      title={t("team.remove")}
+                      onClick={() => handleRemove(m)}
+                      disabled={removingId === mid}
+                    >
+                      {removingId === mid ? <Spinner size="sm" /> : "✕"}
+                    </button>
+                  </div>
                 )}
               </div>
             );
@@ -257,6 +302,33 @@ function Team() {
           </Button>
           <Button color="primary" onClick={handleInvite} disabled={sending}>
             {sending ? <Spinner size="sm" /> : t("team.sendInvite")}
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      <Modal isOpen={!!editing} toggle={() => !savingEdit && setEditing(null)} className="add-transaction-modal add-business-modal">
+        <ModalHeader toggle={() => !savingEdit && setEditing(null)}>
+          {t("team.editTitle")}
+          <span className="mksv-modal-sub">{editing?.email}</span>
+        </ModalHeader>
+        <ModalBody>
+          {error && <div className="alert alert-danger" role="alert">{error}</div>}
+          <FormGroup>
+            <Label>{t("team.roleLabel")}</Label>
+            <Input type="select" value={editRole} onChange={(e) => setEditRole(e.target.value)}>
+              {TEAM_ROLES.map((r) => (
+                <option key={r.value} value={r.value}>{t(r.labelKey)}</option>
+              ))}
+            </Input>
+            <small className="team-role-hint">{t("team.roleHint")}</small>
+          </FormGroup>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="secondary" onClick={() => setEditing(null)} disabled={savingEdit}>
+            {t("common.cancel")}
+          </Button>
+          <Button color="primary" onClick={saveEdit} disabled={savingEdit}>
+            {savingEdit ? <Spinner size="sm" /> : t("team.save")}
           </Button>
         </ModalFooter>
       </Modal>

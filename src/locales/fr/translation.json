@@ -991,7 +991,11 @@
     "hide": "Masquer",
     "passwordShort": "Le mot de passe doit comporter au moins 8 caractères.",
     "emailTaken": "Cet e-mail a déjà un compte Meksova — utilisez un autre e-mail pour le collègue.",
-    "passwordWeak": "Ce mot de passe ne respecte pas les exigences — essayez-en un plus fort ou appuyez sur Générer."
+    "passwordWeak": "Ce mot de passe ne respecte pas les exigences — essayez-en un plus fort ou appuyez sur Générer.",
+    "edit": "Modifier",
+    "editTitle": "Modifier le collègue",
+    "save": "Enregistrer",
+    "added": "ajouté"
   },
   "connections": {
     "title": "Connexions",
