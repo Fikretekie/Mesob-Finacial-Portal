@@ -29,16 +29,7 @@ function Footer(props) {
           className="copyright"
           style={{ color: "var(--text-2)" }}
         >
-          &copy; {1900 + new Date().getYear()} · Copy right reserved for Meksova ·
-          Coded by{" "}
-          <a
-            href="https://therevolutiontechnologies.io"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: "var(--text-2)", textDecoration: "underline" }}
-          >
-            The Revolution Technologies
-          </a>
+          &copy; {1900 + new Date().getYear()} · Copy right reserved for Meksova
         </div>
       </Container>
     </footer>
