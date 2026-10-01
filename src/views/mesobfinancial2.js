@@ -1422,6 +1422,7 @@ const MesobFinancial2 = () => {
     scheduleCount < 4;
 
   const isSubscriptionGateActive = () =>
+    localStorage.getItem("isTeamMember") !== "true" &&
     userRole !== 1 && !userSubscription && !isTrialActive();
 
   const calculateFinancials = (transactions) => {

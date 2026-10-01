@@ -183,7 +183,7 @@ const getCustomerRoutes = () => {
     component: <CSVReports />,
     layout: "/customer",
   },
-  ...(userRole !== 1
+  ...(userRole !== 1 && localStorage.getItem("isTeamMember") !== "true"
     ? [
         {
           path: "/subscription",

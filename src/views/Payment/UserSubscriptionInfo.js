@@ -9,6 +9,9 @@ const UserSubscriptionInfo = ({
 }) => {
   const navigate = useNavigate();
 
+  // Teammates don't manage billing — never show them subscribe/trial prompts.
+  if (localStorage.getItem("isTeamMember") === "true") return null;
+
   const isTrialActive = () => {
     return new Date() < trialEndDate && scheduleCount < 4;
   };

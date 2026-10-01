@@ -84,7 +84,9 @@ function DemoNavbar(props) {
     trialEndDate && new Date() < trialEndDate && scheduleCount < 4;
 
   const subscriptionGateActive =
-    userRole === 1 ? false : !userSubscription && !isTrialActive();
+    userRole === 1 || localStorage.getItem("isTeamMember") === "true"
+      ? false
+      : !userSubscription && !isTrialActive();
 
   const SUBSCRIPTION_ROUTE = "/customer/subscription";
   const SUBSCRIPTION_UPDATE_HINT = t("navbar.subscriptionUpdateNeeded");

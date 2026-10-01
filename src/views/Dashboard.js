@@ -732,6 +732,7 @@ function Dashboard() {
     trialEndDate && new Date() < trialEndDate && scheduleCount < 4;
 
   const isSubscriptionGateActive = () =>
+    localStorage.getItem("isTeamMember") !== "true" &&
     userRole !== 1 && !userSubscription && !isTrialActive();
 
   const handleAddTransactionClick = () => {
@@ -957,7 +958,9 @@ function Dashboard() {
   };
 
   const filterActionsLocked =
-    userRole === 1 ? false : !userSubscription && !isTrialActive();
+    userRole === 1 || localStorage.getItem("isTeamMember") === "true"
+      ? false
+      : !userSubscription && !isTrialActive();
   const dashboardFilterDisabled = userRole === 0 && !selectedUserId;
 
   const handleDashboardFilterRun = () => {
