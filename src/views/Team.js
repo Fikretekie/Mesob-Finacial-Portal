@@ -87,6 +87,15 @@ function Team() {
       setError(t("team.passwordShort"));
       return;
     }
+    if (
+      !/[a-z]/.test(password) ||
+      !/[A-Z]/.test(password) ||
+      !/[0-9]/.test(password) ||
+      !/[^A-Za-z0-9]/.test(password)
+    ) {
+      setError(t("team.passwordWeak"));
+      return;
+    }
     setSending(true);
     setError("");
     try {
