@@ -879,7 +879,11 @@
     "fuelPurchase": "Iibsiga Shidaalka",
     "iftaReport": "Warbixinta IFTA",
     "backupCsv": "Kaydka CSV",
-    "subscribe": "Isdiiwaangeli"
+    "subscribe": "Isdiiwaangeli",
+    "team": "Kooxda",
+    "connections": "Xiriirrada",
+    "badgeNew": "CUSUB",
+    "badgeSoon": "DHOW"
   },
   "navbar": {
     "helpSupport": "Caawimo & Taageero",
@@ -954,5 +958,30 @@
     "cancel": "Jooji",
     "save": "Kaydi",
     "saving": "Waa la kaydinayaa..."
+  },
+  "team": {
+    "title": "Kooxda",
+    "subtitle": "Ku casuun xisaabiyahaaga ama saaxiib akoonkan — waxay heli doonaan gelitaan ammaan ah oo u gaar ah.",
+    "invite": "Casuun saaxiib",
+    "inviteTitle": "Casuun saaxiib",
+    "inviteSub": "Waxay heli doonaan iimayl si ay ugu soo biiraan akoonkan.",
+    "emailLabel": "Iimaylka",
+    "emailPlaceholder": "magac@email.com",
+    "roleLabel": "Doorka",
+    "roleHint": "Xisaabiyeyaashu way arki karaan oo maamuli karaan maaliyadda. Xubnuhu way ku dari karaan macaamil. Daawadayaashu wax kaliya way arki karaan.",
+    "sendInvite": "Dir casuumaadda",
+    "invalidEmail": "Geli iimayl sax ah.",
+    "inviteError": "Lama diri karin casuumaadda. Isku day mar kale.",
+    "remove": "Ka saar",
+    "you": "Adiga",
+    "roleOwner": "Milkiilaha",
+    "roleAccountant": "Xisaabiye",
+    "roleMember": "Xubin",
+    "roleViewer": "Daawade",
+    "active": "Firfircoon",
+    "invited": "La casuumay",
+    "loading": "Kooxda waa la soo rarayaa…",
+    "emptyTitle": "Weli saaxiibo ma jiraan",
+    "emptySub": "Ku casuun xisaabiyahaaga ama saaxiib si aad ula shaqaysaan."
   }
 }

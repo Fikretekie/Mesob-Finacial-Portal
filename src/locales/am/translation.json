@@ -879,7 +879,11 @@
     "fuelPurchase": "የነዳጅ ግዢ",
     "iftaReport": "IFTA ሪፖርት",
     "backupCsv": "የCSV ምትኬ",
-    "subscribe": "ይመዝገቡ"
+    "subscribe": "ይመዝገቡ",
+    "team": "ቡድን",
+    "connections": "ግንኙነቶች",
+    "badgeNew": "አዲስ",
+    "badgeSoon": "በቅርቡ"
   },
   "navbar": {
     "helpSupport": "እገዛ እና ድጋፍ",
@@ -954,5 +958,30 @@
     "cancel": "ይቅር",
     "save": "አስቀምጥ",
     "saving": "በማስቀመጥ ላይ..."
+  },
+  "team": {
+    "title": "ቡድን",
+    "subtitle": "የሂሳብ ባለሙያዎን ወይም የቡድን አባልን ወደዚህ መለያ ይጋብዙ — የራሳቸው ደህንነቱ የተጠበቀ መግቢያ ያገኛሉ።",
+    "invite": "አባል ይጋብዙ",
+    "inviteTitle": "አባል ይጋብዙ",
+    "inviteSub": "ወደዚህ መለያ ለመቀላቀል ኢሜይል ይደርሳቸዋል።",
+    "emailLabel": "ኢሜይል አድራሻ",
+    "emailPlaceholder": "name@email.com",
+    "roleLabel": "ሚና",
+    "roleHint": "የሂሳብ ባለሙያዎች ፋይናንስን ማየትና ማስተዳደር ይችላሉ። አባላት ግብይቶችን ማከል ይችላሉ። ተመልካቾች ማየት ብቻ ይችላሉ።",
+    "sendInvite": "ግብዣ ላክ",
+    "invalidEmail": "ትክክለኛ ኢሜይል ያስገቡ።",
+    "inviteError": "ግብዣውን መላክ አልተቻለም። እንደገና ይሞክሩ።",
+    "remove": "አስወግድ",
+    "you": "እርስዎ",
+    "roleOwner": "ባለቤት",
+    "roleAccountant": "የሂሳብ ባለሙያ",
+    "roleMember": "አባል",
+    "roleViewer": "ተመልካች",
+    "active": "ንቁ",
+    "invited": "ተጋብዟል",
+    "loading": "ቡድን በመጫን ላይ…",
+    "emptyTitle": "እስካሁን አባላት የሉም",
+    "emptySub": "ለመተባበር የሂሳብ ባለሙያዎን ወይም አባልን ይጋብዙ።"
   }
 }

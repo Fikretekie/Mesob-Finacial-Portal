@@ -879,7 +879,11 @@
     "fuelPurchase": "شراء الوقود",
     "iftaReport": "تقرير IFTA",
     "backupCsv": "نسخ CSV",
-    "subscribe": "اشترك"
+    "subscribe": "اشترك",
+    "team": "الفريق",
+    "connections": "التكاملات",
+    "badgeNew": "جديد",
+    "badgeSoon": "قريبًا"
   },
   "navbar": {
     "helpSupport": "المساعدة والدعم",
@@ -954,5 +958,30 @@
     "cancel": "إلغاء",
     "save": "حفظ",
     "saving": "جارٍ الحفظ..."
+  },
+  "team": {
+    "title": "الفريق",
+    "subtitle": "ادعُ محاسبك أو زميلاً إلى هذا الحساب — سيحصل على تسجيل دخول آمن خاص به.",
+    "invite": "دعوة زميل",
+    "inviteTitle": "دعوة زميل",
+    "inviteSub": "سيصله بريد إلكتروني للانضمام إلى هذا الحساب.",
+    "emailLabel": "البريد الإلكتروني",
+    "emailPlaceholder": "name@email.com",
+    "roleLabel": "الدور",
+    "roleHint": "يمكن للمحاسبين عرض وإدارة الأمور المالية. يمكن للأعضاء إضافة المعاملات. يمكن للمشاهدين العرض فقط.",
+    "sendInvite": "إرسال الدعوة",
+    "invalidEmail": "أدخل بريدًا إلكترونيًا صالحًا.",
+    "inviteError": "تعذّر إرسال الدعوة. حاول مرة أخرى.",
+    "remove": "إزالة",
+    "you": "أنت",
+    "roleOwner": "المالك",
+    "roleAccountant": "محاسب",
+    "roleMember": "عضو",
+    "roleViewer": "مشاهد",
+    "active": "نشط",
+    "invited": "مدعو",
+    "loading": "جارٍ تحميل الفريق…",
+    "emptyTitle": "لا يوجد زملاء بعد",
+    "emptySub": "ادعُ محاسبك أو زميلاً للتعاون."
   }
 }

@@ -155,6 +155,10 @@ export const ROUTES = {
   RECEIPT_OCR: "ReceiptOcr",
   /** Multi-business support -- GET ?userId= lists businesses; POST/PUT/DELETE manage them. */
   BUSINESSES: "Businesses",
+  /** Team / accountant seats -- GET ?userId= lists members; POST invites; DELETE removes. */
+  TEAM: "Team",
+  /** Bank (Plaid) + POS (Square) connections -- GET lists, POST links, DELETE unlinks. */
+  CONNECTIONS: "Connections",
   TRANSACTION: "Transaction",
   RECEIPT: "Receipt",
   BACKUP: "backup",

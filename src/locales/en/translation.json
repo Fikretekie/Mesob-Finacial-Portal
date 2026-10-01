@@ -904,7 +904,11 @@
     "fuelPurchase": "Fuel Purchase",
     "iftaReport": "IFTA Report",
     "backupCsv": "Backup CSV",
-    "subscribe": "Subscribe"
+    "subscribe": "Subscribe",
+    "team": "Team",
+    "connections": "Connections",
+    "badgeNew": "NEW",
+    "badgeSoon": "SOON"
   },
   "navbar": {
     "helpSupport": "Help & Support",
@@ -946,5 +950,30 @@
     "cancel": "Cancel",
     "save": "Save",
     "saving": "Saving..."
+  },
+  "team": {
+    "title": "Team",
+    "subtitle": "Invite your accountant or a teammate to this account — they get their own secure login.",
+    "invite": "Invite teammate",
+    "inviteTitle": "Invite a teammate",
+    "inviteSub": "They'll get an email to join this account.",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "name@email.com",
+    "roleLabel": "Role",
+    "roleHint": "Accountants can view and manage finances. Members can add transactions. Viewers can only view.",
+    "sendInvite": "Send invite",
+    "invalidEmail": "Enter a valid email address.",
+    "inviteError": "Could not send the invite. Please try again.",
+    "remove": "Remove",
+    "you": "You",
+    "roleOwner": "Owner",
+    "roleAccountant": "Accountant",
+    "roleMember": "Member",
+    "roleViewer": "Viewer",
+    "active": "Active",
+    "invited": "Invited",
+    "loading": "Loading team…",
+    "emptyTitle": "No teammates yet",
+    "emptySub": "Invite your accountant or a teammate to collaborate."
   }
 }

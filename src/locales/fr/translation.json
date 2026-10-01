@@ -879,7 +879,11 @@
     "fuelPurchase": "Achat de carburant",
     "iftaReport": "Rapport IFTA",
     "backupCsv": "Sauvegarde CSV",
-    "subscribe": "S abonner"
+    "subscribe": "S abonner",
+    "team": "Équipe",
+    "connections": "Connexions",
+    "badgeNew": "NOUVEAU",
+    "badgeSoon": "BIENTÔT"
   },
   "navbar": {
     "helpSupport": "Aide et assistance",
@@ -954,5 +958,30 @@
     "cancel": "Annuler",
     "save": "Enregistrer",
     "saving": "Enregistrement..."
+  },
+  "team": {
+    "title": "Équipe",
+    "subtitle": "Invitez votre comptable ou un collègue sur ce compte — il aura son propre accès sécurisé.",
+    "invite": "Inviter un collègue",
+    "inviteTitle": "Inviter un collègue",
+    "inviteSub": "Il recevra un e-mail pour rejoindre ce compte.",
+    "emailLabel": "Adresse e-mail",
+    "emailPlaceholder": "nom@email.com",
+    "roleLabel": "Rôle",
+    "roleHint": "Les comptables peuvent voir et gérer les finances. Les membres peuvent ajouter des transactions. Les observateurs peuvent seulement consulter.",
+    "sendInvite": "Envoyer l'invitation",
+    "invalidEmail": "Saisissez une adresse e-mail valide.",
+    "inviteError": "Impossible d'envoyer l'invitation. Réessayez.",
+    "remove": "Retirer",
+    "you": "Vous",
+    "roleOwner": "Propriétaire",
+    "roleAccountant": "Comptable",
+    "roleMember": "Membre",
+    "roleViewer": "Observateur",
+    "active": "Actif",
+    "invited": "Invité",
+    "loading": "Chargement de l'équipe…",
+    "emptyTitle": "Aucun collègue pour l'instant",
+    "emptySub": "Invitez votre comptable ou un collègue à collaborer."
   }
 }

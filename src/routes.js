@@ -12,6 +12,7 @@ import MileageTracker from "views/MileageTracker";
 import TripHistory from "views/TripHistory";
 import FuelPurchase from "views/FuelPurchase";
 import IftaReport from "views/IftaReport";
+import Team from "views/Team";
 
 const adminRoutes = [
   {
@@ -149,6 +150,15 @@ const getCustomerRoutes = () => {
         },
       ]
     : []),
+  {
+    path: "/team",
+    name: "Team",
+    nameKey: "nav.team",
+    badge: "nav.badgeNew",
+    icon: "users_single-02",
+    component: <Team />,
+    layout: "/customer",
+  },
   {
     path: "/profile",
     name: "Account",

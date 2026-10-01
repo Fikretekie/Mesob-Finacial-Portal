@@ -219,6 +219,16 @@ function Sidebar(props) {
                   <NavLink to={prop.layout + prop.path} className="nav-link">
                     <NavIcon path={prop.path} />
                     <p>{prop.nameKey ? t(prop.nameKey, prop.name) : prop.name}</p>
+                    {prop.badge && (
+                      <span
+                        className={
+                          "nav-badge" +
+                          (prop.badgeTone === "soon" ? " nav-badge--soon" : "")
+                        }
+                      >
+                        {t(prop.badge)}
+                      </span>
+                    )}
                   </NavLink>
                 </li>
               );

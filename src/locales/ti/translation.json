@@ -879,7 +879,11 @@
     "fuelPurchase": "ግዝኣት ነዳዲ",
     "iftaReport": "IFTA ሪፖርት",
     "backupCsv": "ናይ CSV ድጋፍ",
-    "subscribe": "ተመዝገብ"
+    "subscribe": "ተመዝገብ",
+    "team": "ጋንታ",
+    "connections": "ርክባት",
+    "badgeNew": "ሓድሽ",
+    "badgeSoon": "ኣብ ቀረባ"
   },
   "navbar": {
     "helpSupport": "ሓገዝን ደገፍን",
@@ -954,5 +958,30 @@
     "cancel": "ሰርዝ",
     "save": "ኣቐምጥ",
     "saving": "ይቕመጥ ኣሎ..."
+  },
+  "team": {
+    "title": "ጋንታ",
+    "subtitle": "ናይ ሕሳብ ክኢላኹም ወይ መሳርሕተኛ ናብዚ መለለዪ ዓድሙ — ናይ ገዛእ ርእሶም ውሑስ መእተዊ ይረኽቡ።",
+    "invite": "መሳርሕተኛ ዓድም",
+    "inviteTitle": "መሳርሕተኛ ዓድም",
+    "inviteSub": "ናብዚ መለለዪ ንምጽንባር ኢመይል ይበጽሖም።",
+    "emailLabel": "ኢመይል ኣድራሻ",
+    "emailPlaceholder": "name@email.com",
+    "roleLabel": "ተራ",
+    "roleHint": "ናይ ሕሳብ ክኢላታት ፋይናንስ ክርእዩን ከመሓድሩን ይኽእሉ። ኣባላት ግብይታት ክውስኹ ይኽእሉ። ተዓዘብቲ ክርእዩ ጥራይ ይኽእሉ።",
+    "sendInvite": "ዕድመ ልኣኽ",
+    "invalidEmail": "ቅኑዕ ኢመይል ኣእትዉ።",
+    "inviteError": "ዕድመ ክለኣኽ ኣይተኻእለን። እንደገና ፈትኑ።",
+    "remove": "ኣወግድ",
+    "you": "ንስኹም",
+    "roleOwner": "ዋና",
+    "roleAccountant": "ናይ ሕሳብ ክኢላ",
+    "roleMember": "ኣባል",
+    "roleViewer": "ተዓዛቢ",
+    "active": "ንጡፍ",
+    "invited": "ተዓዲሙ",
+    "loading": "ጋንታ ይጽዓን ኣሎ…",
+    "emptyTitle": "ክሳብ ሕጂ መሳርሕተኛታት የለዉን",
+    "emptySub": "ንምትሕብባር ናይ ሕሳብ ክኢላኹም ወይ መሳርሕተኛ ዓድሙ።"
   }
 }
