@@ -39,7 +39,7 @@ const getRedirectOrigin = () =>
 const styles = {
   page: {
     minHeight: "100vh",
-    background: "var(--surface-2)",
+    background: "transparent",
     display: "flex",
     alignItems: "flex-start",
     justifyContent: "center",
@@ -53,40 +53,68 @@ const styles = {
     marginLeft: "auto",
     marginRight: "auto",
   },
-  /* gradient border card */
+  /* blue rim-glow card (matches landing demo + design tokens) */
   gradientBorder: {
     borderRadius: "20px",
-    padding: "3px",              // ← border thickness
+    padding: 0,
   },
   card: {
-    background: "#1c1e3d",
-    borderRadius: "18px",
-    padding: "clamp(1.25rem, 2vw, 1.75rem) clamp(1.25rem, 3vw, 2.25rem)",
+    background: "var(--surface-2)",
+    border: "1px solid var(--card-border)",
+    boxShadow: "var(--card-glow)",
+    borderRadius: "20px",
+    padding: "clamp(1.5rem, 2.5vw, 2rem) clamp(1.25rem, 3vw, 2.25rem)",
   },
-  heading: {
-    textAlign: "center",
-    marginBottom: "1rem",
+  /* heading above the card */
+  topHeading: {
+    textAlign: "left",
+    margin: "0 0 1rem",
+    padding: "0 0.25rem",
   },
   h2: {
-    fontSize: "clamp(1.5rem, 6vw, 1.8rem)", // ← larger, more readable
-    fontWeight: "700",
+    fontSize: "clamp(1.5rem, 6vw, 1.9rem)",
+    fontWeight: "800",
     color: "var(--text-1)",
-    marginBottom: "0.875rem",
-    lineHeight: 1.2,
+    letterSpacing: "-0.02em",
+    margin: "0 0 0.6rem",
+    lineHeight: 1.15,
   },
-  accent: { color: "var(--text-1)" },
+  accent: { color: "var(--accent)" },
   subtitle: {
-    color: "var(--text-3)",
-    fontSize: "clamp(0.9rem, 4vw, 1rem)", // ← more readable
-    lineHeight: 1.5,
+    color: "var(--text-2)",
+    fontSize: "clamp(0.9rem, 4vw, 1rem)",
+    lineHeight: 1.55,
     margin: 0,
-    textAlign: "center",
+    textAlign: "left",
   },
-  bold: { fontWeight: "600", color: "var(--text-2)" },
+  bold: { fontWeight: "700", color: "var(--text-1)" },
+  /* eyebrow row inside card */
+  eyebrow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.65rem",
+    fontFamily: "var(--font-mono)",
+    fontSize: "0.72rem",
+    fontWeight: 700,
+    letterSpacing: "0.12em",
+    textTransform: "uppercase",
+    color: "var(--text-3)",
+    marginBottom: "1.1rem",
+  },
+  eyebrowIco: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    display: "grid",
+    placeItems: "center",
+    color: "var(--accent)",
+    background: "var(--accent-soft)",
+    border: "1px solid rgba(59, 130, 246, 0.28)",
+  },
   /* features box */
   featuresBox: {
-    background: "#282d57",
-    border: "1px solid rgba(59, 130, 246, 0.15)",
+    background: "var(--surface-1)",
+    border: "1px solid var(--border)",
     borderRadius: "14px",
     padding: "clamp(1rem, 2vw, 1.35rem)",
     marginBottom: "1rem",
@@ -104,7 +132,7 @@ const styles = {
     marginBottom: 0,
   },
   checkIcon: {
-    color: "#8e94b3",
+    color: "var(--green)",
     marginTop: "2px",
     flexShrink: 0,
     fontSize: "14px",
@@ -128,32 +156,42 @@ const styles = {
     lineHeight: 1.6,
     gridColumn: "1 / -1",
   },
-  /* billing cycle toggle */
+  /* billing cycle toggle (segmented pill, demo style) */
   cycleToggle: {
-    display: "flex",
-    justifyContent: "center",
-    gap: "0.5rem",
-    marginBottom: "1rem",
+    display: "inline-flex",
+    justifyContent: "flex-start",
+    gap: "4px",
+    padding: "4px",
+    marginBottom: "1.1rem",
+    background: "var(--surface-3)",
+    border: "1px solid var(--border)",
+    borderRadius: "999px",
   },
   cyclePill: (active) => ({
-    border: active ? "1px solid #3b82f6" : "1px solid #334155",
-    background: active ? "rgba(59,130,246,0.15)" : "transparent",
-    color: active ? "var(--text-1)" : "var(--text-3)",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    border: "none",
+    background: active ? "var(--accent-solid)" : "transparent",
+    color: active ? "var(--accent-ink)" : "var(--text-2)",
     borderRadius: "999px",
-    padding: "0.4rem 1rem",
-    fontSize: "clamp(0.8rem, 3vw, 0.9rem)",
-    fontWeight: "600",
+    padding: "0.45rem 1.05rem",
+    fontSize: "clamp(0.82rem, 3vw, 0.92rem)",
+    fontWeight: "700",
     cursor: "pointer",
     transition: "all 0.2s ease",
   }),
-  cycleSavings: {
-    color: "#34d399",
-    fontSize: "clamp(0.7rem, 2.5vw, 0.78rem)",
-    fontWeight: "600",
-    marginLeft: "4px",
-  },
+  saveBadge: (activeYearly) => ({
+    fontSize: "0.64rem",
+    fontWeight: 800,
+    letterSpacing: "0.04em",
+    padding: "2px 7px",
+    borderRadius: "999px",
+    background: activeYearly ? "rgba(255,255,255,0.22)" : "rgba(0,217,126,0.15)",
+    color: activeYearly ? "var(--accent-ink)" : "var(--green)",
+  }),
   /* price */
-  priceWrap: { textAlign: "center", marginBottom: "1rem" },
+  priceWrap: { textAlign: "left", marginBottom: "1rem" },
   price: {
     fontSize: "clamp(2.4rem, 10vw, 3.2rem)", // ← magnified headline price
     fontWeight: "800",
@@ -174,16 +212,16 @@ const styles = {
   /* CTA */
   ctaBtn: {
     width: "100%",
-    background: "linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%)",
+    background: "linear-gradient(135deg, var(--accent) 0%, var(--accent-solid) 100%)",
     border: "none",
     borderRadius: "12px",
-    color: "var(--text-1)",
-    fontWeight: "600",
-    fontSize: "clamp(0.95rem, 4vw, 1.05rem)", // ← readable
+    color: "var(--accent-ink)",
+    fontWeight: "700",
+    fontSize: "clamp(0.95rem, 4vw, 1.05rem)",
     padding: "1rem 1.25rem",
     cursor: "pointer",
     transition: "all 0.3s ease",
-    boxShadow: "0 4px 20px rgba(59,130,246,0.35)",
+    boxShadow: "0 10px 30px -8px var(--accent-ring)",
     letterSpacing: "0.01em",
   },
   footNote: {
@@ -406,7 +444,7 @@ const SubscriptionPlans = () => {
   const plans = [
     {
       name: t("subscription.pricingPlan"),
-      price: { monthly: "$24.99/month", yearly: "$249.99/year" },
+      price: { monthly: "$29.99/month", yearly: "$299.99/year" },
       priceId: {
         monthly: getStripeMonthlyPriceId(),
         yearly: "price_basic_yearly",
@@ -538,6 +576,7 @@ const SubscriptionPlans = () => {
 
   const isMobileLandscape = isMobile && isLandscape;
   const currentPriceId = plans[0].priceId[billingCycle];
+  const headerPriceLine = billingCycle === "yearly" ? "$299.99/year" : "$29.99/month";
 
   /** Wider card on small screens: less outer + inner horizontal padding */
   const pageStyleMobile = isMobile
@@ -576,19 +615,33 @@ const SubscriptionPlans = () => {
 
             {error && <div style={styles.errorBox}>⚠️ {error}</div>}
 
-            {/* ── Gradient-border card ── */}
+            {/* ── Heading above the card (demo layout) ── */}
+            <div style={styles.topHeading}>
+              <h2 style={styles.h2}>
+                Full Access with <span style={styles.accent}>Pro Plan</span>
+              </h2>
+              <p style={styles.subtitle}>
+                Enjoy{" "}
+                <b style={styles.bold}>unlimited access free for 30 days</b> — no
+                credit card required. After your trial, your subscription
+                continues automatically at{" "}
+                <b style={styles.bold}>{headerPriceLine}</b>.
+              </p>
+            </div>
+
+            {/* ── Blue rim-glow card ── */}
             <div style={styles.gradientBorder}>
               <div style={{ ...styles.card, ...cardStyleMobile }}>
 
-                {/* Header */}
-                <div style={styles.heading}>
-                  <h2 style={styles.h2}>
-                    <span style={styles.accent}>Pro Plan</span>
-                  </h2>
-                  <p style={styles.subtitle}>
-                    Your 30-day free trial is ending. Don't lose access to your
-                    transactions, reports, and saved business data.
-                  </p>
+                {/* Eyebrow */}
+                <div style={styles.eyebrow}>
+                  <span style={styles.eyebrowIco}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="2" y="5" width="20" height="14" rx="2" />
+                      <line x1="2" y1="10" x2="22" y2="10" />
+                    </svg>
+                  </span>
+                  Pro Plan
                 </div>
 
                 {/* Features */}
@@ -629,7 +682,10 @@ const SubscriptionPlans = () => {
                       style={styles.cyclePill(billingCycle === "yearly")}
                       onClick={() => setBillingCycle("yearly")}
                     >
-                      Yearly <span style={styles.cycleSavings}>Save 17%</span>
+                      Yearly{" "}
+                      <span style={styles.saveBadge(billingCycle === "yearly")}>
+                        SAVE 17%
+                      </span>
                     </button>
                   </div>
                 )}
@@ -639,18 +695,18 @@ const SubscriptionPlans = () => {
                   {billingCycle === "yearly" ? (
                     <>
                       <p style={styles.price}>
-                        $20.83{" "}
+                        $24.99{" "}
                         <span style={styles.perMonth}>/ month</span>
                       </p>
                       <p style={styles.priceSub}>
-                        billed annually $249.99 ·{" "}
+                        $299.99 billed yearly ·{" "}
                         <span style={styles.priceSave}>2 months free</span>
                       </p>
                     </>
                   ) : (
                     <>
                       <p style={styles.price}>
-                        $24.99{" "}
+                        $29.99{" "}
                         <span style={styles.perMonth}>/ month</span>
                       </p>
                       <p style={styles.priceSub}>billed monthly · cancel anytime</p>

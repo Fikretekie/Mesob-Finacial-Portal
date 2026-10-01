@@ -153,6 +153,9 @@ function BusinessSwitcher() {
           style={{
             width: 38,
             height: 38,
+            minWidth: 38,
+            padding: 0,
+            margin: 0,
             display: "grid",
             placeItems: "center",
             borderRadius: "var(--r-sm, 8px)",
@@ -160,6 +163,7 @@ function BusinessSwitcher() {
             border: dropdownOpen ? "1.5px solid var(--accent-solid, #3b82f6)" : "1px solid var(--border-strong)",
             color: "var(--text-1)",
             flex: "0 0 auto",
+            boxShadow: "none",
           }}
         >
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

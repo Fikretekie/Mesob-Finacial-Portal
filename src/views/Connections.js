@@ -4,7 +4,6 @@ import { Helmet } from "react-helmet";
 import { Spinner } from "reactstrap";
 import {
   PROVIDERS,
-  isProviderLive,
   fetchConnections,
   startConnection,
   disconnectProvider,
@@ -82,7 +81,6 @@ function Connections() {
 
       <div className="conn-grid">
         {PROVIDERS.map((p) => {
-          const live = isProviderLive(p);
           const st = status[p.id] || {};
           const connected = !!st.connected;
           return (
@@ -93,9 +91,7 @@ function Connections() {
               <div className="conn-body">
                 <div className="conn-name-row">
                   <span className="conn-name">{t("connections." + p.id + "Name")}</span>
-                  {!live ? (
-                    <span className="conn-chip conn-chip--soon">{t("nav.badgeSoon")}</span>
-                  ) : connected ? (
+                  {connected ? (
                     <span className="conn-chip conn-chip--on">{t("connections.connected")}</span>
                   ) : (
                     <span className="conn-chip">{t("connections.notConnected")}</span>
@@ -107,11 +103,7 @@ function Connections() {
                 )}
               </div>
               <div className="conn-action">
-                {!live ? (
-                  <button className="conn-btn conn-btn--ghost" disabled title={t("connections.comingSoonHint")}>
-                    {t("nav.badgeSoon")}
-                  </button>
-                ) : connected ? (
+                {connected ? (
                   <button className="conn-btn conn-btn--ghost" onClick={() => handleDisconnect(p)} disabled={busyId === p.id}>
                     {busyId === p.id ? <Spinner size="sm" /> : t("connections.disconnect")}
                   </button>

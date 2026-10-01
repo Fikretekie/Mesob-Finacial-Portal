@@ -260,11 +260,6 @@ function QuickScanReceipt() {
           </svg>
         )}
         {!isBusy && t("quickScan.scanReceipt")}
-        {!isBusy && (
-          <span className="mksv-scan-new">
-            {t("quickScan.badgeNew")}
-          </span>
-        )}
       </button>
 
       <Modal isOpen={showReview} toggle={isBusy ? undefined : resetAndClose}>
