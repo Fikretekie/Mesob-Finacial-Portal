@@ -114,25 +114,15 @@ h1, h2, h3, h4, h5, h6,
 }
 .sidebar .nav .nav-link:hover i { color: var(--text-1); }
 
-/* Active row — blue "you are here" edge + tint (blue is our brand accent). */
+/* Active row — clean subtle tint + 1px accent ring (matches the demo;
+   no heavy gradient / glow / edge-bar so the sidebar reads calm). */
 .sidebar .nav li.active > .nav-link {
   position: relative;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.30), rgba(59, 130, 246, 0.12)) !important;
+  background: rgba(59, 130, 246, 0.12) !important;
   color: var(--text-1) !important;
-  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.40),
-    0 8px 18px -10px rgba(59, 130, 246, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.40) !important;
 }
 .sidebar .nav li.active > .nav-link i { color: var(--accent); }
-.sidebar .nav li.active > .nav-link::before {
-  content: "";
-  position: absolute;
-  left: -2px;
-  top: 8px;
-  bottom: 8px;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--accent);
-}
 /* Neutralise Now UI's own active pseudo-backgrounds. */
 .sidebar .nav li.active > a::before,
 .sidebar .nav li.active > a::after { opacity: 0 !important; }
