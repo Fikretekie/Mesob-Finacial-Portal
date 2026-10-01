@@ -1006,7 +1006,8 @@
     "verbDeleted": "eliminó",
     "seatNote": "Cada compañero añade $9.99/mes a tu suscripción.",
     "needSubscription": "Suscríbete con tarjeta para agregar compañeros ($9.99/usuario/mes).",
-    "firstFree": "Tu primer compañero es gratis. Cada compañero adicional cuesta $9.99/mes."
+    "firstFree": "Tu primer compañero es gratis. Cada compañero adicional cuesta $9.99/mes.",
+    "activityEmpty": "Aún no hay actividad. Las acciones de los compañeros aparecerán aquí."
   },
   "connections": {
     "title": "Conexiones",

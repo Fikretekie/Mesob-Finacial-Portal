@@ -335,20 +335,26 @@ function Team() {
         )}
       </div>
 
-      {canManage && log.length > 0 && (
+      {canManage && (
         <div className="team-card team-log">
           <div className="team-log__head">{t("team.activity")}</div>
-          {log.map((ev, i) => (
-            <div className="team-row" key={i}>
-              <div className="team-ava team-ava--log">{initials(ev.actorEmail || "?")}</div>
-              <div className="team-row__main">
-                <span className="team-row__email">{ev.actorEmail || ev.actorSub}</span>
-                <span className="team-row__meta">
-                  {actionLabel(ev)} · {fmtDateTime(ev.at)}
-                </span>
-              </div>
+          {log.length === 0 ? (
+            <div className="team-empty">
+              <p className="team-empty__sub">{t("team.activityEmpty")}</p>
             </div>
-          ))}
+          ) : (
+            log.map((ev, i) => (
+              <div className="team-row" key={i}>
+                <div className="team-ava team-ava--log">{initials(ev.actorEmail || "?")}</div>
+                <div className="team-row__main">
+                  <span className="team-row__email">{ev.actorEmail || ev.actorSub}</span>
+                  <span className="team-row__meta">
+                    {actionLabel(ev)} · {fmtDateTime(ev.at)}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       )}
 
