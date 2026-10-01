@@ -995,7 +995,11 @@
     "edit": "Wax ka beddel",
     "editTitle": "Wax ka beddel xubinta",
     "save": "Kaydi isbeddelada",
-    "added": "lagu daray"
+    "added": "lagu daray",
+    "businessAccess": "Gelitaanka ganacsiga",
+    "businessAccessHint": "Dooro ganacsiyada xubintani arki karto.",
+    "selectBusiness": "Dooro ugu yaraan hal ganacsi.",
+    "allBusinesses": "Dhammaan ganacsiyada"
   },
   "connections": {
     "title": "Xiriirrada",

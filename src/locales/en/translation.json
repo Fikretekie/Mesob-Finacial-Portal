@@ -987,7 +987,11 @@
     "edit": "Edit",
     "editTitle": "Edit teammate",
     "save": "Save changes",
-    "added": "added"
+    "added": "added",
+    "businessAccess": "Business access",
+    "businessAccessHint": "Choose which businesses this teammate can see.",
+    "selectBusiness": "Select at least one business.",
+    "allBusinesses": "All businesses"
   },
   "connections": {
     "title": "Connections",

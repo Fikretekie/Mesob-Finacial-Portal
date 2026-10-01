@@ -62,6 +62,22 @@ function BusinessSwitcher() {
   const currentId = getCurrentBusinessId();
   const currentName = localStorage.getItem("companyName") || getDefaultBusinessName();
 
+  // Teammates only see the businesses the owner granted them, and can't
+  // add/delete businesses (owner-only + billing).
+  const isTeamMember = localStorage.getItem("isTeamMember") === "true";
+  let allowed = null;
+  try {
+    const a = JSON.parse(localStorage.getItem("allowedBusinessIds") || "null");
+    if (Array.isArray(a) && a.length) allowed = a;
+  } catch (e) {
+    /* no restriction */
+  }
+  const restrict = isTeamMember && allowed;
+  const canSeeDefault = !restrict || allowed.includes("");
+  const visibleBusinesses = restrict
+    ? businesses.filter((b) => allowed.includes(b.businessId))
+    : businesses;
+
   const resetAddModal = () => {
     setShowAddModal(false);
     setAddStep("form");
@@ -172,15 +188,17 @@ function BusinessSwitcher() {
           </svg>
         </DropdownToggle>
         <DropdownMenu end style={{ maxWidth: "calc(100vw - 16px)" }}>
-          <DropdownItem
-            active={!currentId}
-            onClick={() => {
-              if (currentId) switchToDefaultBusiness();
-            }}
-          >
-            {getDefaultBusinessName()}
-          </DropdownItem>
-          {businesses.map((b) => (
+          {canSeeDefault && (
+            <DropdownItem
+              active={!currentId}
+              onClick={() => {
+                if (currentId) switchToDefaultBusiness();
+              }}
+            >
+              {getDefaultBusinessName()}
+            </DropdownItem>
+          )}
+          {visibleBusinesses.map((b) => (
             <DropdownItem
               key={b.businessId}
               active={currentId === b.businessId}
@@ -195,47 +213,53 @@ function BusinessSwitcher() {
               >
                 {b.name}
               </span>
-              <span
-                title="Delete business"
-                style={{
-                  cursor: "pointer",
-                  color: "#ef4444",
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  width: 20,
-                  height: 20,
-                  display: "grid",
-                  placeItems: "center",
-                  borderRadius: "4px",
-                  flexShrink: 0,
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDeleteTarget(b);
-                }}
-              >
-                ✕
-              </span>
+              {!isTeamMember && (
+                <span
+                  title="Delete business"
+                  style={{
+                    cursor: "pointer",
+                    color: "#ef4444",
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    width: 20,
+                    height: 20,
+                    display: "grid",
+                    placeItems: "center",
+                    borderRadius: "4px",
+                    flexShrink: 0,
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteTarget(b);
+                  }}
+                >
+                  ✕
+                </span>
+              )}
             </DropdownItem>
           ))}
-          <DropdownItem divider />
-          <DropdownItem
-            onClick={() => setShowAddModal(true)}
-            style={{
-              color: "var(--accent, #3b82f6)",
-              fontWeight: 600,
-              fontSize: "13px",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Add another business
-          </DropdownItem>
+          {!isTeamMember && (
+            <>
+              <DropdownItem divider />
+              <DropdownItem
+                onClick={() => setShowAddModal(true)}
+                style={{
+                  color: "var(--accent, #3b82f6)",
+                  fontWeight: 600,
+                  fontSize: "13px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Add another business
+              </DropdownItem>
+            </>
+          )}
         </DropdownMenu>
       </Dropdown>
 

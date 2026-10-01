@@ -995,7 +995,11 @@
     "edit": "ኣርትዕ",
     "editTitle": "ናይ ጋንታ ኣባል ኣርትዕ",
     "save": "ለውጥታት ኣቐምጥ",
-    "added": "ተወሲኹ"
+    "added": "ተወሲኹ",
+    "businessAccess": "ናይ ንግዲ መእተዊ",
+    "businessAccessHint": "እዚ ናይ ጋንታ ኣባል ኣየኖት ንግድታት ክርኢ ከም ዝኽእል ምረጹ።",
+    "selectBusiness": "ብውሑዱ ሓደ ንግዲ ምረጹ።",
+    "allBusinesses": "ኩሎም ንግድታት"
   },
   "connections": {
     "title": "ርክባት",

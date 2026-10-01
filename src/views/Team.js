@@ -19,6 +19,7 @@ import {
   removeTeamMember,
   TEAM_ROLES,
 } from "utils/teamStorage";
+import { fetchBusinesses, getDefaultBusinessName } from "utils/businessStorage";
 import "../assets/css/team.css";
 
 const initials = (s) =>
@@ -46,6 +47,17 @@ function Team() {
   const [editing, setEditing] = useState(null); // member being edited
   const [editRole, setEditRole] = useState("accountant");
   const [savingEdit, setSavingEdit] = useState(false);
+  const [bizOptions, setBizOptions] = useState([]); // [{id,name}] incl default (id "")
+  const [inviteBiz, setInviteBiz] = useState([]); // selected business ids (add)
+  const [editBiz, setEditBiz] = useState([]); // selected business ids (edit)
+
+  const toggleId = (arr, id) => (arr.includes(id) ? arr.filter((x) => x !== id) : [...arr, id]);
+
+  const bizNames = (ids) =>
+    (ids || [])
+      .map((id) => (bizOptions.find((o) => o.id === id) || {}).name)
+      .filter(Boolean)
+      .join(", ");
 
   const fmtDate = (s) => {
     if (!s) return "";
@@ -56,6 +68,11 @@ function Team() {
   const openEdit = (m) => {
     setEditing(m);
     setEditRole(m.role || "member");
+    setEditBiz(
+      Array.isArray(m.businessIds) && m.businessIds.length
+        ? m.businessIds
+        : bizOptions.map((o) => o.id)
+    );
     setError("");
   };
 
@@ -64,7 +81,7 @@ function Team() {
     setSavingEdit(true);
     setError("");
     try {
-      await updateTeamMember(editing.memberId || editing.id, { role: editRole });
+      await updateTeamMember(editing.memberId || editing.id, { role: editRole, businessIds: editBiz });
       setEditing(null);
       load();
     } catch (err) {
@@ -101,6 +118,17 @@ function Team() {
 
   useEffect(() => {
     load();
+    (async () => {
+      let opts = [{ id: "", name: getDefaultBusinessName() }];
+      try {
+        const list = await fetchBusinesses();
+        opts = opts.concat((list || []).map((b) => ({ id: b.businessId, name: b.name })));
+      } catch (e) {
+        /* default business only */
+      }
+      setBizOptions(opts);
+      setInviteBiz(opts.map((o) => o.id)); // default: access to all
+    })();
   }, []);
 
   const resetInvite = () => {
@@ -109,6 +137,7 @@ function Team() {
     setPassword("");
     setShowPw(false);
     setRole("accountant");
+    setInviteBiz(bizOptions.map((o) => o.id));
     setError("");
   };
 
@@ -130,10 +159,14 @@ function Team() {
       setError(t("team.passwordWeak"));
       return;
     }
+    if (bizOptions.length > 1 && inviteBiz.length === 0) {
+      setError(t("team.selectBusiness"));
+      return;
+    }
     setSending(true);
     setError("");
     try {
-      await inviteTeamMember({ email, role, password });
+      await inviteTeamMember({ email, role, password, businessIds: inviteBiz });
       resetInvite();
       load();
     } catch (err) {
@@ -221,6 +254,12 @@ function Team() {
                       {status === "active" ? t("team.active") : t("team.invited")}
                     </span>
                     {m.createdAt ? ` · ${t("team.added")} ${fmtDate(m.createdAt)}` : ""}
+                    {bizOptions.length > 1 &&
+                    Array.isArray(m.businessIds) &&
+                    m.businessIds.length &&
+                    m.businessIds.length < bizOptions.length
+                      ? ` · ${bizNames(m.businessIds)}`
+                      : ""}
                   </span>
                 </div>
                 {canManage && (
@@ -295,6 +334,24 @@ function Team() {
             </Input>
             <small className="team-role-hint">{t("team.roleHint")}</small>
           </FormGroup>
+          {bizOptions.length > 1 && (
+            <FormGroup>
+              <Label>{t("team.businessAccess")}</Label>
+              <div className="team-biz-list">
+                {bizOptions.map((o) => (
+                  <label key={o.id || "default"} className="team-biz-item">
+                    <input
+                      type="checkbox"
+                      checked={inviteBiz.includes(o.id)}
+                      onChange={() => setInviteBiz((a) => toggleId(a, o.id))}
+                    />
+                    <span>{o.name}</span>
+                  </label>
+                ))}
+              </div>
+              <small className="team-role-hint">{t("team.businessAccessHint")}</small>
+            </FormGroup>
+          )}
         </ModalBody>
         <ModalFooter>
           <Button color="secondary" onClick={resetInvite} disabled={sending}>
@@ -322,6 +379,24 @@ function Team() {
             </Input>
             <small className="team-role-hint">{t("team.roleHint")}</small>
           </FormGroup>
+          {bizOptions.length > 1 && (
+            <FormGroup>
+              <Label>{t("team.businessAccess")}</Label>
+              <div className="team-biz-list">
+                {bizOptions.map((o) => (
+                  <label key={o.id || "default"} className="team-biz-item">
+                    <input
+                      type="checkbox"
+                      checked={editBiz.includes(o.id)}
+                      onChange={() => setEditBiz((a) => toggleId(a, o.id))}
+                    />
+                    <span>{o.name}</span>
+                  </label>
+                ))}
+              </div>
+              <small className="team-role-hint">{t("team.businessAccessHint")}</small>
+            </FormGroup>
+          )}
         </ModalBody>
         <ModalFooter>
           <Button color="secondary" onClick={() => setEditing(null)} disabled={savingEdit}>

@@ -995,7 +995,11 @@
     "edit": "Editar",
     "editTitle": "Editar compañero",
     "save": "Guardar cambios",
-    "added": "añadido"
+    "added": "añadido",
+    "businessAccess": "Acceso a negocios",
+    "businessAccessHint": "Elige a qué negocios puede acceder este compañero.",
+    "selectBusiness": "Selecciona al menos un negocio.",
+    "allBusinesses": "Todos los negocios"
   },
   "connections": {
     "title": "Conexiones",

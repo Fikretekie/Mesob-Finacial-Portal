@@ -995,7 +995,11 @@
     "edit": "تعديل",
     "editTitle": "تعديل عضو الفريق",
     "save": "حفظ التغييرات",
-    "added": "أُضيف"
+    "added": "أُضيف",
+    "businessAccess": "الوصول إلى الأنشطة",
+    "businessAccessHint": "اختر الأنشطة التجارية التي يمكن لعضو الفريق الوصول إليها.",
+    "selectBusiness": "اختر نشاطًا واحدًا على الأقل.",
+    "allBusinesses": "كل الأنشطة"
   },
   "connections": {
     "title": "التكاملات",

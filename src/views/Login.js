@@ -479,6 +479,7 @@ const Login = () => {
         let acctId = user.userId;
         let teamRole = null;
         let memberEmail = null;
+        let memberBiz = null;
 
         if (!response.ok || !result.user) {
           const who = await getMyOwner();
@@ -497,6 +498,7 @@ const Login = () => {
               acctId = who.ownerId;
               teamRole = who.role || "member";
               memberEmail = user?.signInDetails?.loginId || email;
+              memberBiz = Array.isArray(who.businessIds) ? who.businessIds : [];
             }
           }
           if (!acct) {
@@ -526,6 +528,7 @@ const Login = () => {
           localStorage.setItem("teamRole", teamRole);
           localStorage.setItem("memberId", user.userId);
           localStorage.setItem("memberEmail", memberEmail || "");
+          localStorage.setItem("allowedBusinessIds", JSON.stringify(memberBiz || []));
         }
 
         const path =

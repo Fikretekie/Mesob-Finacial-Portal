@@ -995,7 +995,11 @@
     "edit": "አርትዕ",
     "editTitle": "የቡድን አባል አርትዕ",
     "save": "ለውጦችን አስቀምጥ",
-    "added": "ተጨምሯል"
+    "added": "ተጨምሯል",
+    "businessAccess": "የንግድ መዳረሻ",
+    "businessAccessHint": "ይህ የቡድን አባል የትኞቹን ንግዶች ማየት እንደሚችል ይምረጡ።",
+    "selectBusiness": "ቢያንስ አንድ ንግድ ይምረጡ።",
+    "allBusinesses": "ሁሉም ንግዶች"
   },
   "connections": {
     "title": "ግንኙነቶች",

@@ -995,7 +995,11 @@
     "edit": "Modifier",
     "editTitle": "Modifier le collègue",
     "save": "Enregistrer",
-    "added": "ajouté"
+    "added": "ajouté",
+    "businessAccess": "Accès aux entreprises",
+    "businessAccessHint": "Choisissez les entreprises auxquelles ce collègue a accès.",
+    "selectBusiness": "Sélectionnez au moins une entreprise.",
+    "allBusinesses": "Toutes les entreprises"
   },
   "connections": {
     "title": "Connexions",
