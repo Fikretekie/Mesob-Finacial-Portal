@@ -16,6 +16,7 @@ import {
   Spinner,
 } from "reactstrap";
 import { businessTypes } from "views/BusinessTypes";
+import { getTranslatedBusinessTypeName } from "utils/translatedBusinessTypes";
 import {
   fetchBusinesses,
   createBusiness,
@@ -216,15 +217,31 @@ function BusinessSwitcher() {
           <DropdownItem divider />
           <DropdownItem
             onClick={() => setShowAddModal(true)}
-            style={{ color: "var(--text-3, #7d8698)", fontSize: "12px" }}
+            style={{
+              color: "var(--accent, #3b82f6)",
+              fontWeight: 600,
+              fontSize: "13px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
           >
-            + Add another business
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Add another business
           </DropdownItem>
         </DropdownMenu>
       </Dropdown>
 
-      <Modal isOpen={showAddModal} toggle={() => !saving && resetAddModal()}>
-        <ModalHeader toggle={() => !saving && resetAddModal()}>Add Business</ModalHeader>
+      <Modal isOpen={showAddModal} toggle={() => !saving && resetAddModal()} className="add-transaction-modal add-business-modal">
+        <ModalHeader toggle={() => !saving && resetAddModal()}>
+          Add a business
+          <span className="mksv-modal-sub">
+            Run a second company on its own clean set of books.
+          </span>
+        </ModalHeader>
         <ModalBody>
           {error && (
             <div className="alert alert-danger" role="alert">
@@ -234,20 +251,25 @@ function BusinessSwitcher() {
 
           {addStep === "form" && (
             <>
-              <p style={{ color: "var(--text-2)", fontSize: "13px" }}>
-                Additional businesses are billed on top of your current subscription.
-              </p>
+              <div className="add-business-note">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                <span>Each business keeps its own transactions, reports, and receipts. It's billed on top of your current plan.</span>
+              </div>
               <FormGroup>
-                <Label>Business Name</Label>
+                <Label>Business name</Label>
                 <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Truck 2" />
               </FormGroup>
               <FormGroup>
-                <Label>Business Type</Label>
+                <Label>Business type</Label>
                 <Input type="select" value={newType} onChange={(e) => setNewType(e.target.value)}>
-                  <option value="">Select type...</option>
+                  <option value="">Select type…</option>
                   {Object.keys(businessTypes).map((type) => (
                     <option key={type} value={type}>
-                      {type}
+                      {getTranslatedBusinessTypeName(type)}
                     </option>
                   ))}
                 </Input>
@@ -291,7 +313,7 @@ function BusinessSwitcher() {
         </ModalFooter>
       </Modal>
 
-      <Modal isOpen={!!deleteTarget} toggle={() => !deleting && closeDeleteModal()}>
+      <Modal isOpen={!!deleteTarget} toggle={() => !deleting && closeDeleteModal()} className="add-transaction-modal add-business-modal">
         <ModalHeader toggle={() => !deleting && closeDeleteModal()}>
           Delete "{deleteTarget?.name}"?
         </ModalHeader>
