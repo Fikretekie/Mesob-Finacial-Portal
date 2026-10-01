@@ -55,7 +55,8 @@ function Team() {
   const [log, setLog] = useState([]); // recent teammate activity (owner only)
   const [billing, setBilling] = useState(null); // owner's subscription status
 
-  // Teammates are a paid add-on: each extra user needs an active card subscription.
+  // Billing model: the first teammate is free; each additional one ($9.99/mo)
+  // needs an active card subscription.
   const canCharge = !!(
     billing &&
     billing.subscription &&
@@ -63,6 +64,7 @@ function Team() {
     billing.paymentType === "STRIPE" &&
     billing.subscriptionId
   );
+  const paidSeat = members.length >= 1; // this new user is the 2nd+ → paid
 
   const fmtDateTime = (s) => {
     const d = new Date(s);
@@ -196,7 +198,7 @@ function Team() {
       setError(t("team.selectBusiness"));
       return;
     }
-    if (!canCharge) {
+    if (paidSeat && !canCharge) {
       setError(t("team.needSubscription"));
       return;
     }
@@ -208,7 +210,7 @@ function Team() {
         role,
         password,
         businessIds: inviteBiz,
-        subscriptionId: billing.subscriptionId,
+        subscriptionId: paidSeat ? billing?.subscriptionId || "" : "",
       });
       resetInvite();
       load();
@@ -357,12 +359,15 @@ function Team() {
         </ModalHeader>
         <ModalBody>
           {error && <div className="alert alert-danger" role="alert">{error}</div>}
-          {billing &&
-            (canCharge ? (
+          {!paidSeat ? (
+            <div className="team-seat-note">{t("team.firstFree")}</div>
+          ) : billing ? (
+            canCharge ? (
               <div className="team-seat-note">{t("team.seatNote")}</div>
             ) : (
               <div className="team-seat-note team-seat-note--warn">{t("team.needSubscription")}</div>
-            ))}
+            )
+          ) : null}
           <FormGroup>
             <Label>{t("team.emailLabel")}</Label>
             <Input

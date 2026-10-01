@@ -1005,7 +1005,8 @@
     "verbUpdated": "a modifié",
     "verbDeleted": "a supprimé",
     "seatNote": "Chaque collègue ajoute 9,99 $/mois à votre abonnement.",
-    "needSubscription": "Abonnez-vous par carte pour ajouter des collègues (9,99 $/utilisateur/mois)."
+    "needSubscription": "Abonnez-vous par carte pour ajouter des collègues (9,99 $/utilisateur/mois).",
+    "firstFree": "Votre premier collègue est gratuit. Chaque collègue supplémentaire coûte 9,99 $/mois."
   },
   "connections": {
     "title": "Connexions",

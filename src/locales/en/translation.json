@@ -997,7 +997,8 @@
     "verbUpdated": "updated",
     "verbDeleted": "deleted",
     "seatNote": "Each teammate adds $9.99/month to your subscription.",
-    "needSubscription": "Subscribe with a card to add teammates ($9.99/user/month)."
+    "needSubscription": "Subscribe with a card to add teammates ($9.99/user/month).",
+    "firstFree": "Your first teammate is free. Additional teammates are $9.99/month each."
   },
   "connections": {
     "title": "Connections",

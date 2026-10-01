@@ -1005,7 +1005,8 @@
     "verbUpdated": "cusboonaysiiyay",
     "verbDeleted": "tirtiray",
     "seatNote": "Xubin kasta oo kooxeed waxay ku dartaa $9.99/bishii rukunkaaga.",
-    "needSubscription": "Ku isdiiwaangeli kaadh si aad u darto xubno ($9.99 qofkii/bishii)."
+    "needSubscription": "Ku isdiiwaangeli kaadh si aad u darto xubno ($9.99 qofkii/bishii).",
+    "firstFree": "Xubintaada koowaad ee kooxeed waa bilaash. Xubnaha dheeraadka ah waa $9.99 bishii mid kasta."
   },
   "connections": {
     "title": "Xiriirrada",
