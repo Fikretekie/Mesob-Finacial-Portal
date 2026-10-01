@@ -989,7 +989,9 @@
     "generate": "Samee",
     "show": "Muuji",
     "hide": "Qari",
-    "passwordShort": "Furaha waa inuu ahaadaa ugu yaraan 8 xaraf."
+    "passwordShort": "Furaha waa inuu ahaadaa ugu yaraan 8 xaraf.",
+    "emailTaken": "Iimaylkan horey ayuu u lahaa akoon Meksova — isticmaal iimayl kale xubinta kooxda.",
+    "passwordWeak": "Furahani ma buuxiyo shuruudaha — isku day mid xoog badan ama taabo Samee."
   },
   "connections": {
     "title": "Xiriirrada",

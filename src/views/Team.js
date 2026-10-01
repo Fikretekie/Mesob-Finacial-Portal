@@ -95,7 +95,10 @@ function Team() {
       load();
     } catch (err) {
       console.error("Add user failed:", err);
-      setError(t("team.inviteError"));
+      const code = err?.response?.status;
+      if (code === 409) setError(t("team.emailTaken"));
+      else if (code === 400) setError(t("team.passwordWeak"));
+      else setError(t("team.inviteError"));
     } finally {
       setSending(false);
     }

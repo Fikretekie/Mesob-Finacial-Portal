@@ -981,7 +981,9 @@
     "generate": "Generate",
     "show": "Show",
     "hide": "Hide",
-    "passwordShort": "Password must be at least 8 characters."
+    "passwordShort": "Password must be at least 8 characters.",
+    "emailTaken": "That email already has a Meksova login — use a different email for the teammate.",
+    "passwordWeak": "That password doesn't meet the requirements — try a stronger one or tap Generate."
   },
   "connections": {
     "title": "Connections",
