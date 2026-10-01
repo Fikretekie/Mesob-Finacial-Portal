@@ -155,13 +155,22 @@ const styles = {
   /* price */
   priceWrap: { textAlign: "center", marginBottom: "1rem" },
   price: {
-    fontSize: "clamp(1.9rem, 8vw, 2.4rem)", // ← more prominent
-    fontWeight: "700",
+    fontSize: "clamp(2.4rem, 10vw, 3.2rem)", // ← magnified headline price
+    fontWeight: "800",
     color: "var(--text-1)",
+    letterSpacing: "-0.02em",
+    lineHeight: 1.05,
     margin: 0,
-    marginBottom: "0.25rem",
+    marginBottom: "0.15rem",
   },
-  perMonth: { fontSize: "clamp(0.85rem, 3vw, 1rem)", fontWeight: "400", color: "var(--text-3)" },
+  perMonth: { fontSize: "clamp(0.85rem, 3vw, 1rem)", fontWeight: "500", color: "var(--text-3)" },
+  priceSub: {
+    fontSize: "clamp(0.78rem, 2.8vw, 0.9rem)",
+    color: "var(--text-3)",
+    margin: "4px 0 0",
+    fontWeight: 500,
+  },
+  priceSave: { color: "#34d399", fontWeight: 700 },
   /* CTA */
   ctaBtn: {
     width: "100%",
@@ -397,7 +406,7 @@ const SubscriptionPlans = () => {
   const plans = [
     {
       name: t("subscription.pricingPlan"),
-      price: { monthly: "$29.99/month", yearly: "$299.99/year" },
+      price: { monthly: "$24.99/month", yearly: "$249.99/year" },
       priceId: {
         monthly: getStripeMonthlyPriceId(),
         yearly: "price_basic_yearly",
@@ -625,18 +634,27 @@ const SubscriptionPlans = () => {
                   </div>
                 )}
 
-                {/* Price */}
+                {/* Price — magnified per-month headline, billing detail beneath */}
                 <div style={styles.priceWrap}>
                   {billingCycle === "yearly" ? (
-                    <p style={styles.price}>
-                      $299.99{" "}
-                      <span style={styles.perMonth}>/ year</span>
-                    </p>
+                    <>
+                      <p style={styles.price}>
+                        $20.83{" "}
+                        <span style={styles.perMonth}>/ month</span>
+                      </p>
+                      <p style={styles.priceSub}>
+                        billed annually $249.99 ·{" "}
+                        <span style={styles.priceSave}>2 months free</span>
+                      </p>
+                    </>
                   ) : (
-                    <p style={styles.price}>
-                      $29.99{" "}
-                      <span style={styles.perMonth}>/ month</span>
-                    </p>
+                    <>
+                      <p style={styles.price}>
+                        $24.99{" "}
+                        <span style={styles.perMonth}>/ month</span>
+                      </p>
+                      <p style={styles.priceSub}>billed monthly · cancel anytime</p>
+                    </>
                   )}
                 </div>
 
