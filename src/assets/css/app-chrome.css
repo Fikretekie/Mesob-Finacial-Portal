@@ -1277,3 +1277,53 @@ select option {
   line-height: 1.45;
 }
 .add-business-note svg { color: var(--accent); flex: 0 0 auto; margin-top: 1px; }
+
+/* ==========================================================================
+   Scan Receipt button — filled accent pill that pops (gentle attention pulse)
+   ========================================================================== */
+.mksv-scan-btn {
+  margin-top: 10px;
+  height: 36px;
+  border: none;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-solid) 100%);
+  box-shadow: 0 6px 18px -6px rgba(59, 130, 246, 0.6),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  animation: mksvScanPulse 2.6s ease-in-out infinite;
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+.mksv-scan-btn svg { color: #fff; flex: 0 0 auto; }
+.mksv-scan-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 10px 26px -6px rgba(59, 130, 246, 0.72),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+.mksv-scan-btn:active:not(:disabled) { transform: translateY(0); }
+.mksv-scan-btn:disabled { opacity: .7; cursor: default; animation: none; }
+.mksv-scan-btn .mksv-scan-new {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--accent-solid);
+  background: #fff;
+  border-radius: 4px;
+  padding: 2px 5px;
+  line-height: 1;
+}
+@keyframes mksvScanPulse {
+  0%, 100% { box-shadow: 0 6px 18px -6px rgba(59, 130, 246, 0.55), inset 0 0 0 1px rgba(255,255,255,0.12), 0 0 0 0 rgba(59, 130, 246, 0); }
+  50%      { box-shadow: 0 6px 18px -6px rgba(59, 130, 246, 0.70), inset 0 0 0 1px rgba(255,255,255,0.12), 0 0 0 6px rgba(59, 130, 246, 0.14); }
+}
+@media (prefers-reduced-motion: reduce) { .mksv-scan-btn { animation: none; } }

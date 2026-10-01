@@ -1378,6 +1378,15 @@ const MesobFinancial2 = () => {
     }
   }, [location.state, navigate]);
 
+  // Auto-sync: a receipt scan (or other quick add) fires this — refetch the
+  // transaction list so the scanned entry shows immediately for the active
+  // business, without a manual refresh.
+  useEffect(() => {
+    const handleTxAdded = () => fetchTransactions();
+    window.addEventListener("mesob:transactionAdded", handleTxAdded);
+    return () => window.removeEventListener("mesob:transactionAdded", handleTxAdded);
+  }, []);
+
   // Subscriptions
   useEffect(() => {
     const fetchUserSubscriptionData = async () => {

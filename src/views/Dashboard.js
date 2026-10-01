@@ -847,6 +847,14 @@ function Dashboard() {
     return () => window.removeEventListener("dashboard:downloadReport", handleDashboardDownload);
   }, []);
 
+  // Auto-sync: a receipt scan (or other quick add) fires this — refetch so the
+  // dashboard reflects the new transaction immediately, no manual refresh.
+  useEffect(() => {
+    const handleTxAdded = () => fetchFinancialData();
+    window.addEventListener("mesob:transactionAdded", handleTxAdded);
+    return () => window.removeEventListener("mesob:transactionAdded", handleTxAdded);
+  }, []);
+
   const LoadingOverlay = ({ loading, text = "Loading..." }) => {
     if (!loading) return null;
     return (

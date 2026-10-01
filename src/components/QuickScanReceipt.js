@@ -221,6 +221,11 @@ function QuickScanReceipt() {
         });
       }
 
+      // Auto-sync: tell whichever screen is open (Dashboard / Financial Report)
+      // to refetch so the scanned transaction appears immediately, for the
+      // active business — no manual refresh needed.
+      window.dispatchEvent(new CustomEvent("mesob:transactionAdded", { detail: { source: "scan" } }));
+
       resetAndClose();
     } catch (err) {
       console.error("Quick scan save failed:", err);
@@ -244,46 +249,19 @@ function QuickScanReceipt() {
         onClick={() => fileInputRef.current?.click()}
         disabled={isBusy}
         title={t("quickScan.scanReceipt")}
-        style={{
-          marginTop: "10px",
-          height: "32px",
-          borderRadius: "999px",
-          background: "transparent",
-          border: "1px dashed var(--accent-solid, #096afa)",
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "0 8px 0 12px",
-          gap: "7px",
-          cursor: isBusy ? "default" : "pointer",
-          color: "var(--text-1, #12151c)",
-          fontSize: "13px",
-          fontWeight: 600,
-          whiteSpace: "nowrap",
-        }}
+        className="mksv-scan-btn"
       >
         {isBusy ? (
-          <Spinner size="sm" style={{ color: "var(--accent-solid, #096afa)" }} />
+          <Spinner size="sm" style={{ color: "#ffffff" }} />
         ) : (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
             <circle cx="12" cy="13" r="4" />
           </svg>
         )}
         {!isBusy && t("quickScan.scanReceipt")}
         {!isBusy && (
-          <span
-            style={{
-              fontSize: "9px",
-              fontWeight: 800,
-              letterSpacing: "0.04em",
-              color: "var(--accent-ink, #ffffff)",
-              background: "var(--accent-solid, #096afa)",
-              borderRadius: "4px",
-              padding: "2px 5px",
-              textTransform: "uppercase",
-            }}
-          >
+          <span className="mksv-scan-new">
             {t("quickScan.badgeNew")}
           </span>
         )}
