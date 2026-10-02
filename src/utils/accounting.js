@@ -262,14 +262,26 @@ export function calculateTotalInventory(filteredItems, initialValueableItems = 0
 
 const MS_PER_MONTH = (365.25 / 12) * 24 * 60 * 60 * 1000;
 
-/** Fixed-asset purchases, as depreciable lots. */
+/** Fixed-asset purchases, as depreciable lots. Assets that have since been sold
+ *  (a sale_fixed disposal referencing them) are excluded — you don't depreciate
+ *  something you no longer own; its gain/loss already captures the economics. */
 export function getFixedAssetLots(allItems) {
+  const disposedIds = new Set(
+    (allItems || [])
+      .filter(
+        (t) =>
+          t.transactionType === "Receive" &&
+          t.subType === "sale_fixed" &&
+          t.soldTransactionId != null
+      )
+      .map((t) => t.soldTransactionId)
+  );
   return (allItems || [])
     .filter((t) => {
       const isNewItemFixed = t.transactionType === "New_Item" && t.assetType === "fixed";
       const isPayableFixed =
         t.transactionType === "Payable" && t.assetType === "fixed" && t.subType === "New_Item";
-      return isNewItemFixed || isPayableFixed;
+      return (isNewItemFixed || isPayableFixed) && !disposedIds.has(t.id);
     })
     .map((t) => ({
       cost: num(t.originalAmount || t.transactionAmount),
