@@ -45,7 +45,24 @@ import {
   getBalanceColor,
   getBalanceCardStyle,
 } from "utils/financialColors";
-import { calculateEstimatedTax } from "utils/accounting";
+import {
+  calculateEstimatedTax,
+  calculateTotalRevenue as engineTotalRevenue,
+  calculateTotalExpenses as engineTotalExpenses,
+  calculateTotalCash as engineTotalCash,
+  calculateTotalPayable as engineTotalPayable,
+  isCountableOutflow,
+  outflowAmount,
+  filterItemsByTimeRange as engineFilterByRange,
+} from "utils/accounting";
+
+// Human-readable labels for raw transactionType enums in the activity feed.
+const TX_TYPE_LABEL = {
+  Receive: "Money In",
+  Pay: "Payment",
+  New_Item: "Inventory Purchase",
+  Payable: "Bill",
+};
 
 const CHART_TOOLBAR_DOWNLOAD_ICON =
   '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>';
@@ -392,6 +409,18 @@ function Dashboard() {
     [items, allTransactions]
   );
 
+  // Revenue and Expenses tiles come from the shared accrual engine so the
+  // Dashboard matches the Financial Report. (The hero "Money In / Money Out"
+  // block below stays cash-basis — it is a cash-flow view, not a P&L view.)
+  const accrualRevenue = useMemo(
+    () => parseFloat(engineTotalRevenue(items)) || 0,
+    [items]
+  );
+  const accrualExpenses = useMemo(
+    () => parseFloat(engineTotalExpenses(items, allTransactions)) || 0,
+    [items, allTransactions]
+  );
+
   const calculateTotalRevenue = () => {
     return (totalrevenueRef.current || 0).toFixed(2);
   };
@@ -530,7 +559,11 @@ function Dashboard() {
           },
         },
         tickAmount: 5,
-        min: 0,
+        // Allow negative balances to render (cash can go below zero); only floor
+        // at 0 when every point is positive, so a healthy chart still sits on 0.
+        min: function (min) {
+          return min < 0 ? min * 1.1 : 0;
+        },
         max: function (max) {
           return max > 0 ? max * 1.1 : 100;
         },
@@ -755,11 +788,12 @@ function Dashboard() {
   };
 
   const calculatePercentageChange = (currentValue, previousValue) => {
-    if (!previousValue || previousValue === 0) {
-      if (currentValue === 0) return { text: "— No change", value: 0, isPositive: null };
-      return { text: "+100% vs last month", value: 100, isPositive: true };
+    // No valid prior period (new business, or a custom range we can't compare):
+    // show no badge rather than a fabricated "+100%" or an exploding percentage.
+    if (previousValue == null || previousValue === 0) {
+      return { text: "", value: 0, isPositive: null };
     }
-    const change = ((currentValue - previousValue) / previousValue) * 100;
+    const change = ((currentValue - previousValue) / Math.abs(previousValue)) * 100;
     const roundedChange = Math.round(change);
     if (roundedChange === 0) {
       return { text: "— No change", value: 0, isPositive: null };
@@ -772,17 +806,26 @@ function Dashboard() {
     };
   };
 
+  // Honest month-over-month: compare against the PREVIOUS CALENDAR MONTH,
+  // computed from the shared engine (flows for the month, balances as of its
+  // end). Suppressed for custom ranges, where there is no clean comparison.
   const getPreviousMonthValues = () => {
-    if (!monthlySales || monthlySales.length < 2) {
-      return { cashOnHand: 0, expenses: 0, payable: 0, revenue: 0 };
-    }
-    const previousIndex = monthlySales.length - 2;
-    const previous = monthlySales[previousIndex];
+    if (dashboardDateRange) return null;
+    const all = allTransactions || [];
+    const now = new Date();
+    const prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const prevEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+    const prevFiltered = engineFilterByRange(all, {
+      from: prevStart.toISOString(),
+      to: prevEnd.toISOString(),
+    });
+    const upToPrevEnd = all.filter((t) => new Date(t.createdAt) <= prevEnd);
     return {
-      cashOnHand: previous?.cashOnHand || 0,
-      expenses: previous?.expenses || 0,
-      payable: previous?.payable || 0,
-      revenue: previous?.revenue || 0,
+      revenue: parseFloat(engineTotalRevenue(prevFiltered)) || 0,
+      expenses: parseFloat(engineTotalExpenses(prevFiltered, all)) || 0,
+      cashOnHand: parseFloat(engineTotalCash(upToPrevEnd, initialBalance)) || 0,
+      payable:
+        parseFloat(engineTotalPayable(upToPrevEnd, all, initialoutstandingDebt)) || 0,
     };
   };
 
@@ -1072,28 +1115,29 @@ function Dashboard() {
   }, []);
 
   // Metric registry — drives the interactive hero panel + overview chart.
+  const prevMonth = getPreviousMonthValues();
   const heroMetrics = {
     cash: {
       key: "cash", label: t("dashboard.cashOnHand"), value: parseFloat(calculateTotalCash()),
-      prev: getPreviousMonthValues().cashOnHand, color: FINANCIAL_COLORS.asset, icon: "fas fa-wallet",
+      prev: prevMonth?.cashOnHand, color: FINANCIAL_COLORS.asset, icon: "fas fa-wallet",
       chart: cashOnHandChartData, chartTitle: t("dashboard.totalCashOnHandChart"),
       spark: monthlySales.map((m) => m.cashOnHand),
     },
     revenue: {
-      key: "revenue", label: t("dashboard.revenue"), value: totalrevenue,
-      prev: getPreviousMonthValues().revenue, color: FINANCIAL_COLORS.income, icon: "fas fa-arrow-up",
+      key: "revenue", label: t("dashboard.revenue"), value: accrualRevenue,
+      prev: prevMonth?.revenue, color: FINANCIAL_COLORS.income, icon: "fas fa-arrow-up",
       chart: revenueChartData, chartTitle: t("dashboard.revenueChart"),
       spark: monthlySales.map((m) => m.revenue),
     },
     expenses: {
-      key: "expenses", label: t("dashboard.totalExpenses"), value: totalExpenses,
-      prev: getPreviousMonthValues().expenses, color: FINANCIAL_COLORS.expense, icon: "fas fa-arrow-down",
+      key: "expenses", label: t("dashboard.totalExpenses"), value: accrualExpenses,
+      prev: prevMonth?.expenses, color: FINANCIAL_COLORS.expense, icon: "fas fa-arrow-down",
       chart: expensesChartData, chartTitle: t("dashboard.totalExpensesChart"),
       spark: monthlySales.map((m) => m.expenses),
     },
     payable: {
       key: "payable", label: t("dashboard.totalPayable"), value: totalPayable,
-      prev: getPreviousMonthValues().payable, color: FINANCIAL_COLORS.payable, icon: "fas fa-file-invoice",
+      prev: prevMonth?.payable, color: FINANCIAL_COLORS.payable, icon: "fas fa-file-invoice",
       chart: payableChartData, chartTitle: t("dashboard.totalPayableChart"),
       spark: monthlySales.map((m) => m.payable),
     },
@@ -1464,6 +1508,14 @@ function Dashboard() {
                     </span>
                   )}
                 </div>
+                {!loadingFinancialData && activeMetric.key === "cash" && activeMetric.value < 0 && (
+                  <div className="hero-cash-warning" style={{ color: FINANCIAL_COLORS.negative, fontSize: "12px", marginTop: 4 }}>
+                    {t(
+                      "dashboard.negativeCashWarning",
+                      "Cash on hand is negative — you've recorded more money out than in. Check for a missing deposit or a miscategorized entry."
+                    )}
+                  </div>
+                )}
                 {!loadingFinancialData && (() => {
                   const income = parseFloat(calculateTotalRevenue()) || 0;
                   const outflow = parseFloat(calculateTotalExpenses()) || 0;
@@ -1508,10 +1560,12 @@ function Dashboard() {
                 })()}
                 {!loadingFinancialData && (
                   <div className="hero-subline">
-                    <div>
-                      <span className="hk">{t("dashboard.previousMonth", "Prev. month")}</span>
-                      <span className="hv">${Number(activeMetric.prev || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                    </div>
+                    {activeMetric.prev != null && (
+                      <div>
+                        <span className="hk">{t("dashboard.previousMonth", "Prev. month")}</span>
+                        <span className="hv">${Number(activeMetric.prev || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                      </div>
+                    )}
                     {activeMetric.key === "cash" && (
                       <div>
                         <span className="hk">{t("dashboard.taxEstimation", "Tax set-aside")}</span>
@@ -1667,7 +1721,7 @@ function Dashboard() {
                                 day: "numeric",
                               })
                             : ""}
-                          {type ? ` · ${type}` : ""}
+                          {type ? ` · ${TX_TYPE_LABEL[type] || type}` : ""}
                         </div>
                       </div>
                       <span className="dash-tx__amt" style={{ color: rowColor }}>
@@ -1693,16 +1747,28 @@ function Dashboard() {
               </div>
               {(() => {
                 const groups = {};
-                (allTransactions || []).forEach((tx) => {
-                  const isExp =
-                    tx.transactionType === "Pay" || tx.transactionType === "New_Item";
-                  if (!isExp) return;
+                // Accrual P&L expenses only — mirrors the engine, so debt
+                // principal and inventory purchases are excluded, and the cost
+                // of goods sold is included at the time of sale.
+                (items || []).forEach((tx) => {
+                  if (!isCountableOutflow(tx, allTransactions)) return;
                   const key =
                     String(tx.transactionPurpose || "")
                       .replace(/\s*\(Expense\)\s*/i, "")
                       .trim() ||
                     t("dashboard.otherExpense", "Other");
-                  groups[key] = (groups[key] || 0) + Math.abs(parseFloat(tx.transactionAmount) || 0);
+                  groups[key] = (groups[key] || 0) + outflowAmount(tx);
+                });
+                (items || []).forEach((tx) => {
+                  if (
+                    tx.transactionType === "Receive" &&
+                    tx.subType === "sale_inventory" &&
+                    (parseFloat(tx.originalAmount) || 0) > 0
+                  ) {
+                    const key = t("dashboard.cogs", "Cost of goods sold");
+                    groups[key] =
+                      (groups[key] || 0) + (parseFloat(tx.originalAmount) || 0);
+                  }
                 });
                 const rows = Object.entries(groups)
                   .sort((a, b) => b[1] - a[1])

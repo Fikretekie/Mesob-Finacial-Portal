@@ -2021,6 +2021,11 @@ const MesobFinancial2 = () => {
   const calculateTotalPayable = () =>
     acct.calculateTotalPayable(getFilteredItems(), items, initialoutstandingDebt);
 
+  // While transactions are still loading, the summary would compute from opening
+  // balances alone (e.g. cash $50, payable $5,000) and flash wrong numbers before
+  // correcting. Show a spinner instead of those stale figures.
+  const statsLoading = loading || loadingTransactions;
+
   const fetchTransactions = (uid = null) => {
     setLoadingTransactions(true);
     const targetUserId = uid || localStorage.getItem("userId");
@@ -2915,9 +2920,13 @@ const MesobFinancial2 = () => {
                       <div className="mksv-ico mksv-ico--income"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="6" width="18" height="12" rx="2" /><circle cx="12" cy="12" r="2.4" /></svg></div>
                       <div className="mksv-stat-main">
                         <div className="mksv-stat-label">{t('financialReport.totalCashOnHand')}</div>
-                        <BalanceValue value={parseFloat(calculateTotalCash())} tooltip={t('financialReport.cashDeficitTooltip')} style={{ fontSize: "1.15rem", fontWeight: 800 }}>
-                          {CUR}{parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </BalanceValue>
+                        {statsLoading ? (
+                          <Spinner size="sm" />
+                        ) : (
+                          <BalanceValue value={parseFloat(calculateTotalCash())} tooltip={t('financialReport.cashDeficitTooltip')} style={{ fontSize: "1.15rem", fontWeight: 800 }}>
+                            {CUR}{parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </BalanceValue>
+                        )}
                       </div>
                       <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><path d="M2 26 12 24 22 25 32 18 42 20 52 10 64 6 64 34 2 34Z" fill="#34d39922" /><polyline points="2,26 12,24 22,25 32,18 42,20 52,10 64,6" fill="none" stroke="#34d399" strokeWidth="2" /></svg>
                     </div>
@@ -2926,7 +2935,7 @@ const MesobFinancial2 = () => {
                       <div className="mksv-ico mksv-ico--payable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 3h9l5 5v13H6z" /><path d="M9 12h7M9 16h7" /></svg></div>
                       <div className="mksv-stat-main">
                         <div className="mksv-stat-label">{t('financialReport.totalPayable')}</div>
-                        <div className="mksv-stat-val" style={{ color: FINANCIAL_COLORS.payable }}>{CUR}{parseFloat(calculateTotalPayable()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        <div className="mksv-stat-val" style={{ color: FINANCIAL_COLORS.payable }}>{statsLoading ? <Spinner size="sm" /> : `${CUR}${parseFloat(calculateTotalPayable()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</div>
                       </div>
                       <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><polyline points="2,20 12,18 22,22 32,16 42,19 52,14 64,12" fill="none" stroke="#e6b25f" strokeWidth="2" /></svg>
                     </div>
@@ -2935,7 +2944,7 @@ const MesobFinancial2 = () => {
                       <div className="mksv-ico mksv-ico--accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-7" /></svg></div>
                       <div className="mksv-stat-main">
                         <div className="mksv-stat-label">{t('financialReport.totalRevenue')}</div>
-                        <div className="mksv-stat-val" style={{ color: "#3b82f6" }}>{CUR}{parseFloat(calculateTotalRevenue()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        <div className="mksv-stat-val" style={{ color: "#3b82f6" }}>{statsLoading ? <Spinner size="sm" /> : `${CUR}${parseFloat(calculateTotalRevenue()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</div>
                       </div>
                       <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><path d="M2 28 12 22 22 24 32 15 42 17 52 9 64 4 64 34 2 34Z" fill="#3b82f622" /><polyline points="2,28 12,22 22,24 32,15 42,17 52,9 64,4" fill="none" stroke="#3b82f6" strokeWidth="2" /></svg>
                     </div>
@@ -2944,7 +2953,7 @@ const MesobFinancial2 = () => {
                       <div className="mksv-ico mksv-ico--expense"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 12a9 9 0 11-9-9v9z" /></svg></div>
                       <div className="mksv-stat-main">
                         <div className="mksv-stat-label">{t('financialReport.totalExpense')}</div>
-                        <div className="mksv-stat-val" style={{ color: FINANCIAL_COLORS.expense }}>{CUR}{parseFloat(calculateTotalExpenses(true)).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        <div className="mksv-stat-val" style={{ color: FINANCIAL_COLORS.expense }}>{statsLoading ? <Spinner size="sm" /> : `${CUR}${parseFloat(calculateTotalExpenses(true)).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</div>
                       </div>
                       <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><polyline points="2,14 12,16 22,13 32,17 42,15 52,19 64,17" fill="none" stroke="#a855f7" strokeWidth="2" /></svg>
                     </div>
@@ -3401,17 +3410,21 @@ const MesobFinancial2 = () => {
                       <div style={{ marginBottom: "8px", color: "var(--text-1)", fontWeight: "bold", fontSize: "0.9rem" }}>
                         {t('financialReport.totalCashOnHand')}
                       </div>
-                      <BalanceValue
-                        value={parseFloat(calculateTotalCash())}
-                        tooltip={t("financialReport.cashDeficitTooltip")}
-                        style={{ fontSize: "1.1rem" }}
-                      >
-                        {CUR}
-                        {parseFloat(calculateTotalCash()).toLocaleString("en-US", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </BalanceValue>
+                      {statsLoading ? (
+                        <Spinner size="sm" />
+                      ) : (
+                        <BalanceValue
+                          value={parseFloat(calculateTotalCash())}
+                          tooltip={t("financialReport.cashDeficitTooltip")}
+                          style={{ fontSize: "1.1rem" }}
+                        >
+                          {CUR}
+                          {parseFloat(calculateTotalCash()).toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </BalanceValue>
+                      )}
                     </div>
 
                     <div
@@ -3433,13 +3446,13 @@ const MesobFinancial2 = () => {
                           fontSize: "1.1rem",
                         }}
                       >
-                        {CUR}
-                        {parseFloat(calculateTotalPayable()).toLocaleString(
-                          "en-US",
-                          {
+                        {statsLoading ? (
+                          <Spinner size="sm" />
+                        ) : (
+                          `${CUR}${parseFloat(calculateTotalPayable()).toLocaleString("en-US", {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
-                          }
+                          })}`
                         )}
                       </div>
                     </div>
