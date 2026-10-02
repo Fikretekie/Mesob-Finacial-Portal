@@ -46,11 +46,11 @@ import {
   getBalanceCardStyle,
 } from "utils/financialColors";
 import {
-  calculateEstimatedTax,
   calculateTotalRevenue as engineTotalRevenue,
   calculateTotalExpenses as engineTotalExpenses,
   calculateTotalCash as engineTotalCash,
   calculateTotalPayable as engineTotalPayable,
+  calculateDepreciationExpense as engineDepreciation,
   isCountableOutflow,
   outflowAmount,
   filterItemsByTimeRange as engineFilterByRange,
@@ -404,21 +404,27 @@ function Dashboard() {
   // Tax set-aside comes from the shared engine: 30% of net income (after cost
   // of goods), never below zero. It used to be 30% of cash on hand, which went
   // negative whenever cash did and overstated tax for anyone holding cash.
-  const estimatedTax = useMemo(
-    () => parseFloat(calculateEstimatedTax(items, allTransactions)) || 0,
-    [items, allTransactions]
-  );
-
   // Revenue and Expenses tiles come from the shared accrual engine so the
   // Dashboard matches the Financial Report. (The hero "Money In / Money Out"
   // block below stays cash-basis — it is a cash-flow view, not a P&L view.)
+  const depreciation = useMemo(
+    () => parseFloat(engineDepreciation(allTransactions, dashboardDateRange)) || 0,
+    [allTransactions, dashboardDateRange]
+  );
   const accrualRevenue = useMemo(
     () => parseFloat(engineTotalRevenue(items)) || 0,
     [items]
   );
   const accrualExpenses = useMemo(
-    () => parseFloat(engineTotalExpenses(items, allTransactions)) || 0,
-    [items, allTransactions]
+    () => (parseFloat(engineTotalExpenses(items, allTransactions)) || 0) + depreciation,
+    [items, allTransactions, depreciation]
+  );
+
+  // Tax set-aside: 30% of net income (revenue − expenses incl. depreciation),
+  // never below zero. Matches the Financial Report's net income.
+  const estimatedTax = useMemo(
+    () => Math.max(0, accrualRevenue - accrualExpenses) * 0.3,
+    [accrualRevenue, accrualExpenses]
   );
 
   const calculateTotalRevenue = () => {

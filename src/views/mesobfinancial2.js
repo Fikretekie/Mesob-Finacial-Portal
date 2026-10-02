@@ -185,6 +185,12 @@ const MesobFinancial2 = () => {
   const [transactionType, setTransactionType] = useState("");
   const [transactionPurpose, setTransactionPurpose] = useState("");
   const [transactionAmount, setTransactionAmount] = useState("");
+  // Transaction date — lets a user backdate a hand-entered transaction instead
+  // of everything defaulting to "now". Stored as the record's createdAt.
+  const [transactionDate, setTransactionDate] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
   // IFTA: optional state + gallons on a manual fuel expense (Trucking), so typed
   // fuel feeds the IFTA report just like scanned fuel receipts do.
   const [iftaState, setIftaState] = useState("");
@@ -229,6 +235,9 @@ const MesobFinancial2 = () => {
   const [showInstallmentInput, setShowInstallmentInput] = useState(false);
   const [paymentOption, setPaymentOption] = useState(null);
   const [remainingAmount, setRemainingAmount] = useState(0);
+  // Loan payments: the interest portion is a P&L expense; only the principal
+  // reduces the debt balance. Blank/0 = treat the whole payment as principal.
+  const [interestPortion, setInterestPortion] = useState("");
   const [isBreakdownExpanded, setIsBreakdownExpanded] = useState(true);
   const [isRevenueExpanded, setIsRevenueExpanded] = useState(true);
   const [isExpenseExpanded, setIsExpenseExpanded] = useState(true);
@@ -282,6 +291,10 @@ const MesobFinancial2 = () => {
   const [assetName, setAssetName] = useState("");                // selected or manual name
   const [assetNameManual, setAssetNameManual] = useState("");    // when "Enter manually" for asset
   const [purchaseQty, setPurchaseQty] = useState("");            // qty bought (inventory purchases)
+  // Depreciation choice for a fixed asset (e.g. a truck). Straight-line spreads
+  // the cost over its useful life; Section 179 writes it all off in year one.
+  const [depreciationMethod, setDepreciationMethod] = useState("straight_line");
+  const [usefulLifeYears, setUsefulLifeYears] = useState("5");
   const [boughtNewItemPurposes, setBoughtNewItemPurposes] = useState([]);
   // Add method to save new purposes
   const handleAddPurpose = () => {
@@ -710,6 +723,9 @@ const MesobFinancial2 = () => {
                 originalAmount: parseFloat(transactionAmount),
                 assetType: assetType || null,
                 assetName: resolvedAssetName || null,
+                ...(assetType === "fixed"
+                  ? { depreciationMethod, usefulLifeYears: parseFloat(usefulLifeYears) || 5 }
+                  : {}),
                 ...(assetType === "current" && purchaseQty !== "" && !isNaN(parseFloat(purchaseQty))
                   ? { quantity: parseFloat(purchaseQty) }
                   : {}),
@@ -741,6 +757,9 @@ const MesobFinancial2 = () => {
                 originalAmount: parseFloat(transactionAmount),
                 assetType: assetType || null,
                 assetName: resolvedAssetName || null,
+                ...(assetType === "fixed"
+                  ? { depreciationMethod, usefulLifeYears: parseFloat(usefulLifeYears) || 5 }
+                  : {}),
                 ...(assetType === "current" && purchaseQty !== "" && !isNaN(parseFloat(purchaseQty))
                   ? { quantity: parseFloat(purchaseQty) }
                   : {}),
@@ -780,6 +799,13 @@ const MesobFinancial2 = () => {
 
       if (getCurrentBusinessId()) newTransaction.businessId = getCurrentBusinessId();
 
+      // Use the chosen date (defaulting to today) as the record's timestamp, so
+      // a backdated entry lands in the right period. Noon avoids a timezone
+      // day-shift when the date-only value is parsed as UTC midnight.
+      if (transactionDate) {
+        newTransaction.createdAt = new Date(`${transactionDate}T12:00:00`).toISOString();
+      }
+
       const response = await axios.post(
         apiUrl(ROUTES.TRANSACTION),
         newTransaction
@@ -790,7 +816,7 @@ const MesobFinancial2 = () => {
         // record a FuelPurchase so it flows into the IFTA report (same as scans).
         if (iftaState && iftaGallons && !isNaN(parseFloat(iftaGallons))) {
           try {
-            const d = new Date();
+            const d = transactionDate ? new Date(`${transactionDate}T12:00:00`) : new Date();
             const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
             await saveFuelPurchase({
               dateKey,
@@ -827,6 +853,10 @@ const MesobFinancial2 = () => {
     setTransactionType("");
     setTransactionPurpose("");
     setTransactionAmount("");
+    setTransactionDate(() => {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    });
     setIftaState("");
     setIftaGallons("");
     setManualPurpose("");
@@ -839,6 +869,8 @@ const MesobFinancial2 = () => {
     setSaleQty("");
     setSaleCostPortion("");
     setPurchaseQty("");
+    setDepreciationMethod("straight_line");
+    setUsefulLifeYears("5");
     setAssetType("");
     setAssetName("");
     setAssetNameManual("");
@@ -1122,6 +1154,14 @@ const MesobFinancial2 = () => {
         ? parseFloat(transaction.transactionAmount)
         : parseFloat(remainingAmount);
 
+    // Loan interest/principal split: interest is expensed, only principal pays
+    // down the balance. Only applies to the outstanding-debt (loan) payment.
+    const interest =
+      transaction.id === "outstanding-debt"
+        ? Math.min(parseFloat(interestPortion) || 0, paidAmount)
+        : 0;
+    const principal = paidAmount - interest;
+
     setIsUpdatingTransaction(true);
     try {
       if (transaction.id !== "outstanding-debt") {
@@ -1168,35 +1208,51 @@ const MesobFinancial2 = () => {
         );
       }
 
-      // Create the payment transaction record
-      const newPaidTransaction = {
-        userId: localStorage.getItem("userId"),
-        transactionType: "Pay",
-        transactionPurpose:
-          transaction.id === "outstanding-debt"
-            ? "Payment for Outstanding Debt"
-            : paymentOption === "full"
-              ? `Full Payment for ${transaction.transactionPurpose}`
-              : `Partial Payment for ${transaction.transactionPurpose}`,
-        transactionAmount: paidAmount,
-        receiptUrl: Url || "",
-        payableId: transaction.id,
-        createdAt: new Date().toISOString(),
-        ...(getCurrentBusinessId() ? { businessId: getCurrentBusinessId() } : {}),
-      };
+      // Create the principal payment record (only the principal reduces the
+      // debt balance). Skipped when the whole payment is interest.
+      if (principal > 0) {
+        const newPaidTransaction = {
+          userId: localStorage.getItem("userId"),
+          transactionType: "Pay",
+          transactionPurpose:
+            transaction.id === "outstanding-debt"
+              ? `Payment for Outstanding Debt${interest > 0 ? " (principal)" : ""}`
+              : paymentOption === "full"
+                ? `Full Payment for ${transaction.transactionPurpose}`
+                : `Partial Payment for ${transaction.transactionPurpose}`,
+          transactionAmount: principal,
+          receiptUrl: Url || "",
+          payableId: transaction.id,
+          createdAt: new Date().toISOString(),
+          ...(getCurrentBusinessId() ? { businessId: getCurrentBusinessId() } : {}),
+        };
 
-      const response2 = await axios.post(
-        apiUrl(ROUTES.TRANSACTION),
-        newPaidTransaction
-      );
-
-      if (response2.status === 200) {
-        notify("tr", t("financialReport.paymentRecorded"), "success");
-        fetchTransactions();
-        fetchUserInitialBalance();
-      } else {
-        throw new Error("Failed to add the payment record");
+        const response2 = await axios.post(
+          apiUrl(ROUTES.TRANSACTION),
+          newPaidTransaction
+        );
+        if (response2.status !== 200) {
+          throw new Error("Failed to add the payment record");
+        }
       }
+
+      // Interest portion is booked as its own P&L expense (no payableId, so the
+      // engine counts it as an operating expense rather than a debt paydown).
+      if (interest > 0) {
+        await axios.post(apiUrl(ROUTES.TRANSACTION), {
+          userId: localStorage.getItem("userId"),
+          transactionType: "Pay",
+          subType: "loan_interest",
+          transactionPurpose: "Loan Interest",
+          transactionAmount: interest,
+          createdAt: new Date().toISOString(),
+          ...(getCurrentBusinessId() ? { businessId: getCurrentBusinessId() } : {}),
+        });
+      }
+
+      notify("tr", t("financialReport.paymentRecorded"), "success");
+      fetchTransactions();
+      fetchUserInitialBalance();
     } catch (error) {
       console.error("Error updating transaction:", error);
       notify("tr", `Error recording payment: ${error.message}`, "danger");
@@ -1207,6 +1263,7 @@ const MesobFinancial2 = () => {
       setShowAddTransaction(false);
       setTransactionAmount("");
       setRemainingAmount(0);
+      setInterestPortion("");
     }
   };
 
@@ -1866,6 +1923,28 @@ const MesobFinancial2 = () => {
         </td>
       </tr>
 
+      {parseFloat(calculateDepreciationExpense()) > 0 && (
+        <tr>
+          <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>
+            {t("financialReport.depreciationExpense", "Depreciation expense")}
+          </td>
+          <td
+            style={{
+              color: FINANCIAL_COLORS.expense,
+              padding: "8px",
+              border: "1px solid var(--border)",
+              textAlign: "right",
+            }}
+          >
+            {CUR}
+            {parseFloat(calculateDepreciationExpense()).toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </td>
+        </tr>
+      )}
+
       <tr
         onClick={() => setIsOtherExpenseExpanded(!isOtherExpenseExpanded)}
         style={{ cursor: "pointer" }}
@@ -1966,8 +2045,22 @@ const MesobFinancial2 = () => {
   const calculateTotalInventory = () =>
     acct.calculateTotalInventory(getFilteredItems(), initialvalueableItems);
 
+  // Depreciation expense for the selected period (straight-line / Section 179).
+  const calculateDepreciationExpense = () =>
+    acct.calculateDepreciationExpense(items, selectedTimeRange);
+  const calculateAccumulatedDepreciation = () =>
+    acct.calculateAccumulatedDepreciation(
+      items,
+      selectedTimeRange && selectedTimeRange.to ? selectedTimeRange.to : new Date()
+    );
+
+  // Fixed assets shown at net book value (cost minus the depreciation taken in
+  // this period), so the balance sheet still ties to the depreciated net income.
   const calculateTotalFixedAssets = () =>
-    acct.calculateTotalFixedAssets(getFilteredItems());
+    (
+      parseFloat(acct.calculateTotalFixedAssets(getFilteredItems())) -
+      parseFloat(calculateDepreciationExpense())
+    ).toFixed(2);
 
   const getFixedAssetBreakdown = () => {
     const filteredItems = getFilteredItems();
@@ -2014,7 +2107,11 @@ const MesobFinancial2 = () => {
   };
 
   // Authoritative total expenses driving net income (delegates to shared engine).
-  const calculateTotalExpenses = () => acct.calculateTotalExpenses(getFilteredItems(), items);
+  const calculateTotalExpenses = () =>
+    (
+      parseFloat(acct.calculateTotalExpenses(getFilteredItems(), items)) +
+      parseFloat(calculateDepreciationExpense())
+    ).toFixed(2);
 
   const calculateTotalCash = () => acct.calculateTotalCash(getFilteredItems(), initialBalance);
 
@@ -2958,6 +3055,39 @@ const MesobFinancial2 = () => {
                       <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><polyline points="2,14 12,16 22,13 32,17 42,15 52,19 64,17" fill="none" stroke="#a855f7" strokeWidth="2" /></svg>
                     </div>
                   </div>
+                  {!statsLoading && unpaidTransactions && unpaidTransactions.length > 0 && (() => {
+                    const now = Date.now();
+                    const buckets = [
+                      [t('financialReport.agingCurrent', 'Current (0–30 days)'), 0],
+                      [t('financialReport.aging31', '31–60 days'), 0],
+                      [t('financialReport.aging61', '61–90 days'), 0],
+                      [t('financialReport.aging90', '90+ days (overdue)'), 0],
+                    ];
+                    unpaidTransactions.forEach((tx) => {
+                      const amt = parseFloat(tx.remainingAmount != null ? tx.remainingAmount : tx.transactionAmount) || 0;
+                      if (amt <= 0) return;
+                      const days = tx.createdAt ? (now - new Date(tx.createdAt).getTime()) / 86400000 : 0;
+                      const i = days <= 30 ? 0 : days <= 60 ? 1 : days <= 90 ? 2 : 3;
+                      buckets[i][1] += amt;
+                    });
+                    const rows = buckets.filter(([, v]) => v > 0);
+                    if (rows.length === 0) return null;
+                    return (
+                      <div style={{ marginTop: "16px", borderTop: "1px solid var(--border)", paddingTop: "12px" }}>
+                        <div className="mksv-stat-label" style={{ marginBottom: 8 }}>
+                          {t('financialReport.apAging', 'Unpaid bills by age')}
+                        </div>
+                        {rows.map(([label, v], idx) => (
+                          <div key={label} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", padding: "3px 0", color: idx === 3 ? FINANCIAL_COLORS.expense : "var(--text-2)" }}>
+                            <span>{label}</span>
+                            <span style={{ color: FINANCIAL_COLORS.payable, fontWeight: 600 }}>
+                              {CUR}{v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </CardBody>
               </Card>
             </Col>
@@ -3163,6 +3293,17 @@ const MesobFinancial2 = () => {
                             <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           </tr>
                         ))}
+                        {isInventoryExpanded && parseFloat(initialvalueableItems) > 0 && (
+                          <tr>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-3)", paddingLeft: "20px" }}>
+                              {t('financialReport.openingInventory', 'Opening inventory (from profile)')}
+                            </td>
+                            <td style={{ color: FINANCIAL_COLORS.asset, textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
+                              $ {parseFloat(initialvalueableItems).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
+                          </tr>
+                        )}
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
                             <strong>{t('financialReport.totalInventory')}</strong>
@@ -3197,6 +3338,17 @@ const MesobFinancial2 = () => {
                             <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           </tr>
                         ))}
+                        {parseFloat(calculateDepreciationExpense()) > 0 && (
+                          <tr>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-3)", paddingLeft: "20px" }}>
+                              {t('financialReport.lessDepreciation', 'Less: Depreciation')}
+                            </td>
+                            <td style={{ color: FINANCIAL_COLORS.expense, textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
+                              − $ {parseFloat(calculateDepreciationExpense()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                            <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
+                          </tr>
+                        )}
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}>
                             <strong>{t('financialReport.totalFixedAssets')}</strong>
@@ -3260,6 +3412,9 @@ const MesobFinancial2 = () => {
                             style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           >
                             {t('financialReport.beginningEquity')}
+                            <div style={{ color: "var(--text-3)", fontSize: "11px", fontWeight: 400, marginTop: "2px" }}>
+                              {t('financialReport.beginningEquityNote', 'Your opening stake: starting cash + items − debts you set in your profile.')}
+                            </div>
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
@@ -3955,6 +4110,9 @@ const MesobFinancial2 = () => {
                             style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
                           >
                             {t('financialReport.beginningEquity')}
+                            <div style={{ color: "var(--text-3)", fontSize: "11px", fontWeight: 400, marginTop: "2px" }}>
+                              {t('financialReport.beginningEquityNote', 'Your opening stake: starting cash + items − debts you set in your profile.')}
+                            </div>
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}
@@ -4195,6 +4353,17 @@ const MesobFinancial2 = () => {
                 </Button>
               </div>
             </FormGroup>
+            {transactionType && (
+              <FormGroup>
+                <Label>{t('financialReport.date', 'Date')}:</Label>
+                <Input
+                  type="date"
+                  value={transactionDate}
+                  max={new Date().toISOString().slice(0, 10)}
+                  onChange={(e) => setTransactionDate(e.target.value)}
+                />
+              </FormGroup>
+            )}
             {/* Show action buttons for Pay Cash */}
             {transactionType === "pay" && (
               <FormGroup>
@@ -4483,6 +4652,23 @@ const MesobFinancial2 = () => {
                     </div>
                   </FormGroup>
                 )}
+                {selectedUnpaidTransaction?.id === "outstanding-debt" && (
+                  <FormGroup>
+                    <Label>{t('financialReport.interestPortion', 'Interest portion (optional)')}:</Label>
+                    <Input
+                      className="no-number-spinner"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      value={interestPortion}
+                      onChange={(e) => setInterestPortion(limitToTwoDecimals(e.target.value))}
+                    />
+                    <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                      {t('financialReport.interestPortionHint', "Only the interest is a business expense. The rest reduces your loan balance and isn't expensed.")}
+                    </small>
+                  </FormGroup>
+                )}
                 {/* Receipts form */}
                 <FormGroup>
                   <Label>{t('financialReport.receipt')}:</Label>
@@ -4575,6 +4761,35 @@ const MesobFinancial2 = () => {
                     />
                     <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
                       {t('financialReport.quantityHint', "Add a count so you can sell part of it later and only the sold portion counts as cost.")}
+                    </small>
+                  </FormGroup>
+                )}
+                {assetType === "fixed" && (
+                  <FormGroup>
+                    <Label>{t('financialReport.depreciation', 'Depreciation')}:</Label>
+                    <Input
+                      type="select"
+                      value={depreciationMethod}
+                      onChange={(e) => setDepreciationMethod(e.target.value)}
+                    >
+                      <option value="straight_line">{t('financialReport.straightLine', 'Straight-line (spread over useful life)')}</option>
+                      <option value="section_179">{t('financialReport.section179', 'Section 179 (full write-off in year one)')}</option>
+                    </Input>
+                    {depreciationMethod === "straight_line" && (
+                      <div style={{ marginTop: "8px" }}>
+                        <Label>{t('financialReport.usefulLife', 'Useful life (years)')}:</Label>
+                        <Input
+                          className="no-number-spinner"
+                          type="number"
+                          step="1"
+                          min="1"
+                          value={usefulLifeYears}
+                          onChange={(e) => setUsefulLifeYears(e.target.value)}
+                        />
+                      </div>
+                    )}
+                    <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                      {t('financialReport.depreciationHint', "Spreads the asset's cost across its life, or writes it all off this year (Section 179).")}
                     </small>
                   </FormGroup>
                 )}
@@ -4679,6 +4894,35 @@ const MesobFinancial2 = () => {
                     />
                     <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
                       {t('financialReport.quantityHint', "Add a count so you can sell part of it later and only the sold portion counts as cost.")}
+                    </small>
+                  </FormGroup>
+                )}
+                {assetType === "fixed" && (
+                  <FormGroup>
+                    <Label>{t('financialReport.depreciation', 'Depreciation')}:</Label>
+                    <Input
+                      type="select"
+                      value={depreciationMethod}
+                      onChange={(e) => setDepreciationMethod(e.target.value)}
+                    >
+                      <option value="straight_line">{t('financialReport.straightLine', 'Straight-line (spread over useful life)')}</option>
+                      <option value="section_179">{t('financialReport.section179', 'Section 179 (full write-off in year one)')}</option>
+                    </Input>
+                    {depreciationMethod === "straight_line" && (
+                      <div style={{ marginTop: "8px" }}>
+                        <Label>{t('financialReport.usefulLife', 'Useful life (years)')}:</Label>
+                        <Input
+                          className="no-number-spinner"
+                          type="number"
+                          step="1"
+                          min="1"
+                          value={usefulLifeYears}
+                          onChange={(e) => setUsefulLifeYears(e.target.value)}
+                        />
+                      </div>
+                    )}
+                    <small style={{ display: "block", marginTop: "6px", color: "var(--text-3)", fontSize: "12px" }}>
+                      {t('financialReport.depreciationHint', "Spreads the asset's cost across its life, or writes it all off this year (Section 179).")}
                     </small>
                   </FormGroup>
                 )}
