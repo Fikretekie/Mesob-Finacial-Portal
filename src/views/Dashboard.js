@@ -45,6 +45,7 @@ import {
   getBalanceColor,
   getBalanceCardStyle,
 } from "utils/financialColors";
+import { calculateEstimatedTax } from "utils/accounting";
 
 const CHART_TOOLBAR_DOWNLOAD_ICON =
   '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>';
@@ -382,6 +383,14 @@ function Dashboard() {
 
   const calculateTotalCash = () =>
     (totalCashOnHandRef.current || 0).toFixed(2);
+
+  // Tax set-aside comes from the shared engine: 30% of net income (after cost
+  // of goods), never below zero. It used to be 30% of cash on hand, which went
+  // negative whenever cash did and overstated tax for anyone holding cash.
+  const estimatedTax = useMemo(
+    () => parseFloat(calculateEstimatedTax(items, allTransactions)) || 0,
+    [items, allTransactions]
+  );
 
   const calculateTotalRevenue = () => {
     return (totalrevenueRef.current || 0).toFixed(2);
@@ -1506,7 +1515,7 @@ function Dashboard() {
                     {activeMetric.key === "cash" && (
                       <div>
                         <span className="hk">{t("dashboard.taxEstimation", "Tax set-aside")}</span>
-                        <span className="hv">${(parseFloat(calculateTotalCash()) * 0.3).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                        <span className="hv">${estimatedTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                       </div>
                     )}
                   </div>
@@ -1803,7 +1812,7 @@ function Dashboard() {
                   {t("dashboard.taxEstimation", "Tax set-aside")}
                 </span>
                 <span className="mk-badge mk-badge--info">
-                  ${(parseFloat(calculateTotalCash()) * 0.3).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  ${estimatedTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </span>
               </div>
               <div className="dash-status__row">
