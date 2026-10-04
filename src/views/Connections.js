@@ -63,11 +63,14 @@ function Connections() {
         await loadPlaidScript();
         const handler = window.Plaid.create({
           token: res.linkToken,
-          onSuccess: async (publicToken) => {
-            await exchangePublicToken(p.id, publicToken);
-            await fetchConnections().then(setStatus);
+          onSuccess: (publicToken) => {
+            exchangePublicToken(p.id, publicToken)
+              .then(() => fetchConnections().then(setStatus))
+              .catch((err) => console.error("Plaid exchange failed:", err));
           },
-          onExit: () => {},
+          onExit: (err) => {
+            if (err) console.error("Plaid Link exited with error:", err);
+          },
         });
         handler.open();
       } else {
