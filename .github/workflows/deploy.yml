@@ -49,6 +49,7 @@ jobs:
           REACT_APP_STAGING_GOOGLE_CLIENT_ID=${{ secrets.STAGING_GOOGLE_CLIENT_ID }}
           REACT_APP_STAGING_APPLE_CLIENT_ID=${{ secrets.STAGING_APPLE_CLIENT_ID }}
           REACT_APP_STRIPE_PRICE_MONTHLY_STAGING=${{ secrets.STRIPE_PRICE_MONTHLY_STAGING }}
+          REACT_APP_PLAID_ENABLED=true
           EOF
 
       - name: Debug - Show .env contents
