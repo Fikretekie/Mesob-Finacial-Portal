@@ -74,3 +74,14 @@ export async function disconnectProvider(providerId) {
   });
   return res.data;
 }
+export async function exchangePublicToken(providerId, publicToken) {
+  const businessId = getCurrentBusinessId();
+  const res = await axios.post(apiUrl(ROUTES.CONNECTIONS), {
+    userId: ownerId(),
+    provider: providerId,
+    action: "exchange",
+    publicToken,
+    ...(businessId ? { businessId } : {}),
+  });
+  return res.data;
+}

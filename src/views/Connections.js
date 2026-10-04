@@ -4,9 +4,11 @@ import { Helmet } from "react-helmet";
 import { Spinner } from "reactstrap";
 import {
   PROVIDERS,
+  isProviderLive,
   fetchConnections,
   startConnection,
   disconnectProvider,
+  exchangePublicToken,
 } from "utils/connectionsStorage";
 import "../assets/css/team.css";
 import "../assets/css/connections.css";
@@ -27,6 +29,17 @@ const ProviderIcon = ({ kind }) =>
     </svg>
   );
 
+function loadPlaidScript() {
+  return new Promise((resolve, reject) => {
+    if (window.Plaid) return resolve();
+    const script = document.createElement("script");
+    script.src = "https://cdn.plaid.com/link/v2/stable/link-initialize.js";
+    script.onload = resolve;
+    script.onerror = reject;
+    document.body.appendChild(script);
+  });
+}
+
 function Connections() {
   const { t } = useTranslation();
   const [status, setStatus] = useState({});
@@ -44,9 +57,22 @@ function Connections() {
     setBusyId(p.id);
     try {
       const res = await startConnection(p.id);
-      // Plaid returns a link token; Square returns a redirect URL.
-      if (res?.redirectUrl) window.location.href = res.redirectUrl;
-      else await fetchConnections().then(setStatus);
+      if (res?.redirectUrl) {
+        window.location.href = res.redirectUrl;
+      } else if (res?.linkToken) {
+        await loadPlaidScript();
+        const handler = window.Plaid.create({
+          token: res.linkToken,
+          onSuccess: async (publicToken) => {
+            await exchangePublicToken(p.id, publicToken);
+            await fetchConnections().then(setStatus);
+          },
+          onExit: () => {},
+        });
+        handler.open();
+      } else {
+        await fetchConnections().then(setStatus);
+      }
     } catch (err) {
       console.error("Connect failed:", err);
     } finally {
@@ -81,6 +107,7 @@ function Connections() {
 
       <div className="conn-grid">
         {PROVIDERS.map((p) => {
+          const live = isProviderLive(p);
           const st = status[p.id] || {};
           const connected = !!st.connected;
           return (
@@ -91,7 +118,9 @@ function Connections() {
               <div className="conn-body">
                 <div className="conn-name-row">
                   <span className="conn-name">{t("connections." + p.id + "Name")}</span>
-                  {connected ? (
+                  {!live ? (
+                    <span className="conn-chip conn-chip--soon">{t("nav.badgeSoon")}</span>
+                  ) : connected ? (
                     <span className="conn-chip conn-chip--on">{t("connections.connected")}</span>
                   ) : (
                     <span className="conn-chip">{t("connections.notConnected")}</span>
@@ -103,7 +132,11 @@ function Connections() {
                 )}
               </div>
               <div className="conn-action">
-                {connected ? (
+                {!live ? (
+                  <button className="conn-btn conn-btn--ghost" disabled title={t("connections.comingSoonHint")}>
+                    {t("nav.badgeSoon")}
+                  </button>
+                ) : connected ? (
                   <button className="conn-btn conn-btn--ghost" onClick={() => handleDisconnect(p)} disabled={busyId === p.id}>
                     {busyId === p.id ? <Spinner size="sm" /> : t("connections.disconnect")}
                   </button>
