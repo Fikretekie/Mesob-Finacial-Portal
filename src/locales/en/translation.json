@@ -1018,6 +1018,7 @@
     "connect": "Connect",
     "disconnect": "Disconnect",
     "connected": "Connected",
+    "reviewTransactions": "Review transactions",
     "notConnected": "Not connected",
     "comingSoonHint": "Available soon — we're finishing the setup.",
     "securityNote": "Bank-grade security. We never see or store your login credentials.",
