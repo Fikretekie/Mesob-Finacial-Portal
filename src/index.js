@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense, lazy } from "react";
 import ReactDOM from "react-dom/client";
 import {
   BrowserRouter,
@@ -23,22 +23,24 @@ import "assets/css/tokens.css";
 import "assets/css/components.css";
 import "assets/css/app-chrome.css";
 
-import AdminLayout from "layouts/Admin.js";
-import FinancialLayout from "layouts/financial.js";
+// Login stays eager — it is the landing page, so there is nothing to lazy-load
+// before it. Everything behind auth is code-split so the first paint is small.
 import Login from "../src/views/Login";
-import MesobFinanceLogin from "views/MesobFinanceLogin";
-import SignupPage from "./views/Signup";
-import CustomerLayout from "layouts/Customer";
-import ForgotPassword from "views/ForgotPassword";
-import SubscriptionPlans from "views/Payment/SubscriptionPlans";
-import SubscriptionPage from "views/Payment/Subscription";
-import Confirm from "views/Confirm";
 import OAuthListener from "components/OAuthListener";
 import NativeOAuthListener from "components/NativeOAuthListener";
 import { getNativeIdToken } from "./utils/nativeOAuth";
-import TermsOfUse from "views/Terms";
-import CompleteProfile from "views/CompleteProfile";
 import "./i18n";
+
+const AdminLayout = lazy(() => import("layouts/Admin.js"));
+const FinancialLayout = lazy(() => import("layouts/financial.js"));
+const CustomerLayout = lazy(() => import("layouts/Customer"));
+const MesobFinanceLogin = lazy(() => import("views/MesobFinanceLogin"));
+const SignupPage = lazy(() => import("./views/Signup"));
+const ForgotPassword = lazy(() => import("views/ForgotPassword"));
+const SubscriptionPlans = lazy(() => import("views/Payment/SubscriptionPlans"));
+const Confirm = lazy(() => import("views/Confirm"));
+const TermsOfUse = lazy(() => import("views/Terms"));
+const CompleteProfile = lazy(() => import("views/CompleteProfile"));
 
 import { getEnv } from "./config/api";
 
@@ -232,6 +234,13 @@ root.render(
   <Provider store={store}>
     <BrowserRouter>
       <NativeOAuthListener />
+      <Suspense
+        fallback={
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+            <div className="spinner-border text-primary" role="status" />
+          </div>
+        }
+      >
       <Routes>
         {/* Route for the Login page */}
         <Route path="/login" element={<Login />} />
@@ -254,6 +263,7 @@ root.render(
         {/* Redirect any unknown routes to /login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
+      </Suspense>
     </BrowserRouter>
   </Provider>
 );
