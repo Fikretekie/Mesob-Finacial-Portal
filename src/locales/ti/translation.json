@@ -1025,9 +1025,25 @@
     "connect": "ኣራኽብ",
     "disconnect": "ኣቋርጽ",
     "connected": "ተራኺቡ",
+    "reviewTransactions": "ግብይታት ገምግም",
     "notConnected": "ኣይተራኸበን",
     "comingSoonHint": "ኣብ ቀረባ ይርከብ — ነቲ ምድላው ንውድኦ ኣለና።",
     "securityNote": "ናይ ባንክ ደረጃ ውሕስነት። ናይ መእተዊ ሓበሬታኹም ፈጺምና ኣይንርእን ኣይነቐምጥን።",
     "loading": "ርክባት ይረጋገጽ ኣሎ…"
+  }
+  ,
+  "transactionReview": {
+      "title": "ግብይታት ገምግም",
+      "subtitle": "{{selected}} ካብ {{total}} ተመሪጹ",
+      "noneFound": "ንምግምጋም ዝኸውን ሓድሽ ግብይት የለን።",
+      "syncError": "ካብ ባንክኻ ግብይታት ክጽዓን ኣይተኻእለን። በጃኻ ድሕሪ ቁሩብ እዋን ደጊምካ ፈትን።",
+      "confirmError": "ግብይታት ክውሰኽ ኣይተኻእለን። ደጊምካ ፈትን።",
+      "enterManually": "ብኢድ ኣእትዎ",
+      "categoryPlaceholder": "ዓይነት ጽሓፍ",
+      "addReceipt": "ቅብሊት ወስኽ (ኣማራጺ)",
+      "addButton": "{{count}} ናብ Meksova ወስኽ",
+      "autoImportLabel": "እዚ ካርድ ንንግዲ ጥራይ እዩ — ብዝመጽእ ግዜ ኩሉ ብኣውቶማቲክ ወስኽ",
+      "bannerText": "{{count}} ግብይታት ካብ ባንክኻ ግምገማኻ የድልዮም",
+      "bannerButton": "ሕጂ ገምግም"
   }
 }

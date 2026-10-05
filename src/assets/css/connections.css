@@ -51,6 +51,7 @@
 .conn-chip--on { color: var(--green, #34d399); background: rgba(52, 196, 137, 0.12); border-color: rgba(52, 196, 137, 0.3); }
 
 .conn-action { flex: 0 0 auto; align-self: center; }
+.conn-action-group { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
 .conn-btn {
   height: 36px;
   padding: 0 16px;

@@ -26,6 +26,7 @@ import {
   Legend,
 } from "chart.js";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
+import PendingReviewBanner from "components/PendingReviewBanner";
 import axios from "axios";
 import { apiUrl, ROUTES } from "../config/api";
 import { getCurrentBusinessId, fetchCurrentBusiness } from "../utils/businessStorage";
@@ -1153,9 +1154,10 @@ function Dashboard() {
   return (
     <>
       <Helmet>
-        <title>Dashboard - Meksova </title>
-      </Helmet>
-      {isMobile ?
+  <title>Dashboard - Meksova </title>
+</Helmet>
+<PendingReviewBanner />
+{isMobile ?
         <PanelHeader
           size={isMobileLandscape ? "md" : isMobile ? "sm" : "sm"}
           content={

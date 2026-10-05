@@ -1025,9 +1025,25 @@
     "connect": "Xir",
     "disconnect": "Ka xir",
     "connected": "La xiray",
+    "reviewTransactions": "Dib u eeg macaamilada",
     "notConnected": "Lama xirin",
     "comingSoonHint": "Dhawaan la heli doono — waxaan dhammaynaynaa dejinta.",
     "securityNote": "Amniga heerka bangiga. Marnaba ma aragno mana kaydinno xogtaada gelitaanka.",
     "loading": "Hubinta xiriirrada…"
+  }
+  ,
+  "transactionReview": {
+      "title": "Dib u eeg macaamilada",
+      "subtitle": "{{selected}} ee {{total}} la doortay",
+      "noneFound": "Macaamilo cusub oo la eego ma jiraan.",
+      "syncError": "Macaamilada bangigaaga lama soo rari karin. Mar kale isku day wax yar ka dib.",
+      "confirmError": "Macaamilada lama darin karin. Mar kale isku day.",
+      "enterManually": "Gacanta ku geli",
+      "categoryPlaceholder": "Qeyb qor",
+      "addReceipt": "Ku dar rasiid (ikhtiyaari)",
+      "addButton": "Ku dar {{count}} Meksova",
+      "autoImportLabel": "Kaarkan waa mid ganacsi oo keliya — mar xigta si otomaatig ah wax walba ku dar",
+      "bannerText": "{{count}} macaamil oo bangigaaga ah ayaa u baahan dib-u-eegistaada",
+      "bannerButton": "Hadda dib u eeg"
   }
 }

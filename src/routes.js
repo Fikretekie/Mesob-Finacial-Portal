@@ -14,6 +14,7 @@ import FuelPurchase from "views/FuelPurchase";
 import IftaReport from "views/IftaReport";
 import Team from "views/Team";
 import Connections from "views/Connections";
+import TransactionReview from "views/TransactionReview";
 
 const adminRoutes = [
   {
@@ -158,6 +159,14 @@ const getCustomerRoutes = () => {
     icon: "ui-1_settings-gear-63",
     component: <Connections />,
     layout: "/customer",
+  },
+  {
+    path: "/review-transactions",
+    name: "Review Transactions",
+    nameKey: "nav.reviewTransactions",
+    component: <TransactionReview />,
+    layout: "/customer",
+    invisible: true,
   },
   // Team management is owner-only — teammates can't add/remove users.
   ...(localStorage.getItem("isTeamMember") !== "true"

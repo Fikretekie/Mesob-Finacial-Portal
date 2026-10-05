@@ -906,9 +906,10 @@
     "backupCsv": "Backup CSV",
     "subscribe": "Subscribe",
     "team": "Team",
-    "connections": "Connections",
+    "connections": "Connections" ,
     "badgeNew": "NEW",
     "badgeSoon": "SOON"
+    
   },
   "navbar": {
     "helpSupport": "Help & Support",
@@ -1022,4 +1023,20 @@
     "securityNote": "Bank-grade security. We never see or store your login credentials.",
     "loading": "Checking connections…"
   }
+  ,
+  "transactionReview": {
+      "title": "Review transactions",
+      "subtitle": "{{selected}} of {{total}} selected",
+      "noneFound": "No new transactions to review.",
+      "syncError": "Could not load transactions from your bank. Try again in a moment.",
+      "confirmError": "Could not add transactions. Try again.",
+      "enterManually": "Enter Manually",
+      "categoryPlaceholder": "Type a category",
+      "addReceipt": "Add receipt (optional)",
+      "addButton": "Add {{count}} to Meksova",
+      "autoImportLabel": "This card is business-only — auto-add everything next time",
+      "bannerText": "{{count}} transactions from your bank need your review",
+      "bannerButton": "Review now"
+  }
+  
 }

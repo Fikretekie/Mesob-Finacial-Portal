@@ -1025,9 +1025,25 @@
     "connect": "Conectar",
     "disconnect": "Desconectar",
     "connected": "Conectado",
+    "reviewTransactions": "Revisar transacciones",
     "notConnected": "No conectado",
     "comingSoonHint": "Disponible pronto — estamos terminando la configuración.",
     "securityNote": "Seguridad de nivel bancario. Nunca vemos ni guardamos tus credenciales.",
     "loading": "Verificando conexiones…"
+  }
+  ,
+  "transactionReview": {
+      "title": "Revisar transacciones",
+      "subtitle": "{{selected}} de {{total}} seleccionadas",
+      "noneFound": "No hay transacciones nuevas para revisar.",
+      "syncError": "No se pudieron cargar las transacciones de tu banco. Inténtalo de nuevo en un momento.",
+      "confirmError": "No se pudieron agregar las transacciones. Inténtalo de nuevo.",
+      "enterManually": "Ingresar manualmente",
+      "categoryPlaceholder": "Escribe una categoría",
+      "addReceipt": "Agregar recibo (opcional)",
+      "addButton": "Agregar {{count}} a Meksova",
+      "autoImportLabel": "Esta tarjeta es solo para negocios — agregar todo automáticamente la próxima vez",
+      "bannerText": "{{count}} transacciones de tu banco necesitan tu revisión",
+      "bannerButton": "Revisar ahora"
   }
 }

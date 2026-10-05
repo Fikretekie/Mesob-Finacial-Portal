@@ -1025,9 +1025,25 @@
     "connect": "አገናኝ",
     "disconnect": "አቋርጥ",
     "connected": "ተገናኝቷል",
+    "reviewTransactions": "ግብይቶችን ይገምግሙ",
     "notConnected": "አልተገናኘም",
     "comingSoonHint": "በቅርቡ ይገኛል — ዝግጅቱን እያጠናቀቅን ነው።",
     "securityNote": "የባንክ ደረጃ ደህንነት። የመግቢያ መረጃዎን ፈጽሞ አናይም ወይም አናስቀምጥም።",
     "loading": "ግንኙነቶችን በማረጋገጥ ላይ…"
+  }
+  ,
+  "transactionReview": {
+      "title": "ግብይቶችን ይገምግሙ",
+      "subtitle": "{{selected}} ከ {{total}} ተመርጠዋል",
+      "noneFound": "ለመገምገም አዲስ ግብይቶች የሉም።",
+      "syncError": "ከባንክዎ ግብይቶችን መጫን አልተቻለም። እባክዎ ትንሽ ቆይተው እንደገና ይሞክሩ።",
+      "confirmError": "ግብይቶችን ማከል አልተቻለም። እንደገና ይሞክሩ።",
+      "enterManually": "በእጅ ያስገቡ",
+      "categoryPlaceholder": "ምድብ ይጻፉ",
+      "addReceipt": "ደረሰኝ ያክሉ (አማራጭ)",
+      "addButton": "{{count}} ወደ Meksova ያክሉ",
+      "autoImportLabel": "ይህ ካርድ ለንግድ ብቻ ነው — በሚቀጥለው ጊዜ ሁሉንም በራስ-ሰር ያክሉ",
+      "bannerText": "{{count}} ከባንክዎ የመጡ ግብይቶች ግምገማዎን ይፈልጋሉ",
+      "bannerButton": "አሁን ይገምግሙ"
   }
 }

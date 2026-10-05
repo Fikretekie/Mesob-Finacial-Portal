@@ -1025,9 +1025,25 @@
     "connect": "ربط",
     "disconnect": "إلغاء الربط",
     "connected": "متصل",
+          "reviewTransactions": "مراجعة المعاملات",
     "notConnected": "غير متصل",
     "comingSoonHint": "متاح قريبًا — نُنهي الإعداد.",
     "securityNote": "أمان بمستوى البنوك. لا نرى بيانات دخولك ولا نخزّنها أبدًا.",
     "loading": "جارٍ التحقق من التكاملات…"
+  }
+  ,
+  "transactionReview": {
+      "title": "مراجعة المعاملات",
+      "subtitle": "{{selected}} من {{total}} محددة",
+      "noneFound": "لا توجد معاملات جديدة للمراجعة.",
+      "syncError": "تعذر تحميل المعاملات من بنكك. حاول مرة أخرى بعد قليل.",
+      "confirmError": "تعذرت إضافة المعاملات. حاول مرة أخرى.",
+      "enterManually": "إدخال يدوي",
+      "categoryPlaceholder": "اكتب فئة",
+      "addReceipt": "إضافة إيصال (اختياري)",
+      "addButton": "إضافة {{count}} إلى Meksova",
+      "autoImportLabel": "هذه البطاقة مخصصة للعمل فقط — إضافة كل شيء تلقائيًا في المرة القادمة",
+      "bannerText": "{{count}} معاملات من بنكك بحاجة إلى مراجعتك",
+      "bannerButton": "راجع الآن"
   }
 }

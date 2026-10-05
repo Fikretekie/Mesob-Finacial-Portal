@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { Spinner } from "reactstrap";
 import {
@@ -42,6 +43,7 @@ function loadPlaidScript() {
 
 function Connections() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [status, setStatus] = useState({});
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
@@ -65,7 +67,7 @@ function Connections() {
           token: res.linkToken,
           onSuccess: (publicToken) => {
             exchangePublicToken(p.id, publicToken)
-              .then(() => fetchConnections().then(setStatus))
+              .then(() => navigate("/customer/review-transactions"))
               .catch((err) => console.error("Plaid exchange failed:", err));
           },
           onExit: (err) => {
@@ -140,9 +142,16 @@ function Connections() {
                     {t("nav.badgeSoon")}
                   </button>
                 ) : connected ? (
-                  <button className="conn-btn conn-btn--ghost" onClick={() => handleDisconnect(p)} disabled={busyId === p.id}>
-                    {busyId === p.id ? <Spinner size="sm" /> : t("connections.disconnect")}
-                  </button>
+                  <div className="conn-action-group">
+                    {p.id === "plaid" && (
+                      <button className="conn-btn" onClick={() => navigate("/customer/review-transactions")}>
+                        {t("connections.reviewTransactions")}
+                      </button>
+                    )}
+                    <button className="conn-btn conn-btn--ghost" onClick={() => handleDisconnect(p)} disabled={busyId === p.id}>
+                      {busyId === p.id ? <Spinner size="sm" /> : t("connections.disconnect")}
+                    </button>
+                  </div>
                 ) : (
                   <button className="conn-btn" onClick={() => handleConnect(p)} disabled={busyId === p.id}>
                     {busyId === p.id ? <Spinner size="sm" /> : t("connections.connect")}

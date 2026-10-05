@@ -85,3 +85,22 @@ export async function exchangePublicToken(providerId, publicToken) {
   });
   return res.data;
 }
+/** Pull newly available bank transactions since the last sync. */
+export async function syncTransactions() {
+  const res = await axios.get(apiUrl(`${ROUTES.CONNECTIONS}/sync`), {
+    params: { userId: ownerId() },
+  });
+  return res.data; // { transactions: [...] }
+}
+
+/** Write the selected transactions into Meksova and clear the whole reviewed
+ * batch (added + skipped) from the pending list, optionally flipping autoImportAll. */
+export async function confirmTransactions(transactions, reviewedIds, autoImportAll) {
+  const res = await axios.post(apiUrl(`${ROUTES.CONNECTIONS}/confirm`), {
+    userId: ownerId(),
+    transactions,
+    reviewedIds,
+    ...(typeof autoImportAll === "boolean" ? { autoImportAll } : {}),
+  });
+  return res.data;
+}
