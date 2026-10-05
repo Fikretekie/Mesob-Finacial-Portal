@@ -1,20 +1,24 @@
-import Dashboard from "views/Dashboard.js";
-import Users from "views/Users.js";
+import { lazy } from "react";
 
-import Receipts from "views/Receipts";
-import UserPage from "views/UserPage";
-import CSVReports from "views/CSVReports";
-import AdminSubscriptions from "views/Payment/AdminSubscriptions";
-import SubscriptionPlans from "views/Payment/SubscriptionPlans";
-import MesobFinancial2 from "views/mesobfinancial2";
-import Documents from "views/Documents";
-import MileageTracker from "views/MileageTracker";
-import TripHistory from "views/TripHistory";
-import FuelPurchase from "views/FuelPurchase";
-import IftaReport from "views/IftaReport";
-import Team from "views/Team";
-import Connections from "views/Connections";
-import TransactionReview from "views/TransactionReview";
+// Each view is code-split into its own chunk (React.lazy) so visiting a page
+// only downloads that page's JS, instead of shipping the whole app up front.
+// The layouts that render these elements wrap their <Routes> in <Suspense>.
+const Dashboard = lazy(() => import("views/Dashboard.js"));
+const Users = lazy(() => import("views/Users.js"));
+const Receipts = lazy(() => import("views/Receipts"));
+const UserPage = lazy(() => import("views/UserPage"));
+const CSVReports = lazy(() => import("views/CSVReports"));
+const AdminSubscriptions = lazy(() => import("views/Payment/AdminSubscriptions"));
+const SubscriptionPlans = lazy(() => import("views/Payment/SubscriptionPlans"));
+const MesobFinancial2 = lazy(() => import("views/mesobfinancial2"));
+const Documents = lazy(() => import("views/Documents"));
+const MileageTracker = lazy(() => import("views/MileageTracker"));
+const TripHistory = lazy(() => import("views/TripHistory"));
+const FuelPurchase = lazy(() => import("views/FuelPurchase"));
+const IftaReport = lazy(() => import("views/IftaReport"));
+const Team = lazy(() => import("views/Team"));
+const Connections = lazy(() => import("views/Connections"));
+const TransactionReview = lazy(() => import("views/TransactionReview"));
 
 const adminRoutes = [
   {

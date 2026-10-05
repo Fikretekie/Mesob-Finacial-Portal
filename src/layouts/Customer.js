@@ -1,5 +1,6 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { useLocation, Route, Routes, Navigate } from "react-router-dom";
+import { Spinner } from "reactstrap";
 
 // core components
 import DemoNavbar from "components/Navbars/DemoNavbar";
@@ -38,13 +39,21 @@ function CustomerLayout(props) {
       <div className="main-panel" ref={mainPanelRef}>
         <DemoNavbar {...props} />
         <div >
-          <Routes>
-            {getRoutes(customerRoutes)}
-            <Route
-              path="*"
-              element={<Navigate to="/customer/dashboard" replace />}
-            />
-          </Routes>
+          <Suspense
+            fallback={
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
+                <Spinner color="primary" />
+              </div>
+            }
+          >
+            <Routes>
+              {getRoutes(customerRoutes)}
+              <Route
+                path="*"
+                element={<Navigate to="/customer/dashboard" replace />}
+              />
+            </Routes>
+          </Suspense>
         </div>
         <Footer fluid />
       </div>
