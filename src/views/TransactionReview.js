@@ -42,8 +42,9 @@ const PLAID_CATEGORY_MAP = {
 
 function guessCategory(txn) {
   const isIncome = txn.amount < 0;
+  const categories = isIncome ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
   const mapped = PLAID_CATEGORY_MAP[txn.category];
-  if (mapped) return mapped;
+  if (mapped && categories.includes(mapped)) return mapped;
   return isIncome ? "Other Income" : "Other Expense";
 }
 
