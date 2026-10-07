@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { Spinner } from "reactstrap";
-import { syncTransactions, confirmTransactions } from "utils/connectionsStorage";
+import { syncTransactions, confirmTransactions, fetchConnections } from "utils/connectionsStorage";
 import { apiUrl, ROUTES } from "config/api";
 import "../assets/css/team.css";
 import "../assets/css/transactionReview.css";
@@ -67,9 +67,9 @@ function TransactionReview() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    syncTransactions()
-      .then((data) => {
-        const txns = data?.transactions || [];
+    Promise.all([syncTransactions(), fetchConnections()])
+      .then(([syncData, connData]) => {
+        const txns = syncData?.transactions || [];
         setRows(
           txns.map((txn) => ({
             ...txn,
@@ -79,6 +79,7 @@ function TransactionReview() {
             receiptUrl: "",
           }))
         );
+        setAutoImportAll(!!connData?.plaid?.autoImportAll);
       })
       .catch((err) => {
         console.error("Sync failed:", err);
@@ -126,6 +127,11 @@ function TransactionReview() {
 
   const selectedRows = useMemo(() => rows.filter((r) => r.selected), [rows]);
   const netTotal = useMemo(() => selectedRows.reduce((sum, r) => sum - r.amount, 0), [selectedRows]);
+
+  const handleToggleAutoImport = (checked) => {
+    setAutoImportAll(checked);
+    confirmTransactions([], [], checked).catch((err) => console.error("Auto-import toggle save failed:", err));
+  };
 
   const handleConfirm = async () => {
     if (!selectedRows.length) return;
@@ -177,72 +183,80 @@ function TransactionReview() {
 
       {error && <p className="tr-review-error">{error}</p>}
 
-      {rows.length > 0 && (
-        <>
-          <div className="tr-review-list">
-            {rows.map((r) => {
-              const isIncome = r.amount < 0;
-              const categories = isIncome ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
-              return (
-                <div className={"tr-review-row" + (r.selected ? " tr-review-row--on" : "")} key={r.id}>
-                  <button
-                    type="button"
-                    className="tr-review-toggle"
-                    aria-pressed={r.selected}
-                    onClick={() => toggleRow(r.id)}
-                  >
-                    <span className="tr-review-toggle-knob" />
-                  </button>
+      {rows.length === 0 ? (
+        <div className="tr-review-caught-up">
+          <div className="tr-review-caught-up-icon">✓</div>
+          <div className="tr-review-caught-up-title">{t("transactionReview.caughtUpTitle")}</div>
+          <p className="tr-review-caught-up-text">{t("transactionReview.caughtUpText")}</p>
+        </div>
+      ) : (
+        <div className="tr-review-list">
+          {rows.map((r) => {
+            const isIncome = r.amount < 0;
+            const categories = isIncome ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+            return (
+              <div className={"tr-review-row" + (r.selected ? " tr-review-row--on" : "")} key={r.id}>
+                <button
+                  type="button"
+                  className="tr-review-toggle"
+                  aria-pressed={r.selected}
+                  onClick={() => toggleRow(r.id)}
+                >
+                  <span className="tr-review-toggle-knob" />
+                </button>
 
-                  <div className="tr-review-info">
-                    <div className="tr-review-name">{r.name}</div>
-                    <div className="tr-review-date">{r.date}</div>
-                  </div>
-
-                  <div className="tr-review-category-wrap">
-                    <select
-                      className="tr-review-category"
-                      value={r.purpose}
-                      onChange={(e) => setPurpose(r.id, e.target.value)}
-                    >
-                      {categories.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                      <option value="manual">{t("transactionReview.enterManually")}</option>
-                    </select>
-                    {r.purpose === "manual" && (
-                      <input
-                        type="text"
-                        className="tr-review-manual"
-                        placeholder={t("transactionReview.categoryPlaceholder")}
-                        value={r.manualPurpose}
-                        onChange={(e) => setManualPurpose(r.id, e.target.value)}
-                      />
-                    )}
-                  </div>
-
-                  <label className="tr-review-receipt" title={t("transactionReview.addReceipt")}>
-                    {uploadingId === r.id ? <Spinner size="sm" /> : r.receiptUrl ? "✓" : "📷"}
-                    <input
-                      type="file"
-                      accept="image/*,application/pdf"
-                      hidden
-                      onChange={(e) => handleReceiptChange(r.id, e.target.files[0])}
-                    />
-                  </label>
-
-                  <div className={"tr-review-amount" + (isIncome ? " tr-review-amount--pos" : "")}>
-                    {isIncome ? "+" : "-"}${Math.abs(r.amount).toFixed(2)}
-                  </div>
+                <div className="tr-review-info">
+                  <div className="tr-review-name">{r.name}</div>
+                  <div className="tr-review-date">{r.date}</div>
                 </div>
-              );
-            })}
-          </div>
 
-          <div className="tr-review-footer">
-            <div className="tr-review-footer-left">
+                <div className="tr-review-category-wrap">
+                  <select
+                    className="tr-review-category"
+                    value={r.purpose}
+                    onChange={(e) => setPurpose(r.id, e.target.value)}
+                  >
+                    {categories.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                    <option value="manual">{t("transactionReview.enterManually")}</option>
+                  </select>
+                  {r.purpose === "manual" && (
+                    <input
+                      type="text"
+                      className="tr-review-manual"
+                      placeholder={t("transactionReview.categoryPlaceholder")}
+                      value={r.manualPurpose}
+                      onChange={(e) => setManualPurpose(r.id, e.target.value)}
+                    />
+                  )}
+                </div>
+
+                <label className="tr-review-receipt" title={t("transactionReview.addReceipt")}>
+                  {uploadingId === r.id ? <Spinner size="sm" /> : r.receiptUrl ? "✓" : "📷"}
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf"
+                    hidden
+                    onChange={(e) => handleReceiptChange(r.id, e.target.files[0])}
+                  />
+                </label>
+
+                <div className={"tr-review-amount" + (isIncome ? " tr-review-amount--pos" : "")}>
+                  {isIncome ? "+" : "-"}${Math.abs(r.amount).toFixed(2)}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="tr-review-footer">
+        <div className="tr-review-footer-left">
+          {rows.length > 0 && (
+            <>
               <button className="conn-btn" disabled={!selectedRows.length || saving} onClick={handleConfirm}>
                 {saving ? <Spinner size="sm" /> : t("transactionReview.addButton", { count: selectedRows.length })}
               </button>
@@ -251,14 +265,18 @@ function TransactionReview() {
                   {netTotal >= 0 ? "+" : "-"}${Math.abs(netTotal).toFixed(2)}
                 </span>
               )}
-            </div>
-            <label className="tr-review-auto">
-              <input type="checkbox" checked={autoImportAll} onChange={(e) => setAutoImportAll(e.target.checked)} />
-              <span>{t("transactionReview.autoImportLabel")}</span>
-            </label>
-          </div>
-        </>
-      )}
+            </>
+          )}
+        </div>
+        <label className="tr-review-auto">
+          <input
+            type="checkbox"
+            checked={autoImportAll}
+            onChange={(e) => handleToggleAutoImport(e.target.checked)}
+          />
+          <span>{t("transactionReview.autoImportLabel")}</span>
+        </label>
+      </div>
     </div>
   );
 }

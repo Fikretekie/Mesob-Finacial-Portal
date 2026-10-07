@@ -1029,6 +1029,8 @@
       "title": "Review transactions",
       "subtitle": "{{selected}} of {{total}} selected",
       "noneFound": "No new transactions to review.",
+            "caughtUpTitle": "All caught up!",
+      "caughtUpText": "No new transactions to review right now. Check back after your next bank sync.",
       "syncError": "Could not load transactions from your bank. Try again in a moment.",
       "confirmError": "Could not add transactions. Try again.",
       "enterManually": "Enter Manually",
