@@ -1404,13 +1404,15 @@ const MesobFinancial2 = () => {
     if (userRole === 0) {
       fetchUsers();
     } else {
-      const initializeData = async () => {
+            const initializeData = async () => {
         try {
           await fetchUserInitialBalance();
           await fetchTransactions();
         } catch (error) {
           console.error("Error initializing data:", error);
           notify("tr", "Error loading initial data", "danger");
+        } finally {
+          setLoading(false);
         }
       };
       initializeData();
