@@ -421,6 +421,14 @@ function Dashboard() {
     [items, allTransactions, depreciation]
   );
 
+  // Payable comes from the shared engine too, so the Dashboard matches the
+  // Financial Report. (The local ledger math double-counted a partial payment,
+  // which could show a negative payable.)
+  const accrualPayable = useMemo(
+    () => parseFloat(engineTotalPayable(items, allTransactions, initialoutstandingDebt)) || 0,
+    [items, allTransactions, initialoutstandingDebt]
+  );
+
   // Tax set-aside: 30% of net income (revenue − expenses incl. depreciation),
   // never below zero. Matches the Financial Report's net income.
   const estimatedTax = useMemo(
@@ -805,6 +813,15 @@ function Dashboard() {
     if (roundedChange === 0) {
       return { text: "— No change", value: 0, isPositive: null };
     }
+    // When last month was near zero, the percentage explodes (e.g. +21439%) and
+    // reads as noise. Cap the displayed figure so it stays meaningful.
+    if (Math.abs(roundedChange) >= 1000) {
+      return {
+        text: `${roundedChange > 0 ? "+" : "−"}999%+ vs last month`,
+        value: roundedChange,
+        isPositive: roundedChange > 0,
+      };
+    }
     const sign = roundedChange > 0 ? "+" : "";
     return {
       text: `${sign}${roundedChange}% vs last month`,
@@ -1143,7 +1160,7 @@ function Dashboard() {
       spark: monthlySales.map((m) => m.expenses),
     },
     payable: {
-      key: "payable", label: t("dashboard.totalPayable"), value: totalPayable,
+      key: "payable", label: t("dashboard.totalPayable"), value: accrualPayable,
       prev: prevMonth?.payable, color: FINANCIAL_COLORS.payable, icon: "fas fa-file-invoice",
       chart: payableChartData, chartTitle: t("dashboard.totalPayableChart"),
       spark: monthlySales.map((m) => m.payable),
@@ -1878,7 +1895,7 @@ function Dashboard() {
                   {t("dashboard.totalPayable", "Payable outstanding")}
                 </span>
                 <span className="mk-badge mk-badge--warn">
-                  ${totalPayable.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  ${accrualPayable.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </span>
               </div>
               <div className="dash-status__row">
