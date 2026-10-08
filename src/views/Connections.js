@@ -10,6 +10,8 @@ import {
   startConnection,
   disconnectProvider,
   exchangePublicToken,
+  exchangeSquareCode,
+  syncSquareTransactions,
 } from "utils/connectionsStorage";
 import "../assets/css/team.css";
 import "../assets/css/connections.css";
@@ -30,6 +32,17 @@ const ProviderIcon = ({ kind }) =>
     </svg>
   );
 
+// The square-sync backend writes straight in; be tolerant of its response shape
+// when reporting how many were imported (number, {imported}/{count}, or a list).
+function squareImportCount(result) {
+  if (result == null) return null;
+  if (typeof result.imported === "number") return result.imported;
+  if (typeof result.count === "number") return result.count;
+  if (typeof result.added === "number") return result.added;
+  if (Array.isArray(result.transactions)) return result.transactions.length;
+  return null;
+}
+
 function loadPlaidScript() {
   return new Promise((resolve, reject) => {
     if (window.Plaid) return resolve();
@@ -47,6 +60,7 @@ function Connections() {
   const [status, setStatus] = useState({});
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
+  const [syncMsg, setSyncMsg] = useState(null);
 
   useEffect(() => {
     fetchConnections()
@@ -54,6 +68,58 @@ function Connections() {
       .catch(() => setStatus({}))
       .finally(() => setLoading(false));
   }, []);
+
+  // Square OAuth return: Square (unlike Plaid) redirects back here with a
+  // ?code= param. Exchange it for an access token, pull the first batch of
+  // payments, strip the code so a refresh can't re-run the exchange, then
+  // refresh the connection status.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    if (!code) return;
+    setBusyId("square");
+    (async () => {
+      try {
+        await exchangeSquareCode(code);
+        const result = await syncSquareTransactions();
+        const n = squareImportCount(result);
+        setSyncMsg(
+          n != null
+            ? t("connections.squareImported", "Connected! Imported {{count}} Square payment(s).", { count: n })
+            : t("connections.squareConnected", "Square connected and synced.")
+        );
+        // Let the dashboard / financial report refresh if they're open.
+        window.dispatchEvent(new Event("mesob:transactionAdded"));
+      } catch (err) {
+        console.error("Square connect/sync failed:", err);
+        setSyncMsg(t("connections.squareError", "Couldn't finish connecting Square. Please try again."));
+      } finally {
+        window.history.replaceState({}, "", window.location.pathname);
+        fetchConnections().then(setStatus).catch(() => {});
+        setBusyId(null);
+      }
+    })();
+  }, []);
+
+  const handleSquareSync = async () => {
+    setBusyId("square");
+    setSyncMsg(null);
+    try {
+      const result = await syncSquareTransactions();
+      const n = squareImportCount(result);
+      setSyncMsg(
+        n != null
+          ? t("connections.squareSynced", "Synced — imported {{count}} new payment(s).", { count: n })
+          : t("connections.squareSyncedNone", "Synced. No new payments.")
+      );
+      window.dispatchEvent(new Event("mesob:transactionAdded"));
+    } catch (err) {
+      console.error("Square sync failed:", err);
+      setSyncMsg(t("connections.squareError", "Sync failed. Please try again."));
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   const handleConnect = async (p) => {
     setBusyId(p.id);
@@ -110,6 +176,12 @@ function Connections() {
         </div>
       </div>
 
+      {syncMsg && (
+        <div className="conn-sync-msg" role="status" onClick={() => setSyncMsg(null)}>
+          {syncMsg}
+        </div>
+      )}
+
       <div className="conn-grid">
         {PROVIDERS.map((p) => {
           const live = isProviderLive(p);
@@ -146,6 +218,11 @@ function Connections() {
                     {p.id === "plaid" && (
                       <button className="conn-btn" onClick={() => navigate("/customer/review-transactions")}>
                         {t("connections.reviewTransactions")}
+                      </button>
+                    )}
+                    {p.id === "square" && (
+                      <button className="conn-btn" onClick={handleSquareSync} disabled={busyId === p.id}>
+                        {busyId === p.id ? <Spinner size="sm" /> : t("connections.syncNow", "Sync now")}
                       </button>
                     )}
                     <button className="conn-btn conn-btn--ghost" onClick={() => handleDisconnect(p)} disabled={busyId === p.id}>
