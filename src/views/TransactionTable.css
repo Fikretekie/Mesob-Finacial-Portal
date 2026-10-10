@@ -178,72 +178,100 @@
   width: 100%;
 }
 
-/* ✅ Mobile Adjustments */
-@media screen and (max-width: 768px) {
-  .journal-sale-grid {
-    column-gap: 8px;
-    row-gap: 8px;
-  }
+/* ── Mobile: reflow the ledger into stacked cards ───────────────────────────
+   A debit/credit table can't fit a phone, and horizontal scroll hid the
+   amounts off-screen. Below 680px each entry becomes a self-labeling card so
+   every value is visible without sideways scrolling. */
+@media screen and (max-width: 680px) {
+  .table-container { overflow-x: visible; box-shadow: none; }
 
-  .table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    /* smooth iOS scroll */
-  }
+  .transaction-table thead { display: none; }
+  .transaction-table,
+  .transaction-table tbody { display: block; width: 100%; }
 
-  .transaction-table {
-    min-width: 600px;
-    /* ✅ keeps structure, user can scroll horizontally */
+  .transaction-table tr.jt-row {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface-2);
+    padding: 12px 14px;
+    margin-bottom: 10px;
   }
+  .transaction-table tr.jt-row:hover { background: var(--surface-2); }
 
-  .transaction-table th:nth-child(4),
-  .transaction-table td:nth-child(4) {
-    width: 40px !important;
-    min-width: 40px !important;
-    max-width: 40px !important;
-  }
-
-  .transaction-table th:nth-child(5),
-  .transaction-table td:nth-child(5) {
-    width: 40px !important;
-    min-width: 40px !important;
-    max-width: 40px !important;
-  }
-
-  /* Ensure proper cell padding */
-  .transaction-table td.debit,
-  .transaction-table td.credit {
-    padding: 6px 4px !important;
-  }
-
-  /* Fix background boxes to fit perfectly within their column */
-  .debit-value,
-  .credit-value {
-    display: block !important;
+  .transaction-table tr.jt-row td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
     width: 100% !important;
-    min-width: 100% !important;
     max-width: 100% !important;
-    box-sizing: border-box !important;
-    padding: 6px 8px !important;
+    min-height: 0;
+    border: none;
+    padding: 5px 0;
+    text-align: right;
+  }
+  .transaction-table tr.jt-row td::before {
+    content: attr(data-label);
+    color: var(--text-3);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-align: left;
+    flex: none;
+  }
+
+  /* Description spans the full card width, above the amounts */
+  .transaction-table tr.jt-row td.jt-txn {
+    display: block;
+    text-align: left;
+    padding-bottom: 8px;
+    margin-bottom: 6px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .transaction-table tr.jt-row td.jt-txn::before { display: block; margin-bottom: 3px; }
+
+  .transaction-table tr.jt-row td.jt-date,
+  .transaction-table tr.jt-row td.jt-sr { font-size: 12px; color: var(--text-2); }
+
+  /* Debit / Credit: show the amount pill, hide the "-" placeholder */
+  .transaction-table tr.jt-row td.debit,
+  .transaction-table tr.jt-row td.credit { overflow: visible; }
+  .transaction-table tr.jt-row td.debit > div:not(.debit-value),
+  .transaction-table tr.jt-row td.credit > div:not(.credit-value) { display: none; }
+  .transaction-table tr.jt-row td.debit .debit-value,
+  .transaction-table tr.jt-row td.credit .credit-value {
+    display: inline-block !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
     margin: 0 !important;
-    text-align: center !important;
-    white-space: nowrap !important;
-    border-radius: 0 !important;
+    padding: 4px 10px !important;
+    border-radius: 8px !important;
+    text-align: right !important;
   }
 
-  /* Ensure all child divs are properly sized */
-  .debit>div,
-  .credit>div {
-    width: 100% !important;
-    text-align: center !important;
-    display: block !important;
-    box-sizing: border-box !important;
+  /* Actions: no label, buttons right-aligned, bigger tap targets */
+  .transaction-table tr.jt-row td.transaction-table-actions {
+    justify-content: flex-end;
+    padding-top: 10px;
+    margin-top: 6px;
+    border-top: 1px dashed var(--border);
+  }
+  .transaction-table tr.jt-row td.transaction-table-actions::before { display: none; }
+  .transaction-table tr.jt-row td.transaction-table-actions svg {
+    width: 18px; height: 18px;
+    box-sizing: content-box;
+    padding: 8px;
   }
 
-  /* Prevent any overflow or overlap */
-  .debit,
-  .credit {
-    overflow: hidden !important;
-    position: relative !important;
+  /* Sale rows: label the block and let the mini T-account grid stack inside */
+  .transaction-table tr.jt-row--sale td.journal-sale-cell {
+    display: block;
+    padding: 4px 0 0;
   }
+  .journal-sale-grid { column-gap: 10px; row-gap: 8px; }
 }

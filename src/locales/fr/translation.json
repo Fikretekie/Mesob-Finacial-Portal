@@ -584,7 +584,27 @@
     "downloadFinancialReport": "Télécharger le Rapport Financier",
     "downloadDashboard": "Télécharger le Tableau de Bord",
     "downloadBoth": "Télécharger les Deux",
-    "pdfNote": "Les rapports seront téléchargés en fichiers PDF"
+    "pdfNote": "Les rapports seront téléchargés en fichiers PDF",
+    "reportPeriod": "Période du rapport",
+    "periodCurrent": "Vue actuelle",
+    "periodThisMonth": "Ce mois-ci",
+    "periodLastMonth": "Le mois dernier",
+    "periodQuarter": "Ce trimestre",
+    "periodYtd": "Depuis le début de l’année",
+    "periodCustom": "Personnalisé",
+    "from": "Du",
+    "to": "Au",
+    "reportTypeLabel": "Type de rapport",
+    "typeStatements": "États financiers",
+    "typeStatementsDesc": "Compte de résultat et bilan — pour votre comptable ou votre banque.",
+    "typeOverview": "Aperçu des performances",
+    "typeOverviewDesc": "Vos chiffres clés en un coup d’œil.",
+    "typeComplete": "Rapport complet",
+    "typeCompleteDesc": "États financiers plus l’aperçu de l’entreprise.",
+    "includeLabel": "Inclure",
+    "includeCharts": "Graphiques de tendance",
+    "includeLedger": "Journal complet des transactions",
+    "generateReport": "Générer le rapport"
   },
   "documents": {
     "title": "Documents",
@@ -883,7 +903,8 @@
     "team": "Équipe",
     "connections": "Connexions",
     "badgeNew": "NOUVEAU",
-    "badgeSoon": "BIENTÔT"
+    "badgeSoon": "BIENTÔT",
+    "helpSupport": "Aide et assistance"
   },
   "navbar": {
     "helpSupport": "Aide et assistance",
@@ -1030,20 +1051,148 @@
     "comingSoonHint": "Bientôt disponible — nous finalisons la configuration.",
     "securityNote": "Sécurité de niveau bancaire. Nous ne voyons ni ne stockons jamais vos identifiants.",
     "loading": "Vérification des connexions…"
-  }
-  ,
+  },
   "transactionReview": {
-      "title": "Examiner les transactions",
-      "subtitle": "{{selected}} sur {{total}} sélectionnées",
-      "noneFound": "Aucune nouvelle transaction à examiner.",
-      "syncError": "Impossible de charger les transactions de votre banque. Réessayez dans un instant.",
-      "confirmError": "Impossible d'ajouter les transactions. Réessayez.",
-      "enterManually": "Saisir manuellement",
-      "categoryPlaceholder": "Saisissez une catégorie",
-      "addReceipt": "Ajouter un reçu (facultatif)",
-      "addButton": "Ajouter {{count}} à Meksova",
-      "autoImportLabel": "Cette carte est réservée à l'entreprise — tout ajouter automatiquement la prochaine fois",
-      "bannerText": "{{count}} transactions de votre banque nécessitent votre examen",
-      "bannerButton": "Examiner maintenant"
+    "title": "Examiner les transactions",
+    "subtitle": "{{selected}} sur {{total}} sélectionnées",
+    "noneFound": "Aucune nouvelle transaction à examiner.",
+    "syncError": "Impossible de charger les transactions de votre banque. Réessayez dans un instant.",
+    "confirmError": "Impossible d'ajouter les transactions. Réessayez.",
+    "enterManually": "Saisir manuellement",
+    "categoryPlaceholder": "Saisissez une catégorie",
+    "addReceipt": "Ajouter un reçu (facultatif)",
+    "addButton": "Ajouter {{count}} à Meksova",
+    "autoImportLabel": "Cette carte est réservée à l'entreprise — tout ajouter automatiquement la prochaine fois",
+    "bannerText": "{{count}} transactions de votre banque nécessitent votre examen",
+    "bannerButton": "Examiner maintenant"
+  },
+  "help": {
+    "title": "Aide et assistance",
+    "subtitle": "Des réponses simples sur l’utilisation de Meksova et la signification des termes financiers.",
+    "searchPlaceholder": "Rechercher de l’aide…",
+    "guidesTitle": "Utiliser l’application",
+    "glossaryTitle": "Ce que veulent dire les mots",
+    "contactTitle": "Besoin d’aide ?",
+    "contactIntro": "Parlez à une vraie personne — nous sommes ravis de vous aider.",
+    "phone": "Téléphone",
+    "email": "E-mail",
+    "followUs": "Suivez-nous",
+    "noResults": "Aucun résultat. Essayez un autre mot, ou contactez-nous ci-dessous.",
+    "guides": {
+      "addTransaction": {
+        "q": "Comment enregistrer de l’argent entrant ou sortant ?",
+        "a": "Appuyez sur « Ajouter une transaction » en haut. Choisissez le type : Argent entrant pour un revenu reçu, Argent sortant pour une dépense payée, ou Facture pour ce que vous devez mais n’avez pas encore payé. Saisissez le montant, choisissez la date, ajoutez une note courte et enregistrez."
+      },
+      "scanReceipt": {
+        "q": "Comment scanner un reçu ?",
+        "a": "Appuyez sur « Scanner un reçu » et prenez une photo. Meksova lit le commerçant, le total et la date pour vous. Vérifiez les détails, choisissez comment l’enregistrer (dépense, marchandise à revendre ou équipement) et enregistrez. La photo reste jointe à la transaction."
+      },
+      "bill": {
+        "q": "Comment enregistrer une facture que je dois et la payer plus tard ?",
+        "a": "Ajoutez une transaction et choisissez « Facture ». Elle apparaît dans Total à payer jusqu’à son règlement. Quand vous payez, en totalité ou en partie, ouvrez la facture et enregistrez le paiement ; le montant restant se met à jour automatiquement."
+      },
+      "goods": {
+        "q": "Comment suivre la marchandise achetée pour revente ?",
+        "a": "En ajoutant un achat, choisissez « Marchandise à revendre ». Meksova la compte comme un stock, pas une dépense, jusqu’à la vente. Lors de la vente, le coût de ce que vous avez vendu est déduit comme « Coût des articles vendus », pour un bénéfice exact."
+      },
+      "equipment": {
+        "q": "Comment enregistrer un équipement ou un véhicule ?",
+        "a": "Ajoutez-le comme Immobilisation, par exemple un camion ou une machine. Ce n’est pas une dépense ; c’est un bien que vous possédez. Meksova peut répartir son coût dans le temps (amortissement) pour que votre bénéfice reflète l’usure chaque mois."
+      },
+      "mileage": {
+        "q": "Comment suivre mes kilomètres ?",
+        "a": "Ouvrez le Suivi kilométrique et appuyez sur Démarrer le trajet quand vous conduisez pour le travail, puis Arrêter à la fin. Enregistrez le trajet comme professionnel ou personnel. L’Historique des trajets additionne vos kilomètres pro et estime votre déduction fiscale."
+      },
+      "connect": {
+        "q": "Comment connecter ma banque ou Square ?",
+        "a": "Allez dans Connexions. Reliez votre banque via Plaid pour vérifier et importer des transactions, ou connectez Square pour importer vos ventes automatiquement. Vous gardez le contrôle : les transactions bancaires attendent votre validation avant d’être ajoutées."
+      },
+      "readReport": {
+        "q": "Comment lire mon Rapport financier ?",
+        "a": "Le Compte de résultat montre ce que vous avez gagné moins ce que vous avez dépensé — votre bénéfice. Le Bilan montre ce que vous possédez, ce que vous devez et ce qui reste. Le Journal liste chaque écriture. Utilisez les filtres de date pour choisir une période."
+      },
+      "downloadReport": {
+        "q": "Comment télécharger ou partager un rapport ?",
+        "a": "Appuyez sur « Télécharger le rapport » sur le Tableau de bord ou le Rapport financier. Vous obtenez un PDF clair de votre résumé, compte de résultat et bilan, à enregistrer, imprimer ou envoyer à votre comptable ou banque."
+      },
+      "currency": {
+        "q": "Comment changer ma devise ?",
+        "a": "Ouvrez Compte, appuyez sur Modifier le profil et choisissez votre Devise d’affichage. Chaque écran et rapport affichera ce symbole. Cela change l’étiquetage des montants, pas les chiffres eux-mêmes."
+      },
+      "team": {
+        "q": "Comment ajouter mon équipe ?",
+        "a": "Ouvrez Équipe et invitez un collègue par e-mail. Il obtient son propre accès pour aider à tenir vos comptes. Seul vous, le propriétaire, pouvez ajouter ou retirer des membres."
+      },
+      "subscription": {
+        "q": "Comment gérer mon abonnement ?",
+        "a": "Ouvrez S’abonner pour démarrer ou changer votre forfait. Votre forfait actuel et les jours restants de l’essai s’affichent en haut du Rapport financier."
+      }
+    },
+    "glossary": {
+      "revenue": {
+        "term": "Revenu (chiffre d’affaires)",
+        "def": "L’argent que votre entreprise gagne par les ventes ou le travail, avant déduction des coûts."
+      },
+      "expense": {
+        "term": "Dépense",
+        "def": "L’argent que vous dépensez pour faire tourner l’entreprise : carburant, fournitures, publicité, etc."
+      },
+      "cashOnHand": {
+        "term": "Liquidités disponibles",
+        "def": "L’argent réel dont vous disposez maintenant : tout ce qui est entré, moins tout ce qui est sorti."
+      },
+      "moneyInOut": {
+        "term": "Argent entrant / sortant",
+        "def": "Votre trésorerie. L’entrant est l’argent reçu ; le sortant est l’argent payé. Il s’agit du moment où l’argent a réellement bougé."
+      },
+      "payable": {
+        "term": "Dette à payer (facture)",
+        "def": "De l’argent que vous devez mais n’avez pas encore payé, comme une facture à échéance future. Elle compte comme dépense dès maintenant, avant même le paiement."
+      },
+      "netIncome": {
+        "term": "Résultat net (bénéfice)",
+        "def": "Ce qu’il reste après avoir soustrait toutes les dépenses de vos revenus. Positif = bénéfice ; négatif = perte."
+      },
+      "estimatedTax": {
+        "term": "Impôt estimé",
+        "def": "Un montant approximatif à mettre de côté pour les impôts — environ 30 % de votre bénéfice. C’est un repère pour épargner, pas l’avis d’imposition exact."
+      },
+      "depreciation": {
+        "term": "Amortissement",
+        "def": "Répartir le coût d’un bien important (comme un camion) sur les années d’utilisation, au lieu de tout compter en un seul mois."
+      },
+      "fixedAsset": {
+        "term": "Immobilisation",
+        "def": "Un bien de valeur que vous possédez et utilisez longtemps : véhicule, équipement, machine. Cela fait partie de ce que l’entreprise possède, ce n’est pas une dépense."
+      },
+      "inventory": {
+        "term": "Stock",
+        "def": "Marchandise achetée pour la revente mais pas encore vendue. Elle compte comme un bien jusqu’à sa vente."
+      },
+      "cogs": {
+        "term": "Coût des articles vendus",
+        "def": "Ce que les articles vendus vous ont coûté à l’origine. On le soustrait de la vente pour un bénéfice exact."
+      },
+      "grossProfit": {
+        "term": "Marge brute",
+        "def": "Vos ventes moins le coût des articles vendus, avant les autres frais de fonctionnement."
+      },
+      "accrualVsCash": {
+        "term": "Comptabilité d’engagement vs de caisse",
+        "def": "La caisse compte l’argent uniquement quand il bouge. L’engagement compte les revenus quand vous les gagnez et les dépenses quand vous les devez, même avant le mouvement d’argent."
+      },
+      "assetsLiabEquity": {
+        "term": "Actifs, passifs et capitaux propres",
+        "def": "Les actifs sont ce que vous possédez. Les passifs sont ce que vous devez. Les capitaux propres sont ce qui vous reste après les dettes. Actifs = passifs + capitaux propres."
+      },
+      "balanceSheet": {
+        "term": "Bilan",
+        "def": "Une photo de ce que vous possédez, ce que vous devez et ce qui reste, à un instant donné."
+      },
+      "incomeStatement": {
+        "term": "Compte de résultat",
+        "def": "Un résumé de vos revenus, coûts et dépenses sur une période, aboutissant à votre bénéfice ou perte."
+      }
+    }
   }
 }

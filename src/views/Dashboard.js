@@ -56,6 +56,12 @@ import {
   outflowAmount,
   filterItemsByTimeRange as engineFilterByRange,
 } from "utils/accounting";
+import { currencySymbol } from "utils/currency";
+
+// User's display-currency symbol (e.g. "$", "Br"). Module-scope so chart option
+// builders and formatters outside the component can use it too; read from the
+// same localStorage-backed source the Financial Report uses, so both screens agree.
+const CUR = currencySymbol();
 
 // Human-readable labels for raw transactionType enums in the activity feed.
 const TX_TYPE_LABEL = {
@@ -491,7 +497,7 @@ function Dashboard() {
                     radius: 2,
                   },
                   label: {
-                    text: `$${lastVal.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                    text: `${CUR}${lastVal.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
                     borderColor: color,
                     borderWidth: 1,
                     offsetY: -2,
@@ -558,9 +564,9 @@ function Dashboard() {
         title: { text: "" },
         labels: {
           formatter: function (value) {
-            if (!value) return "$0";
+            if (!value) return `${CUR}0`;
             return (
-              "$" +
+              CUR +
               value.toLocaleString(undefined, {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0,
@@ -634,7 +640,7 @@ function Dashboard() {
         y: {
           formatter: function (value) {
             return (
-              "$" +
+              CUR +
               value.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
@@ -803,9 +809,12 @@ function Dashboard() {
   };
 
   const calculatePercentageChange = (currentValue, previousValue) => {
-    // No valid prior period (new business, or a custom range we can't compare):
-    // show no badge rather than a fabricated "+100%" or an exploding percentage.
-    if (previousValue == null || previousValue === 0) {
+    // A percent change is only meaningful against a POSITIVE prior base. If last
+    // period was zero or negative (e.g. cash was −$49), "went up 11,000%" is
+    // mathematically meaningless and misleads, so show no badge at all rather
+    // than a fabricated "+100%" or an exploding/sign-flipped percentage. Also
+    // covers a brand-new business and custom ranges we can't compare.
+    if (previousValue == null || previousValue <= 0) {
       return { text: "", value: 0, isPositive: null };
     }
     const change = ((currentValue - previousValue) / Math.abs(previousValue)) * 100;
@@ -1337,8 +1346,12 @@ function Dashboard() {
               })()}
             </h2>
             <p className="dash-overview__sub">
-              {t("dashboard.overviewSubtitle", "Here's your financial overview for")}{" "}
-              {new Date().toLocaleDateString(undefined, { month: "long", year: "numeric" })}
+              {t("dashboard.overviewSubtitleBase", "Here's your financial overview")}
+              {dashPreset === "month"
+                ? ` ${t("dashboard.forLabel", "for")} ${new Date().toLocaleDateString(undefined, { month: "long", year: "numeric" })}`
+                : dashPreset || dashboardDateRange
+                ? ` ${t("dashboard.forSelectedPeriod", "for the selected period")}`
+                : ""}
             </p>
             <QuickScanReceipt />
           </div>
@@ -1519,11 +1532,11 @@ function Dashboard() {
                         value={activeMetric.value}
                         tooltip={t("financialReport.cashDeficitTooltip")}
                       >
-                        {`$${activeMetric.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                        {`${CUR}${activeMetric.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                       </BalanceValue>
                     ) : (
                       <span style={{ color: activeMetric.color }}>
-                        {`$${activeMetric.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                        {`${CUR}${activeMetric.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                       </span>
                     )}
                   </CardTitle>
@@ -1549,7 +1562,7 @@ function Dashboard() {
                   const outPct = total > 0 ? (outflow / total) * 100 : 50;
                   const net = income - outflow;
                   const fmt = (n) =>
-                    `$${Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+                    `${CUR}${Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
                   return (
                     <div className="hero-flow">
                       <div className="hero-flow__row">
@@ -1588,13 +1601,13 @@ function Dashboard() {
                     {activeMetric.prev != null && (
                       <div>
                         <span className="hk">{t("dashboard.previousMonth", "Prev. month")}</span>
-                        <span className="hv">${Number(activeMetric.prev || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                        <span className="hv">{CUR}{Number(activeMetric.prev || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                       </div>
                     )}
                     {activeMetric.key === "cash" && (
                       <div>
                         <span className="hk">{t("dashboard.taxEstimation", "Tax set-aside")}</span>
-                        <span className="hv">${estimatedTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                        <span className="hv">{CUR}{estimatedTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                       </div>
                     )}
                   </div>
@@ -1612,14 +1625,10 @@ function Dashboard() {
                     <i className={activeMetric.icon} />
                   </span>
                   <div>
+                    {/* The current value + MoM% already headline the hero card
+                        directly above this chart, so the chart header carries
+                        only its title — no third repeat of the same figure. */}
                     <span className="chart-card__title" style={{ display: "block", margin: 0 }}>{activeMetric.chartTitle}</span>
-                    {!loadingFinancialData && (
-                      <span className="chart-card__sub">
-                        ${activeMetric.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                        {" · "}
-                        {calculatePercentageChange(activeMetric.value, activeMetric.prev).text}
-                      </span>
-                    )}
                   </div>
                 </div>
                 <div id="cashFlowChart" style={{ flex: 1, minHeight: 0 }}>
@@ -1665,7 +1674,7 @@ function Dashboard() {
                       {loadingFinancialData ? (
                         <Spinner size="sm" />
                       ) : (
-                        `$${m.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        `${CUR}${m.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                       )}
                     </CardTitle>
                     {!loadingFinancialData && (
@@ -1765,7 +1774,7 @@ function Dashboard() {
           <Col lg="5" style={{ paddingInline: 3, marginBottom: 5 }}>
             <div className="mk-card" style={{ position: "relative", marginBottom: 14 }}>
               <div className="dash-panel-head">
-                <span className="mk-chip mk-chip--sm" style={{ backgroundColor: "rgba(168,85,247,0.14)", color: FINANCIAL_COLORS.expense }}>
+                <span className="mk-chip mk-chip--sm" style={{ backgroundColor: "rgba(255,77,77,0.14)", color: FINANCIAL_COLORS.expense }}>
                   <i className="fas fa-chart-pie" />
                 </span>
                 <span className="mk-eyebrow">{t("dashboard.topExpenses", "Top expenses")}</span>
@@ -1795,6 +1804,13 @@ function Dashboard() {
                       (groups[key] || 0) + (parseFloat(tx.originalAmount) || 0);
                   }
                 });
+                // Depreciation is a real P&L expense (non-cash). Include it here
+                // so this breakdown foots to the Total Expenses tile, which also
+                // includes it — otherwise the two appear to disagree.
+                if (depreciation > 0) {
+                  const key = t("dashboard.depreciation", "Depreciation");
+                  groups[key] = (groups[key] || 0) + depreciation;
+                }
                 const rows = Object.entries(groups)
                   .sort((a, b) => b[1] - a[1])
                   .slice(0, 5);
@@ -1806,7 +1822,9 @@ function Dashboard() {
                   );
                 }
                 const totalExp = rows.reduce((s, [, v]) => s + v, 0);
-                const expenseColors = ["var(--purple)", "#C084FC", "#8B5CF6", "#7C3AED", "#6D28D9"];
+                // Warm/red family so every slice still reads as "an expense"
+                // (money out) while staying distinguishable — no purple.
+                const expenseColors = ["#FF4D4D", "#F76B5C", "#D94C6A", "#C2410C", "#FF8A66"];
                 const donutOptions = {
                   chart: {
                     type: "donut",
@@ -1823,7 +1841,7 @@ function Dashboard() {
                     theme: "dark",
                     y: {
                       formatter: (v) =>
-                        `$${Number(v).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                        `${CUR}${Number(v).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
                     },
                   },
                   plotOptions: {
@@ -1839,7 +1857,7 @@ function Dashboard() {
                             fontWeight: 700,
                             offsetY: 2,
                             formatter: (v) =>
-                              `$${Number(v).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                              `${CUR}${Number(v).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
                           },
                           total: {
                             show: true,
@@ -1848,7 +1866,7 @@ function Dashboard() {
                             color: "var(--text-3)",
                             fontSize: "10px",
                             formatter: () =>
-                              `$${totalExp.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                              `${CUR}${totalExp.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
                           },
                         },
                       },
@@ -1926,6 +1944,7 @@ function Dashboard() {
         }
         companyName={companyName}
         items={items || []}
+        allItems={allTransactions || items || []}
         revenues={revenues}
         expenses={expenses}
         initialBalance={initialBalance}

@@ -5,6 +5,7 @@ import "./TransactionTable.css";
 import { useTranslation } from "react-i18next";
 import { translatePurpose } from "utils/translatedBusinessTypes";
 import { can } from "utils/permissions";
+import { currencySymbol } from "utils/currency";
 import {
   FINANCIAL_COLORS,
   SALE_LINE_COLORS,
@@ -32,6 +33,7 @@ const TransactionTable = ({
   userSubscription,
 }) => {
   const { t } = useTranslation();
+  const CUR = currencySymbol();
   const isFeatureEnabled = () => {
     return userSubscription || scheduleCount < 4;
   };
@@ -101,30 +103,30 @@ const TransactionTable = ({
     const dash = <span style={{ color: "var(--text-1)", fontSize: "14px" }}>-</span>;
 
     return (
-      <tr key={`${transaction.id || idx}-${lineKey}`}>
-        <td style={{ color: "var(--text-1)", verticalAlign: "top", paddingTop: "8px" }}>{formatDate(transaction.createdAt)}</td>
-        <td style={{ color: "var(--text-1)", verticalAlign: "top", paddingTop: "8px" }}>{srNo}</td>
+      <tr key={`${transaction.id || idx}-${lineKey}`} className="jt-row jt-row--sale">
+        <td className="jt-date" data-label={t('financialReport.date')} style={{ color: "var(--text-1)", verticalAlign: "top", paddingTop: "8px" }}>{formatDate(transaction.createdAt)}</td>
+        <td className="jt-sr" data-label={t('financialReport.srNo')} style={{ color: "var(--text-1)", verticalAlign: "top", paddingTop: "8px" }}>{srNo}</td>
         <td colSpan={3} className="journal-sale-cell">
           <div className="journal-sale-grid">
             <div className="journal-sale-txn journal-sale-txn-bold">{stripBrackets(t('financialReport.receive'))}</div>
-            <div className="journal-sale-debit"><span style={pill(SALE_LINE_COLORS.receive)}>${fmt(amt)}</span></div>
+            <div className="journal-sale-debit"><span style={pill(SALE_LINE_COLORS.receive)}>{CUR}{fmt(amt)}</span></div>
             <div className="journal-sale-credit">{dash}</div>
 
             <div className="journal-sale-txn">{assetLabel}</div>
             <div className="journal-sale-debit">{dash}</div>
-            <div className="journal-sale-credit"><span style={pill(SALE_LINE_COLORS.inventory)}>${fmt(cost)}</span></div>
+            <div className="journal-sale-credit"><span style={pill(SALE_LINE_COLORS.inventory)}>{CUR}{fmt(cost)}</span></div>
 
             {gain > 0 && (
               <>
                 <div className="journal-sale-txn">{t('financialReport.gainOnSale')}</div>
                 <div className="journal-sale-debit">{dash}</div>
-                <div className="journal-sale-credit"><span style={pill(SALE_LINE_COLORS.gain)}>${fmt(gain)}</span></div>
+                <div className="journal-sale-credit"><span style={pill(SALE_LINE_COLORS.gain)}>{CUR}{fmt(gain)}</span></div>
               </>
             )}
             {loss > 0 && (
               <>
                 <div className="journal-sale-txn">{t('financialReport.lossOnSale')}</div>
-                <div className="journal-sale-debit"><span style={pill(SALE_LINE_COLORS.loss)}>${fmt(loss)}</span></div>
+                <div className="journal-sale-debit"><span style={pill(SALE_LINE_COLORS.loss)}>{CUR}{fmt(loss)}</span></div>
                 <div className="journal-sale-credit">{dash}</div>
               </>
             )}
@@ -133,7 +135,7 @@ const TransactionTable = ({
         <td className="transaction-table-actions" style={{ verticalAlign: "top", paddingTop: "8px" }}>
           <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center" }}>
             {handleEdit && can("edit") && <BsPencilFill className="edit-btn" onClick={() => isFeatureEnabled() && handleEdit(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#4a90e2" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5 }} />}
-            {can("delete") && <BsTrashFill className="delete-btn" onClick={() => isFeatureEnabled() && handleDelete(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#e10d05" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5 }} />}
+            {can("delete") && <BsTrashFill className="delete-btn" onClick={() => isFeatureEnabled() && handleDelete(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "var(--text-3)" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5 }} />}
             {transaction.receiptUrl && <BsReceipt className="receipt-btn" onClick={() => isFeatureEnabled() && handleReceiptClick(transaction.receiptUrl)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#007bff" : "#ccc" }} />}
           </div>
         </td>
@@ -196,10 +198,10 @@ const TransactionTable = ({
               const creditPill = getAmountPillStyle(creditColor, true);
 
               return (
-                <tr key={`${transaction.id || idx}-single`}>
-                  <td style={{ color: "var(--text-1)" }}>{formatDate(transaction.createdAt)}</td>
-                  <td style={{ color: "var(--text-1)" }}>{srNo}</td>
-                  <td style={{ color: "var(--text-1)" }}>
+                <tr key={`${transaction.id || idx}-single`} className="jt-row">
+                  <td className="jt-date" data-label={t('financialReport.date')} style={{ color: "var(--text-1)" }}>{formatDate(transaction.createdAt)}</td>
+                  <td className="jt-sr" data-label={t('financialReport.srNo')} style={{ color: "var(--text-1)" }}>{srNo}</td>
+                  <td className="jt-txn" data-label={t('financialReport.transaction')} style={{ color: "var(--text-1)" }}>
                     {transaction.transactionType === "Receive" ? (
                       <>
                         <div style={{ fontWeight: "bold" }}>{stripBrackets(t('financialReport.receive'))}</div>
@@ -230,11 +232,11 @@ const TransactionTable = ({
                       </>
                     )}
                   </td>
-                  <td className="debit">
+                  <td className="debit" data-label={t('financialReport.debit')}>
                     {transaction.transactionType === "Receive" && (
                       <>
                         <div className="debit-value" style={{ ...debitPill, marginBottom: "4px" }}>
-                          $ {parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {CUR}{parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                         <div style={{ color: "var(--text-1)", fontSize: "14px" }}>-</div>
                       </>
@@ -242,7 +244,7 @@ const TransactionTable = ({
                     {transaction.transactionType === "Payable" && (
                       <>
                         <div className="debit-value" style={{ ...debitPill, marginBottom: "4px" }}>
-                          $ {parseFloat(transaction.originalAmount || transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {CUR}{parseFloat(transaction.originalAmount || transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                         <div style={{ color: "var(--text-1)", fontSize: "14px" }}>-</div>
                       </>
@@ -250,18 +252,18 @@ const TransactionTable = ({
                     {["Pay", "New_Item"].includes(transaction.transactionType) && (
                       <>
                         <div className="debit-value" style={{ ...debitPill, marginBottom: "4px" }}>
-                          $ {parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {CUR}{parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                         <div style={{ color: "var(--text-1)", fontSize: "14px" }}>-</div>
                       </>
                     )}
                   </td>
-                  <td className="credit">
+                  <td className="credit" data-label={t('financialReport.credit')}>
                     {transaction.transactionType === "Receive" && (
                       <>
                         <div style={{ color: "var(--text-1)", fontSize: "14px", marginBottom: "4px" }}>-</div>
                         <div className="credit-value" style={creditPill}>
-                          $ {parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {CUR}{parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                       </>
                     )}
@@ -269,7 +271,7 @@ const TransactionTable = ({
                       <>
                         <div style={{ color: "var(--text-1)", fontSize: "14px", marginBottom: "4px" }}>-</div>
                         <div className="credit-value" style={creditPill}>
-                          $ {parseFloat(transaction.originalAmount || transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {CUR}{parseFloat(transaction.originalAmount || transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                       </>
                     )}
@@ -277,7 +279,7 @@ const TransactionTable = ({
                       <>
                         <div style={{ color: "var(--text-1)", fontSize: "14px", marginBottom: "4px" }}>-</div>
                         <div className="credit-value" style={creditPill}>
-                          $ {parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {CUR}{parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                       </>
                     )}
@@ -285,7 +287,7 @@ const TransactionTable = ({
                   <td className="transaction-table-actions" style={{ verticalAlign: "middle" }}>
                     <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center" }}>
                       {handleEdit && can("edit") && <BsPencilFill className="edit-btn" onClick={() => isFeatureEnabled() && handleEdit(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#4a90e2" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5, display: "flex", alignItems: "center", justifyContent: "center" }} />}
-                      {can("delete") && <BsTrashFill className="delete-btn" onClick={() => isFeatureEnabled() && handleDelete(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#e10d05" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5, display: "flex", alignItems: "center", justifyContent: "center" }} />}
+                      {can("delete") && <BsTrashFill className="delete-btn" onClick={() => isFeatureEnabled() && handleDelete(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "var(--text-3)" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5, display: "flex", alignItems: "center", justifyContent: "center" }} />}
                       {transaction.receiptUrl && <BsReceipt className="receipt-btn" onClick={() => isFeatureEnabled() && handleReceiptClick(transaction.receiptUrl)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#007bff" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5, display: "flex", alignItems: "center", justifyContent: "center" }} />}
                     </div>
                   </td>

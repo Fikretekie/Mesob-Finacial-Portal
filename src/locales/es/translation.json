@@ -584,7 +584,27 @@
     "downloadFinancialReport": "Descargar Informe Financiero",
     "downloadDashboard": "Descargar Panel de Control",
     "downloadBoth": "Descargar Ambos",
-    "pdfNote": "Los informes se descargarán como archivos PDF"
+    "pdfNote": "Los informes se descargarán como archivos PDF",
+    "reportPeriod": "Periodo del informe",
+    "periodCurrent": "Vista actual",
+    "periodThisMonth": "Este mes",
+    "periodLastMonth": "Mes pasado",
+    "periodQuarter": "Este trimestre",
+    "periodYtd": "Año hasta la fecha",
+    "periodCustom": "Personalizado",
+    "from": "Desde",
+    "to": "Hasta",
+    "reportTypeLabel": "Tipo de informe",
+    "typeStatements": "Estados financieros",
+    "typeStatementsDesc": "Estado de resultados y balance general — para tu contador o banco.",
+    "typeOverview": "Resumen de desempeño",
+    "typeOverviewDesc": "Tus cifras clave de un vistazo.",
+    "typeComplete": "Informe completo",
+    "typeCompleteDesc": "Estados financieros más el resumen del negocio.",
+    "includeLabel": "Incluir",
+    "includeCharts": "Gráficos de tendencia",
+    "includeLedger": "Libro de transacciones completo",
+    "generateReport": "Generar informe"
   },
   "documents": {
     "title": "Documentos",
@@ -883,7 +903,8 @@
     "team": "Equipo",
     "connections": "Conexiones",
     "badgeNew": "NUEVO",
-    "badgeSoon": "PRONTO"
+    "badgeSoon": "PRONTO",
+    "helpSupport": "Ayuda y soporte"
   },
   "navbar": {
     "helpSupport": "Ayuda y soporte",
@@ -1030,20 +1051,148 @@
     "comingSoonHint": "Disponible pronto — estamos terminando la configuración.",
     "securityNote": "Seguridad de nivel bancario. Nunca vemos ni guardamos tus credenciales.",
     "loading": "Verificando conexiones…"
-  }
-  ,
+  },
   "transactionReview": {
-      "title": "Revisar transacciones",
-      "subtitle": "{{selected}} de {{total}} seleccionadas",
-      "noneFound": "No hay transacciones nuevas para revisar.",
-      "syncError": "No se pudieron cargar las transacciones de tu banco. Inténtalo de nuevo en un momento.",
-      "confirmError": "No se pudieron agregar las transacciones. Inténtalo de nuevo.",
-      "enterManually": "Ingresar manualmente",
-      "categoryPlaceholder": "Escribe una categoría",
-      "addReceipt": "Agregar recibo (opcional)",
-      "addButton": "Agregar {{count}} a Meksova",
-      "autoImportLabel": "Esta tarjeta es solo para negocios — agregar todo automáticamente la próxima vez",
-      "bannerText": "{{count}} transacciones de tu banco necesitan tu revisión",
-      "bannerButton": "Revisar ahora"
+    "title": "Revisar transacciones",
+    "subtitle": "{{selected}} de {{total}} seleccionadas",
+    "noneFound": "No hay transacciones nuevas para revisar.",
+    "syncError": "No se pudieron cargar las transacciones de tu banco. Inténtalo de nuevo en un momento.",
+    "confirmError": "No se pudieron agregar las transacciones. Inténtalo de nuevo.",
+    "enterManually": "Ingresar manualmente",
+    "categoryPlaceholder": "Escribe una categoría",
+    "addReceipt": "Agregar recibo (opcional)",
+    "addButton": "Agregar {{count}} a Meksova",
+    "autoImportLabel": "Esta tarjeta es solo para negocios — agregar todo automáticamente la próxima vez",
+    "bannerText": "{{count}} transacciones de tu banco necesitan tu revisión",
+    "bannerButton": "Revisar ahora"
+  },
+  "help": {
+    "title": "Ayuda y soporte",
+    "subtitle": "Respuestas sencillas sobre cómo usar Meksova y qué significan los términos de dinero.",
+    "searchPlaceholder": "Buscar ayuda…",
+    "guidesTitle": "Cómo usar la app",
+    "glossaryTitle": "Qué significan los términos",
+    "contactTitle": "¿Todavía necesitas ayuda?",
+    "contactIntro": "Habla con una persona real: con gusto te ayudamos.",
+    "phone": "Teléfono",
+    "email": "Correo",
+    "followUs": "Síguenos",
+    "noResults": "Sin resultados. Prueba otra palabra o contáctanos abajo.",
+    "guides": {
+      "addTransaction": {
+        "q": "¿Cómo registro dinero que entra o sale?",
+        "a": "Toca “Agregar transacción” arriba. Elige el tipo: Dinero que entra para ingresos que recibiste, Dinero que sale para un gasto que pagaste, o Factura para algo que debes pero aún no has pagado. Escribe el monto, elige la fecha, agrega una nota corta y guarda."
+      },
+      "scanReceipt": {
+        "q": "¿Cómo escaneo un recibo?",
+        "a": "Toca “Escanear recibo” y toma una foto. Meksova lee el proveedor, el total y la fecha por ti. Revisa los datos, elige cómo registrarlo (gasto, mercancía para reventa o equipo) y guarda. La foto queda adjunta a la transacción."
+      },
+      "bill": {
+        "q": "¿Cómo registro una factura que debo y la pago después?",
+        "a": "Agrega una transacción y elige “Factura”. Aparece en Total por pagar hasta que la pagues. Cuando pagues, total o parcialmente, abre la factura y registra el pago; el monto que aún debes se actualiza automáticamente."
+      },
+      "goods": {
+        "q": "¿Cómo controlo la mercancía que compro para revender?",
+        "a": "Al agregar una compra, elige “Mercancía para reventa”. Meksova la cuenta como inventario, no como gasto, hasta que la vendas. Cuando registras la venta, el costo de lo vendido se resta como “Costo de los productos vendidos”, para que tu ganancia sea exacta."
+      },
+      "equipment": {
+        "q": "¿Cómo registro equipo o un vehículo?",
+        "a": "Agrégalo como Activo fijo, por ejemplo un camión o una máquina. No es un gasto; es algo que posees. Meksova puede repartir su costo con el tiempo (depreciación) para que tu ganancia refleje el desgaste cada mes."
+      },
+      "mileage": {
+        "q": "¿Cómo registro mis millas?",
+        "a": "Abre el Registro de millas y toca Iniciar viaje cuando empieces a manejar por trabajo, y Detener cuando termines. Guarda el viaje como de negocio o personal. El Historial de viajes suma tus millas de negocio y estima tu deducción de impuestos."
+      },
+      "connect": {
+        "q": "¿Cómo conecto mi banco o Square?",
+        "a": "Ve a Conexiones. Vincula tu banco con Plaid para revisar e importar transacciones, o conecta Square para traer tus ventas automáticamente. Tú tienes el control: las transacciones del banco esperan tu revisión antes de agregarse."
+      },
+      "readReport": {
+        "q": "¿Cómo leo mi Informe financiero?",
+        "a": "El Estado de resultados muestra lo que ganaste menos lo que gastaste: tu ganancia. El Balance general muestra lo que posees, lo que debes y lo que queda. El Diario lista cada asiento. Usa los filtros de fecha para elegir un periodo."
+      },
+      "downloadReport": {
+        "q": "¿Cómo descargo o comparto un informe?",
+        "a": "Toca “Descargar informe” en el Panel o en el Informe financiero. Obtienes un PDF limpio con tu resumen, estado de resultados y balance general que puedes guardar, imprimir o enviar a tu contador o banco."
+      },
+      "currency": {
+        "q": "¿Cómo cambio mi moneda?",
+        "a": "Abre Cuenta, toca Editar perfil y elige tu Moneda de visualización. Cada pantalla e informe mostrará ese símbolo. Esto cambia cómo se etiquetan los montos, no los números en sí."
+      },
+      "team": {
+        "q": "¿Cómo agrego a mi equipo?",
+        "a": "Abre Equipo e invita a un compañero por correo. Recibe su propio acceso para ayudar a llevar tus cuentas. Solo tú, el propietario, puedes agregar o quitar miembros."
+      },
+      "subscription": {
+        "q": "¿Cómo gestiono mi suscripción?",
+        "a": "Abre Suscribirse para iniciar o cambiar tu plan. Tu plan actual y los días que quedan de prueba aparecen arriba en el Informe financiero."
+      }
+    },
+    "glossary": {
+      "revenue": {
+        "term": "Ingresos",
+        "def": "El dinero que tu negocio gana por ventas o trabajo, antes de restar cualquier costo."
+      },
+      "expense": {
+        "term": "Gasto",
+        "def": "Dinero que gastas para operar el negocio: combustible, insumos, publicidad, etc."
+      },
+      "cashOnHand": {
+        "term": "Efectivo disponible",
+        "def": "El dinero real que tienes ahora: todo lo que entró, menos todo lo que salió."
+      },
+      "moneyInOut": {
+        "term": "Dinero que entra / que sale",
+        "def": "Tu flujo de efectivo. Lo que entra es dinero que recibiste; lo que sale es dinero que pagaste. Se trata de cuándo se movió el dinero realmente."
+      },
+      "payable": {
+        "term": "Cuenta por pagar (factura)",
+        "def": "Dinero que debes pero aún no pagas, como una factura con vencimiento posterior. Cuenta como gasto ahora, aun antes de pagarlo."
+      },
+      "netIncome": {
+        "term": "Utilidad neta (ganancia)",
+        "def": "Lo que queda tras restar todos los gastos de tus ingresos. Positivo es ganancia; negativo es pérdida."
+      },
+      "estimatedTax": {
+        "term": "Impuesto estimado",
+        "def": "Un monto aproximado para apartar para impuestos: cerca del 30% de tu ganancia. Es una guía para ahorrar, no la factura exacta de impuestos."
+      },
+      "depreciation": {
+        "term": "Depreciación",
+        "def": "Repartir el costo de algo grande que posees (como un camión) a lo largo de los años que lo usas, en vez de contarlo todo en un solo mes."
+      },
+      "fixedAsset": {
+        "term": "Activo fijo",
+        "def": "Algo valioso que posees y usas por mucho tiempo: un vehículo, equipo, una máquina. Es parte de lo que tu negocio posee, no un gasto."
+      },
+      "inventory": {
+        "term": "Inventario",
+        "def": "Mercancía que compraste para revender pero que aún no vendes. Cuenta como algo que posees hasta venderlo."
+      },
+      "cogs": {
+        "term": "Costo de productos vendidos",
+        "def": "Lo que te costaron originalmente los productos que vendiste. Se resta de la venta para que tu ganancia sea exacta."
+      },
+      "grossProfit": {
+        "term": "Utilidad bruta",
+        "def": "Tus ventas menos el costo de los productos vendidos, antes de otros gastos de operación."
+      },
+      "accrualVsCash": {
+        "term": "Devengo vs efectivo",
+        "def": "La base de efectivo cuenta el dinero solo cuando se mueve. El devengo cuenta los ingresos cuando los ganas y los gastos cuando los debes, aun antes de que el dinero cambie de manos."
+      },
+      "assetsLiabEquity": {
+        "term": "Activos, pasivos y capital",
+        "def": "Los activos son lo que posees. Los pasivos son lo que debes. El capital es lo que te queda tras las deudas. Los activos siempre son iguales a pasivos más capital."
+      },
+      "balanceSheet": {
+        "term": "Balance general",
+        "def": "Una foto de lo que posees, lo que debes y lo que queda, en un momento dado."
+      },
+      "incomeStatement": {
+        "term": "Estado de resultados",
+        "def": "Un resumen de tus ingresos, costos y gastos durante un periodo, que termina en tu ganancia o pérdida."
+      }
+    }
   }
 }

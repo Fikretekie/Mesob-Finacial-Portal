@@ -26,8 +26,14 @@ import {
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import { apiUrl, ROUTES, S3_BUCKET_NAME } from "../config/api";
 import { getCurrentBusinessId, fetchCurrentBusiness, updateBusiness } from "../utils/businessStorage";
+import { currencies } from "../utils/currencies";
 import "./UserPage.css";
 import { saveAs } from "file-saver";
+
+// Currency options sorted by name, for the Account profile selector.
+const CURRENCY_OPTIONS = Object.keys(currencies)
+  .map((code) => ({ code, ...currencies[code] }))
+  .sort((a, b) => a.name.localeCompare(b.name));
 
 function UserPage() {
   const [activeTab, setActiveTab] = useState("1");
@@ -44,6 +50,7 @@ function UserPage() {
     cashBalance: "",
     outstandingDebt: "",
     valueableItems: "",
+    currency: "",
     role: null,
   });
   const [isEditing, setIsEditing] = useState(false);
@@ -135,6 +142,9 @@ function UserPage() {
 
           setUserData(fullUser);
           setOriginalData(fullUser);
+          if (user.currency && currencies[user.currency]) {
+            localStorage.setItem("currency", user.currency);
+          }
           setIsCustomer(user.role === 2 || user.role === 1);
         } else {
           setUserData({ id: userId });
@@ -252,6 +262,13 @@ function UserPage() {
 
           console.log("Update response:", response.data);
           localStorage.setItem("businessType", userData.businessType || "");
+        }
+
+        // Mirror the chosen currency into localStorage so every screen (dashboard,
+        // financial report, journal) picks up the new symbol immediately, without
+        // waiting for a re-login.
+        if (userData.currency) {
+          localStorage.setItem("currency", userData.currency);
         }
 
         setIsEditing(false);
@@ -730,6 +747,44 @@ function UserPage() {
                             style={{ backgroundColor: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "4px" }}
                           />
                         )}
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md="12">
+                      <FormGroup>
+                        <label style={{ color: "var(--text-1)" }}>Display Currency</label>
+                        {isEditing ? (
+                          <Input
+                            type="select"
+                            name="currency"
+                            value={userData.currency || "USD"}
+                            onChange={handleInputChange}
+                            style={{ backgroundColor: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "4px" }}
+                          >
+                            {CURRENCY_OPTIONS.map((c) => (
+                              <option key={c.code} value={c.code}>
+                                {c.name} ({c.symbol}) — {c.code}
+                              </option>
+                            ))}
+                          </Input>
+                        ) : (
+                          <Input
+                            value={(() => {
+                              const c = currencies[userData.currency] || currencies.USD;
+                              const code = userData.currency || "USD";
+                              return `${c.name} (${c.symbol}) — ${code}`;
+                            })()}
+                            disabled
+                            type="text"
+                            style={{ backgroundColor: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "4px" }}
+                          />
+                        )}
+                        <small style={{ color: "var(--text-2)" }}>
+                          Sets the currency symbol shown across your dashboard and
+                          reports. It changes how amounts are labeled, not the
+                          numbers themselves.
+                        </small>
                       </FormGroup>
                     </Col>
                   </Row>

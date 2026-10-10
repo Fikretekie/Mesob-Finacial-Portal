@@ -19,6 +19,7 @@ const IftaReport = lazy(() => import("views/IftaReport"));
 const Team = lazy(() => import("views/Team"));
 const Connections = lazy(() => import("views/Connections"));
 const TransactionReview = lazy(() => import("views/TransactionReview"));
+const HelpCenter = lazy(() => import("views/HelpCenter"));
 
 const adminRoutes = [
   {
@@ -77,6 +78,13 @@ const adminRoutes = [
     nameKey: "nav.subscriptions",
     icon: "business_money-coins",
     component: <AdminSubscriptions />,
+    layout: "/admin",
+  },
+  {
+    path: "/help",
+    name: "Help & Support",
+    nameKey: "nav.helpSupport",
+    component: <HelpCenter />,
     layout: "/admin",
   },
 ];
@@ -214,6 +222,13 @@ const getCustomerRoutes = () => {
         },
       ]
     : []),
+  {
+    path: "/help",
+    name: "Help & Support",
+    nameKey: "nav.helpSupport",
+    component: <HelpCenter />,
+    layout: "/customer",
+  },
   ];
 };
 

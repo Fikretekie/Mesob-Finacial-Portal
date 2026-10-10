@@ -9,7 +9,10 @@ export const FINANCIAL_COLORS = {
   loss: "#FF4D4D",
   payable: "#FFA53B",
   asset: "#00B4D8",
-  expense: "#A855F7",
+  // Expenses are money leaving the business, so they share the outflow red —
+  // one meaning, one colour. (Was purple #A855F7, which read as a 5th accent
+  // and clashed with "Money Out" red elsewhere.)
+  expense: "#FF4D4D",
   negativeBg: "rgba(255, 77, 77, 0.12)",
   negativeBorder: "rgba(255, 77, 77, 0.35)",
 };

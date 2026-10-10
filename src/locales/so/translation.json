@@ -584,7 +584,27 @@
     "downloadFinancialReport": "Soo Dejiso Warbixinta Maaliyadeed",
     "downloadDashboard": "Soo Dejiso Xaashida Xogta",
     "downloadBoth": "Soo Dejiso Labadaba",
-    "pdfNote": "Warbixinnadu waxay soo dejisan doonaan faylasha PDF ahaan"
+    "pdfNote": "Warbixinnadu waxay soo dejisan doonaan faylasha PDF ahaan",
+    "reportPeriod": "Muddada warbixinta",
+    "periodCurrent": "Muuqaalka hadda",
+    "periodThisMonth": "Bishan",
+    "periodLastMonth": "Bishii hore",
+    "periodQuarter": "Rubucan",
+    "periodYtd": "Sannadka ilaa hadda",
+    "periodCustom": "Gaar ah",
+    "from": "Laga bilaabo",
+    "to": "Ilaa",
+    "reportTypeLabel": "Nooca warbixinta",
+    "typeStatements": "Bayaannada maaliyadeed",
+    "typeStatementsDesc": "Bayaanka dakhliga iyo xaashida isuduwida — xisaabiyahaaga ama bangigaaga.",
+    "typeOverview": "Guudmarka waxqabadka",
+    "typeOverviewDesc": "Tiradahaaga muhiimka ah hal eegmo.",
+    "typeComplete": "Warbixin dhammaystiran",
+    "typeCompleteDesc": "Bayaannada iyo guudmarka ganacsigaaga.",
+    "includeLabel": "Ku dar",
+    "includeCharts": "Jaantusyada isbeddelka",
+    "includeLedger": "Diiwaanka dhammaystiran ee dhaqdhaqaaqa",
+    "generateReport": "Samee warbixinta"
   },
   "documents": {
     "title": "Dukumeentiyada",
@@ -883,7 +903,8 @@
     "team": "Kooxda",
     "connections": "Xiriirrada",
     "badgeNew": "CUSUB",
-    "badgeSoon": "DHOW"
+    "badgeSoon": "DHOW",
+    "helpSupport": "Caawimo & Taageero"
   },
   "navbar": {
     "helpSupport": "Caawimo & Taageero",
@@ -1030,20 +1051,148 @@
     "comingSoonHint": "Dhawaan la heli doono — waxaan dhammaynaynaa dejinta.",
     "securityNote": "Amniga heerka bangiga. Marnaba ma aragno mana kaydinno xogtaada gelitaanka.",
     "loading": "Hubinta xiriirrada…"
-  }
-  ,
+  },
   "transactionReview": {
-      "title": "Dib u eeg macaamilada",
-      "subtitle": "{{selected}} ee {{total}} la doortay",
-      "noneFound": "Macaamilo cusub oo la eego ma jiraan.",
-      "syncError": "Macaamilada bangigaaga lama soo rari karin. Mar kale isku day wax yar ka dib.",
-      "confirmError": "Macaamilada lama darin karin. Mar kale isku day.",
-      "enterManually": "Gacanta ku geli",
-      "categoryPlaceholder": "Qeyb qor",
-      "addReceipt": "Ku dar rasiid (ikhtiyaari)",
-      "addButton": "Ku dar {{count}} Meksova",
-      "autoImportLabel": "Kaarkan waa mid ganacsi oo keliya — mar xigta si otomaatig ah wax walba ku dar",
-      "bannerText": "{{count}} macaamil oo bangigaaga ah ayaa u baahan dib-u-eegistaada",
-      "bannerButton": "Hadda dib u eeg"
+    "title": "Dib u eeg macaamilada",
+    "subtitle": "{{selected}} ee {{total}} la doortay",
+    "noneFound": "Macaamilo cusub oo la eego ma jiraan.",
+    "syncError": "Macaamilada bangigaaga lama soo rari karin. Mar kale isku day wax yar ka dib.",
+    "confirmError": "Macaamilada lama darin karin. Mar kale isku day.",
+    "enterManually": "Gacanta ku geli",
+    "categoryPlaceholder": "Qeyb qor",
+    "addReceipt": "Ku dar rasiid (ikhtiyaari)",
+    "addButton": "Ku dar {{count}} Meksova",
+    "autoImportLabel": "Kaarkan waa mid ganacsi oo keliya — mar xigta si otomaatig ah wax walba ku dar",
+    "bannerText": "{{count}} macaamil oo bangigaaga ah ayaa u baahan dib-u-eegistaada",
+    "bannerButton": "Hadda dib u eeg"
+  },
+  "help": {
+    "title": "Caawimo & Taageero",
+    "subtitle": "Jawaabo fudud oo ku saabsan sida loo isticmaalo Meksova iyo macnaha erayada lacagta.",
+    "searchPlaceholder": "Raadi caawimo…",
+    "guidesTitle": "Isticmaalka abka",
+    "glossaryTitle": "Macnaha erayada",
+    "contactTitle": "Weli caawimo ma u baahan tahay?",
+    "contactIntro": "La xiriir qof dhab ah — waan ku faraxsan nahay inaan ku caawinno.",
+    "phone": "Taleefan",
+    "email": "Iimayl",
+    "followUs": "Na raac",
+    "noResults": "Natiijo ma jirto. Isku day eray kale, ama hoos nagala soo xiriir.",
+    "guides": {
+      "addTransaction": {
+        "q": "Sidee u diiwaan geliyaa lacag soo gasha ama baxda?",
+        "a": "Taabo “Ku dar Dhaqdhaqaaq” kore. Dooro nooca — Lacag Soo-gal haddii ay tahay dakhli aad heshay, Lacag Baxay haddii ay tahay kharash aad bixisay, ama Biil haddii ay tahay wax aad leedahay oo aanad weli bixin. Geli qiimaha, dooro taariikhda, ku dar qoraal gaaban, kadibna kaydi."
+      },
+      "scanReceipt": {
+        "q": "Sidee u sawiraa (scan) rasiid?",
+        "a": "Taabo “Scan Rasiid” oo sawir qaad. Meksova wuxuu kuu akhriyaa iibiyaha, wadarta iyo taariikhda. Hubi faahfaahinta, dooro sida aad u diiwaan gelinayso (kharash, badeeco dib-u-iib ah, ama qalab), kadibna kaydi. Sawirku wuxuu la jiraa dhaqdhaqaaqa."
+      },
+      "bill": {
+        "q": "Sidee u diiwaan geliyaa biil aan leeyahay oo aan markii dambe bixiyo?",
+        "a": "Ku dar dhaqdhaqaaq oo dooro “Biil”. Wuxuu ka muuqdaa Wadarta La-bixinayo ilaa aad bixiso. Marka aad bixiso — dhammaan ama qayb — fur biilka oo diiwaan geli lacag-bixinta; qaddarka aad weli leedahay ayaa si toos ah u cusboonaada."
+      },
+      "goods": {
+        "q": "Sidee u la socdaa badeecada aan iibsado si aan dib ugu iibiyo?",
+        "a": "Marka aad ku darayso iibsi, dooro “Badeeco dib-u-iib ah”. Meksova wuxuu u tiriyaa sidii kayd, ma aha kharash, ilaa aad iibiso. Marka aad diiwaan geliso iibka, qiimaha waxa aad iibisay ayaa laga jaraa sida “Qiimaha badeecada la iibiyay”, si faa’iidadaadu u saxanto."
+      },
+      "equipment": {
+        "q": "Sidee u diiwaan geliyaa qalab ama gaari?",
+        "a": "U dar sidii Hanti Joogto ah — tusaale gaari weyn ama mishiin. Kharash ma aha; waa wax aad leedahay. Meksova wuxuu qiimaha u qaybin karaa muddo (dusaanka/qiimo dhaca) si faa’iidadaadu u muujiso duugitaanka bil kasta."
+      },
+      "mileage": {
+        "q": "Sidee u la socdaa mayllaheyga?",
+        "a": "Fur Raad-raaca Mayllaha oo taabo Bilow Safar markaad bilowdo wadista shaqo, kadibna Jooji markaad dhammeyso. Kaydi safarka sida ganacsi ama shakhsi. Taariikhda Safarka waxay isku dartaa mayllahaaga ganacsi waxayna qiyaastaa dhimista cashuurta."
+      },
+      "connect": {
+        "q": "Sidee u xiraa bangigayga ama Square?",
+        "a": "Aad Xiriirinta. Ku xir bangigaaga Plaid si aad u dib-u-eegto oo aad u soo dejiso dhaqdhaqaaqyada, ama ku xir Square si aad iibkaaga si toos ah u soo gasho. Adigaa gacanta ku haya — dhaqdhaqaaqyada bangiga waxay sugayaan dib-u-eegistaada ka hor inta aan la darin."
+      },
+      "readReport": {
+        "q": "Sidee u akhriyaa Warbixintayda Maaliyadeed?",
+        "a": "Bayaanka Dakhliga wuxuu muujiyaa waxaad kasbatay oo laga jaray waxaad kharash gareysay — faa’iidadaada. Xaashida Isuduwida (Balance Sheet) waxay muujisaa waxaad leedahay, waxaad leedahay in aad bixiso, iyo waxa harsan. Joornaalku wuxuu liis gareeyaa diiwaan kasta. Isticmaal shaandhada taariikhda si aad u doorato muddo."
+      },
+      "downloadReport": {
+        "q": "Sidee u soo dejiyaa ama u wadaagaa warbixin?",
+        "a": "Taabo “Soo deji Warbixin” Dashboard-ka ama Warbixinta Maaliyadeed. Waxaad heleysaa PDF nadiif ah oo ah kooban­kaaga, bayaanka dakhliga iyo xaashida isuduwida — oo aad kaydin karto, daabici karto, ama u diri karto xisaabiyahaaga ama bangigaaga."
+      },
+      "currency": {
+        "q": "Sidee u beddelaa lacagtayda?",
+        "a": "Fur Akoon, taabo Wax ka beddel Boorofaylka, oo dooro Lacagta Bandhigga. Shaashad kasta iyo warbixin kasta waxay tusi doontaa calaamaddaas. Tani waxay beddeshaa sida qiimayaasha loo calaamadeeyo, maaha nambaradaasha laftooda."
+      },
+      "team": {
+        "q": "Sidee ku daraa kooxdayda?",
+        "a": "Fur Kooxda oo ku casuun saaxiib shaqo iimayl. Wuxuu helaa gelitaan u gaar ah si uu kaaga caawiyo maareynta xisaabtaada. Adiga oo keliya, milkiilaha, ayaa kordhin kara ama ka saari kara xubnaha."
+      },
+      "subscription": {
+        "q": "Sidee u maareeyaa rukunkayga (subscription)?",
+        "a": "Fur Iska-diiwaan-geli si aad u bilowdo ama u beddesho qorshahaaga. Qorshahaaga hadda iyo maalmaha ka hadhay tijaabada waxay ka muuqdaan xagga sare ee Warbixinta Maaliyadeed."
+      }
+    },
+    "glossary": {
+      "revenue": {
+        "term": "Dakhli",
+        "def": "Lacagta ganacsigaagu ka helo iibka ama shaqada, ka hor inta aan kharashyada laga jarin."
+      },
+      "expense": {
+        "term": "Kharash",
+        "def": "Lacagta aad ku kharash gareyso socodsiinta ganacsiga — shidaal, alaab, xayeysiis, iwm."
+      },
+      "cashOnHand": {
+        "term": "Lacag Gacanta ku jirta",
+        "def": "Lacagta dhabta ah ee aad hadda haysato: wax kasta oo soo galay, oo laga jaray wax kasta oo baxay."
+      },
+      "moneyInOut": {
+        "term": "Lacag Soo-gal / Lacag Baxay",
+        "def": "Socodka lacagtaada. Soo-galku waa lacag aad heshay; baxayku waa lacag aad bixisay. Waxay ku saabsan tahay goorta lacagtu dhab ahaan dhaqaaqday."
+      },
+      "payable": {
+        "term": "La-bixinayo (biil)",
+        "def": "Lacag aad leedahay in aad bixiso laakiin aanad weli bixin, sida biil goor dambe la bixinayo. Hadda ayaa loo tiriyaa kharash, xitaa ka hor inta aadan bixin."
+      },
+      "netIncome": {
+        "term": "Dakhliga Saafiga ah (Faa’iido)",
+        "def": "Waxa harsan kadib marka laga jaro dhammaan kharashyada dakhligaaga. Togan waa faa’iido; taban waa khasaare."
+      },
+      "estimatedTax": {
+        "term": "Cashuur Qiyaasan",
+        "def": "Qaddar qiyaasi ah oo loo keydiyo cashuurta — qiyaastii 30% faa’iidadaada. Waa hage lagu keydiyo, maaha biilka cashuurta ee saxda ah."
+      },
+      "depreciation": {
+        "term": "Qiimo-dhac (Dusaan)",
+        "def": "In qiimaha wax weyn oo aad leedahay (sida gaari) lagu qaybiyo sannadaha aad isticmaalayso, halkii oo dhan lagu tirin lahaa hal bil."
+      },
+      "fixedAsset": {
+        "term": "Hanti Joogto ah",
+        "def": "Wax qiimo leh oo aad leedahay oo aad isticmaasho muddo dheer — gaari, qalab, mishiin. Waa qayb ka mid ah waxa ganacsigaagu leeyahay, maaha kharash."
+      },
+      "inventory": {
+        "term": "Kayd (Bakhaar)",
+        "def": "Badeeco aad u iibsatay dib-u-iib laakiin aanad weli iibin. Waxaa loo tiriyaa wax aad leedahay ilaa la iibiyo."
+      },
+      "cogs": {
+        "term": "Qiimaha Badeecada La Iibiyay",
+        "def": "Waxa ay asal ahaan kugu kacday badeecada aad iibisay. Waxaa laga jaraa iibka si faa’iidadaadu u saxanto."
+      },
+      "grossProfit": {
+        "term": "Faa’iido Guud",
+        "def": "Iibkaaga oo laga jaray qiimaha badeecada la iibiyay, ka hor kharashyada kale ee socodsiinta."
+      },
+      "accrualVsCash": {
+        "term": "Accrual vs Cash",
+        "def": "Cash-ku wuxuu tiriyaa lacagta kaliya marka ay dhaqaaqdo. Accrual-ku wuxuu tiriyaa dakhliga markaad kasbato iyo kharashka markaad leedahay, xitaa ka hor inta lacagtu gacmaha ka beddelan."
+      },
+      "assetsLiabEquity": {
+        "term": "Hantida, Deynaha & Hantida-saafiga",
+        "def": "Hantidu waa waxaad leedahay. Deynuhu waa waxaad bixin leedahay. Hantida-saafigu waa waxa kuu harsan kadib deynaha. Hantidu had iyo jeer waxay la mid tahay deynaha iyo hantida-saafiga."
+      },
+      "balanceSheet": {
+        "term": "Xaashida Isuduwida",
+        "def": "Sawir muujinaya waxaad leedahay, waxaad bixin leedahay, iyo waxa harsan, xilli gaar ah."
+      },
+      "incomeStatement": {
+        "term": "Bayaanka Dakhliga",
+        "def": "Kooban ah dakhligaaga, qiimaha iyo kharashyada muddo, oo ku dhammaada faa’iidadaada ama khasaaraha."
+      }
+    }
   }
 }

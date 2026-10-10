@@ -584,7 +584,27 @@
     "downloadFinancialReport": "Download Financial Report",
     "downloadDashboard": "Download Dashboard",
     "downloadBoth": "Download Both",
-    "pdfNote": "Reports will be downloaded as PDF files"
+    "pdfNote": "Reports will be downloaded as PDF files",
+    "reportPeriod": "Report period",
+    "periodCurrent": "Current view",
+    "periodThisMonth": "This month",
+    "periodLastMonth": "Last month",
+    "periodQuarter": "This quarter",
+    "periodYtd": "Year to date",
+    "periodCustom": "Custom",
+    "from": "From",
+    "to": "To",
+    "reportTypeLabel": "Report type",
+    "typeStatements": "Financial Statements",
+    "typeStatementsDesc": "Profit & Loss and Balance Sheet — for your accountant or bank.",
+    "typeOverview": "Performance Overview",
+    "typeOverviewDesc": "Your key numbers at a glance.",
+    "typeComplete": "Complete Report",
+    "typeCompleteDesc": "Statements plus your business overview.",
+    "includeLabel": "Include",
+    "includeCharts": "Trend charts",
+    "includeLedger": "Full transaction ledger",
+    "generateReport": "Generate report"
   },
   "documents": {
     "title": "Documents",
@@ -906,10 +926,10 @@
     "backupCsv": "Backup CSV",
     "subscribe": "Subscribe",
     "team": "Team",
-    "connections": "Connections" ,
+    "connections": "Connections",
     "badgeNew": "NEW",
-    "badgeSoon": "SOON"
-    
+    "badgeSoon": "SOON",
+    "helpSupport": "Help & Support"
   },
   "navbar": {
     "helpSupport": "Help & Support",
@@ -1023,23 +1043,150 @@
     "comingSoonHint": "Available soon — we're finishing the setup.",
     "securityNote": "Bank-grade security. We never see or store your login credentials.",
     "loading": "Checking connections…"
-  }
-  ,
+  },
   "transactionReview": {
-      "title": "Review transactions",
-      "subtitle": "{{selected}} of {{total}} selected",
-      "noneFound": "No new transactions to review.",
-            "caughtUpTitle": "All caught up!",
-      "caughtUpText": "No new transactions to review right now. Check back after your next bank sync.",
-      "syncError": "Could not load transactions from your bank. Try again in a moment.",
-      "confirmError": "Could not add transactions. Try again.",
-      "enterManually": "Enter Manually",
-      "categoryPlaceholder": "Type a category",
-      "addReceipt": "Add receipt (optional)",
-      "addButton": "Add {{count}} to Meksova",
-      "autoImportLabel": "This card is business-only — auto-add everything next time",
-      "bannerText": "{{count}} transactions from your bank need your review",
-      "bannerButton": "Review now"
+    "title": "Review transactions",
+    "subtitle": "{{selected}} of {{total}} selected",
+    "noneFound": "No new transactions to review.",
+    "caughtUpTitle": "All caught up!",
+    "caughtUpText": "No new transactions to review right now. Check back after your next bank sync.",
+    "syncError": "Could not load transactions from your bank. Try again in a moment.",
+    "confirmError": "Could not add transactions. Try again.",
+    "enterManually": "Enter Manually",
+    "categoryPlaceholder": "Type a category",
+    "addReceipt": "Add receipt (optional)",
+    "addButton": "Add {{count}} to Meksova",
+    "autoImportLabel": "This card is business-only — auto-add everything next time",
+    "bannerText": "{{count}} transactions from your bank need your review",
+    "bannerButton": "Review now"
+  },
+  "help": {
+    "title": "Help & Support",
+    "subtitle": "Simple answers on how to use Meksova and what the money words mean.",
+    "searchPlaceholder": "Search help…",
+    "guidesTitle": "Using the app",
+    "glossaryTitle": "What the words mean",
+    "contactTitle": "Still need help?",
+    "contactIntro": "Reach a real person — we’re happy to help.",
+    "phone": "Phone",
+    "email": "Email",
+    "followUs": "Follow us",
+    "noResults": "No results. Try a different word, or contact us below.",
+    "guides": {
+      "addTransaction": {
+        "q": "How do I record money in or out?",
+        "a": "Tap “Add Transaction” at the top. Choose the type — Money In for income you received, Money Out for an expense you paid, or Bill for something you owe but haven’t paid yet. Enter the amount, pick the date, add a short note, and Save."
+      },
+      "scanReceipt": {
+        "q": "How do I scan a receipt?",
+        "a": "Tap “Scan Receipt” and take a photo. Meksova reads the vendor, total and date for you. Check the details, choose how to record it (expense, goods for resale, or equipment), and Save. The photo stays attached to the transaction."
+      },
+      "bill": {
+        "q": "How do I record a bill I owe and pay it later?",
+        "a": "Add a transaction and choose “Bill”. It shows under Total Payable until you pay it. When you pay — fully or in part — open the bill and record the payment; the amount you still owe updates automatically."
+      },
+      "goods": {
+        "q": "How do I track goods I buy to resell?",
+        "a": "When adding a purchase, choose “Goods for resale”. Meksova counts it as inventory, not an expense, until you sell it. When you record the sale, the cost of what you sold is deducted as “Cost of items sold”, so your profit stays accurate."
+      },
+      "equipment": {
+        "q": "How do I record equipment or a vehicle?",
+        "a": "Add it as a Fixed Asset — for example a truck or a machine. It isn’t an expense; it’s something you own. Meksova can spread its cost over time (depreciation) so your profit reflects the wear each month."
+      },
+      "mileage": {
+        "q": "How do I track my miles?",
+        "a": "Open Mileage Tracker and tap Start Trip when you begin driving for business, then Stop when you finish. Save the trip as business or personal. Trip History totals your business miles and estimates your tax deduction."
+      },
+      "connect": {
+        "q": "How do I connect my bank or Square?",
+        "a": "Go to Connections. Link your bank with Plaid to review and import transactions, or connect Square to bring in your sales automatically. You stay in control — bank transactions wait for your review before they’re added."
+      },
+      "readReport": {
+        "q": "How do I read my Financial Report?",
+        "a": "The Income Statement shows what you earned minus what you spent — your profit. The Balance Sheet shows what you own, what you owe, and what’s left over. The Journal lists every entry. Use the date filters to pick a period."
+      },
+      "downloadReport": {
+        "q": "How do I download or share a report?",
+        "a": "Tap “Download Report” on the Dashboard or Financial Report. You get a clean PDF of your summary, income statement and balance sheet that you can save, print, or send to your accountant or bank."
+      },
+      "currency": {
+        "q": "How do I change my currency?",
+        "a": "Open Account, tap Edit Profile, and choose your Display Currency. Every screen and report then shows that symbol. This changes how amounts are labeled, not the numbers themselves."
+      },
+      "team": {
+        "q": "How do I add my team?",
+        "a": "Open Team and invite a teammate by email. They get their own login to help manage your books. Only you, the owner, can add or remove team members."
+      },
+      "subscription": {
+        "q": "How do I manage my subscription?",
+        "a": "Open Subscribe to start or change your plan. Your current plan and the days left in your trial show at the top of the Financial Report."
+      }
+    },
+    "glossary": {
+      "revenue": {
+        "term": "Revenue (Income)",
+        "def": "The money your business earns from sales or work, before any costs are taken out."
+      },
+      "expense": {
+        "term": "Expense",
+        "def": "Money you spend to run the business — fuel, supplies, advertising, and so on."
+      },
+      "cashOnHand": {
+        "term": "Cash on Hand",
+        "def": "The actual money you have right now: everything that came in, minus everything that went out."
+      },
+      "moneyInOut": {
+        "term": "Money In / Money Out",
+        "def": "Your cash flow. Money In is cash you received; Money Out is cash you paid. It’s about when money actually moved."
+      },
+      "payable": {
+        "term": "Payable (a bill)",
+        "def": "Money you owe but haven’t paid yet, like a bill due later. It counts as an expense now, even before you pay it."
+      },
+      "netIncome": {
+        "term": "Net Income (Profit)",
+        "def": "What’s left after you subtract all expenses from your revenue. Positive means a profit; negative means a loss."
+      },
+      "estimatedTax": {
+        "term": "Estimated Tax",
+        "def": "A rough amount to set aside for taxes — about 30% of your profit. It’s a guide to help you save, not an exact tax bill."
+      },
+      "depreciation": {
+        "term": "Depreciation",
+        "def": "Spreading the cost of something big you own (like a truck) across the years you use it, instead of counting it all in one month."
+      },
+      "fixedAsset": {
+        "term": "Fixed Asset",
+        "def": "Something valuable you own and use for a long time — a vehicle, equipment, a machine. It’s part of what your business owns, not an expense."
+      },
+      "inventory": {
+        "term": "Inventory",
+        "def": "Goods you bought to resell but haven’t sold yet. It counts as something you own until it’s sold."
+      },
+      "cogs": {
+        "term": "Cost of Items Sold (COGS)",
+        "def": "What the goods you sold originally cost you. It’s subtracted from the sale so your profit on it is accurate."
+      },
+      "grossProfit": {
+        "term": "Gross Profit",
+        "def": "Your sales minus the cost of the goods you sold — before other running expenses."
+      },
+      "accrualVsCash": {
+        "term": "Accrual vs Cash",
+        "def": "Cash basis counts money only when it moves. Accrual counts income when you earn it and expenses when you owe them, even before cash changes hands."
+      },
+      "assetsLiabEquity": {
+        "term": "Assets, Liabilities & Equity",
+        "def": "Assets are what you own. Liabilities are what you owe. Equity is what’s left for you after debts. Assets always equal Liabilities plus Equity."
+      },
+      "balanceSheet": {
+        "term": "Balance Sheet",
+        "def": "A snapshot of what you own, what you owe, and what’s left over, at a point in time."
+      },
+      "incomeStatement": {
+        "term": "Income Statement",
+        "def": "A summary of your revenue, costs and expenses over a period, ending in your profit or loss."
+      }
+    }
   }
-  
 }

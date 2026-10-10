@@ -260,7 +260,20 @@ export function calculateTotalInventory(filteredItems, initialValueableItems = 0
 // These are book estimates to help a small business see net asset value and a
 // more realistic profit — not a substitute for a tax preparer's schedule.
 
-const MS_PER_MONTH = (365.25 / 12) * 24 * 60 * 60 * 1000;
+/** Whole months an asset has been in service, under the full-month (a.k.a.
+ *  mid-month) convention small businesses keep their books on: the month an
+ *  asset is placed in service counts as a full month, and depreciation then
+ *  accrues one whole month at a time. This avoids the odd daily-prorated cents
+ *  (e.g. $3.30 on a week-old asset) that continuous proration produced, and
+ *  matches how a monthly depreciation schedule actually reads ($15, $30, …). */
+function monthsInService(start, asOf) {
+  if (!start || asOf < start) return 0;
+  const months =
+    (asOf.getFullYear() - start.getFullYear()) * 12 +
+    (asOf.getMonth() - start.getMonth()) +
+    1; // +1: the acquisition month itself counts as a full month
+  return Math.max(0, months);
+}
 
 /** Fixed-asset purchases, as depreciable lots. Assets that have since been sold
  *  (a sale_fixed disposal referencing them) are excluded — you don't depreciate
@@ -296,7 +309,7 @@ export function getFixedAssetLots(allItems) {
 function lotAccumulated(lot, asOf) {
   if (!lot.date || asOf < lot.date) return 0;
   if (lot.method === "section_179") return lot.cost; // fully expensed at purchase
-  const monthsElapsed = (asOf - lot.date) / MS_PER_MONTH;
+  const monthsElapsed = monthsInService(lot.date, asOf);
   const annual = lot.cost / lot.lifeYears;
   const accumulated = (monthsElapsed / 12) * annual;
   return Math.min(lot.cost, Math.max(0, accumulated));

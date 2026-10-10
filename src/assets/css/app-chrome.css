@@ -247,6 +247,37 @@ h1, h2, h3, h4, h5, h6,
   white-space: nowrap;
 }
 
+/* Account dropdown menu → themed (was a hardcoded white panel that looked
+   broken in dark mode). Items use tokens so they read in light + dark. */
+.navbar .account-dropdown .dropdown-menu {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-md, 12px) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.42) !important;
+  padding: 6px !important;
+  margin-top: 8px !important;
+  min-width: 190px;
+}
+.navbar .account-dropdown .dropdown-item {
+  color: var(--text-1) !important;
+  border-radius: var(--r-sm, 8px) !important;
+  padding: 9px 12px !important;
+  font-size: 0.9rem !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.navbar .account-dropdown .dropdown-item:hover,
+.navbar .account-dropdown .dropdown-item:focus {
+  background: var(--surface-hover) !important;
+  color: var(--text-1) !important;
+}
+.navbar .account-dropdown .dropdown-item .nav-ico { flex: none; color: var(--text-2); }
+.navbar .account-dropdown .dropdown-divider {
+  border-color: var(--border) !important;
+  margin: 6px 4px !important;
+}
+
 /* ---- Native date/time inputs → dark UI (visible calendar icon + text) ---- */
 input[type="date"],
 input[type="datetime-local"],

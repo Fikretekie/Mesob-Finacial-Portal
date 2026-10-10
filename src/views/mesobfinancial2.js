@@ -1706,7 +1706,7 @@ const MesobFinancial2 = () => {
                     textAlign: "right",
                   }}
                 >
-                  $
+                  {CUR}
                   {totalAmount.toLocaleString("en-US", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
@@ -1887,7 +1887,7 @@ const MesobFinancial2 = () => {
                     textAlign: "right",
                   }}
                 >
-                  $
+                  {CUR}
                   {totalAmount.toLocaleString("en-US", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
@@ -3054,7 +3054,7 @@ const MesobFinancial2 = () => {
                         <div className="mksv-stat-label">{t('financialReport.totalExpense')}</div>
                         <div className="mksv-stat-val" style={{ color: FINANCIAL_COLORS.expense }}>{statsLoading ? <Spinner size="sm" /> : `${CUR}${parseFloat(calculateTotalExpenses(true)).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</div>
                       </div>
-                      <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><polyline points="2,14 12,16 22,13 32,17 42,15 52,19 64,17" fill="none" stroke="#a855f7" strokeWidth="2" /></svg>
+                      <svg className="mksv-spark" viewBox="0 0 66 34" preserveAspectRatio="none"><polyline points="2,14 12,16 22,13 32,17 42,15 52,19 64,17" fill="none" stroke="#FF4D4D" strokeWidth="2" /></svg>
                     </div>
                   </div>
                   {!statsLoading && unpaidTransactions && unpaidTransactions.length > 0 && (() => {
@@ -3272,7 +3272,7 @@ const MesobFinancial2 = () => {
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>{t('financialReport.cash')}</td>
                           <td style={{ color: getBalanceColor(calculateTotalCash()), textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
-                            $ {parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {CUR}{parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
@@ -3290,7 +3290,7 @@ const MesobFinancial2 = () => {
                           <tr key={name}>
                             <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", paddingLeft: "20px" }}>{name}</td>
                             <td style={{ color: FINANCIAL_COLORS.asset, textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
-                              $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              {CUR}{parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
                             <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           </tr>
@@ -3301,7 +3301,7 @@ const MesobFinancial2 = () => {
                               {t('financialReport.openingInventory', 'Opening inventory (from profile)')}
                             </td>
                             <td style={{ color: FINANCIAL_COLORS.asset, textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
-                              $ {parseFloat(initialvalueableItems).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              {CUR}{parseFloat(initialvalueableItems).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
                             <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           </tr>
@@ -3311,7 +3311,7 @@ const MesobFinancial2 = () => {
                             <strong>{t('financialReport.totalInventory')}</strong>
                           </td>
                           <td style={{ color: FINANCIAL_COLORS.asset, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
-                            $ {parseFloat(calculateTotalInventory()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {CUR}{parseFloat(calculateTotalInventory()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
@@ -3320,7 +3320,7 @@ const MesobFinancial2 = () => {
                             <strong>{t('financialReport.totalCurrentAssets')}</strong>
                           </td>
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
-                            $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {CUR}{(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
@@ -3335,7 +3335,7 @@ const MesobFinancial2 = () => {
                           <tr key={name}>
                             <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", paddingLeft: "20px" }}>{name}</td>
                             <td style={{ color: "var(--text-1)", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
-                              $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              {CUR}{parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
                             <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           </tr>
@@ -3346,7 +3346,7 @@ const MesobFinancial2 = () => {
                               {t('financialReport.lessDepreciation', 'Less: Depreciation')}
                             </td>
                             <td style={{ color: FINANCIAL_COLORS.expense, textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
-                              − $ {parseFloat(calculateDepreciationExpense()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              − {CUR}{parseFloat(calculateDepreciationExpense()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
                             <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           </tr>
@@ -3356,7 +3356,7 @@ const MesobFinancial2 = () => {
                             <strong>{t('financialReport.totalFixedAssets')}</strong>
                           </td>
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
-                            $ {parseFloat(calculateTotalFixedAssets()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {CUR}{parseFloat(calculateTotalFixedAssets()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
@@ -3365,7 +3365,7 @@ const MesobFinancial2 = () => {
                             <strong>{t('financialReport.totalAssets')}</strong>
                           </td>
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
-                            $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {CUR}{(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
@@ -3725,7 +3725,7 @@ const MesobFinancial2 = () => {
                                       fontSize: "0.9rem",
                                     }}
                                   >
-                                    $
+                                    {CUR}
                                     {totalAmount.toLocaleString("en-US", {
                                       minimumFractionDigits: 2,
                                       maximumFractionDigits: 2,
@@ -3859,7 +3859,7 @@ const MesobFinancial2 = () => {
                                       fontSize: "0.9rem",
                                     }}
                                   >
-                                    $
+                                    {CUR}
                                     {totalAmount.toLocaleString(undefined, {
                                       minimumFractionDigits: 2,
                                       maximumFractionDigits: 2,
@@ -4004,7 +4004,7 @@ const MesobFinancial2 = () => {
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}>{t('financialReport.cash')}</td>
                           <td style={{ color: getBalanceColor(calculateTotalCash()), textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
-                            $ {parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {CUR}{parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
@@ -4022,7 +4022,7 @@ const MesobFinancial2 = () => {
                           <tr key={`bs2-inv-${name}`}>
                             <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", paddingLeft: "20px" }}>{name}</td>
                             <td style={{ color: FINANCIAL_COLORS.asset, textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
-                              $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              {CUR}{parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
                             <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           </tr>
@@ -4032,14 +4032,14 @@ const MesobFinancial2 = () => {
                             <strong>{t('financialReport.totalInventory')}</strong>
                           </td>
                           <td style={{ color: FINANCIAL_COLORS.asset, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
-                            $ {parseFloat(calculateTotalInventory()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {CUR}{parseFloat(calculateTotalInventory()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}><strong>{t('financialReport.totalCurrentAssets')}</strong></td>
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
-                            $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {CUR}{(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
@@ -4052,7 +4052,7 @@ const MesobFinancial2 = () => {
                           <tr key={`bs2-${name}`}>
                             <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", paddingLeft: "20px" }}>{name}</td>
                             <td style={{ color: "var(--text-1)", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
-                              $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              {CUR}{parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
                             <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                           </tr>
@@ -4060,14 +4060,14 @@ const MesobFinancial2 = () => {
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}><strong>{t('financialReport.totalFixedAssets')}</strong></td>
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
-                            $ {parseFloat(calculateTotalFixedAssets()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {CUR}{parseFloat(calculateTotalFixedAssets()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
                         <tr>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)", fontWeight: "bold" }}><strong>{t('financialReport.totalAssets')}</strong></td>
                           <td style={{ color: FINANCIAL_COLORS.income, fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid var(--border)" }}>
-                            $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {CUR}{(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td style={{ padding: "8px", border: "1px solid var(--border)", color: "var(--text-1)" }}></td>
                         </tr>
@@ -5354,6 +5354,7 @@ const MesobFinancial2 = () => {
           toggle={() => setShowDownloadReportModal(false)}
           companyName={companyName}
           items={filterItemsByTimeRange(items, selectedTimeRange, searchTerm)}
+          allItems={items}
           revenues={revenues}
           expenses={expenses}
           initialBalance={initialBalance}

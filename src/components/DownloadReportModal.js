@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Modal,
   ModalHeader,
@@ -8,6 +8,20 @@ import {
 } from "reactstrap";
 import i18n from "../i18n";
 import { translatePurpose, translatePurposeToLanguage } from "../utils/translatedBusinessTypes";
+import { currencySymbol, getCurrencyCode } from "../utils/currency";
+import {
+  filterItemsByTimeRange,
+  calculateTotalRevenue as engRevenue,
+  calculateTotalExpenses as engExpenses,
+  calculateTotalCash as engCash,
+  calculateTotalPayable as engPayable,
+  calculateTotalInventory as engInventory,
+  calculateCOGS as engCOGS,
+  calculateOperatingExpenses as engOpex,
+  calculateTotalFixedAssets as engFixedAtCost,
+  calculateAccumulatedDepreciation as engAccumDep,
+  calculateDepreciationExpense as engDepExpense,
+} from "../utils/accounting";
 
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -60,6 +74,7 @@ const DownloadReportModal = ({
   toggle,
   companyName,
   items,
+  allItems,
   revenues,
   expenses,
   initialBalance,
@@ -79,6 +94,126 @@ const DownloadReportModal = ({
   const [payableOptions, setPayableOptions] = useState(null);
   const [expensesOptions, setExpensesOptions] = useState(null);
 
+  // ── Export options ──────────────────────────────────────────────────────────
+  const [reportType, setReportType] = useState("statements"); // statements | overview | complete
+  const [includeCharts, setIncludeCharts] = useState(false);
+  const [includeLedger, setIncludeLedger] = useState(false);
+  const [period, setPeriod] = useState("current");            // current | month | last-month | quarter | ytd | custom
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
+  const num = (v) => parseFloat(String(v ?? 0).replace(/,/g, "")) || 0;
+
+  // filterItemsByTimeRange only filters on a {from,to} range, so turn each
+  // preset into concrete dates. Returns null for "all" (no bound).
+  const periodRange = () => {
+    const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    if (period === "custom") return fromDate && toDate ? { from: fromDate, to: toDate } : null;
+    if (period === "month") return { from: iso(new Date(y, m, 1)), to: iso(new Date(y, m + 1, 0)) };
+    if (period === "last-month") return { from: iso(new Date(y, m - 1, 1)), to: iso(new Date(y, m, 0)) };
+    if (period === "quarter") { const qs = Math.floor(m / 3) * 3; return { from: iso(new Date(y, qs, 1)), to: iso(new Date(y, qs + 3, 0)) }; }
+    if (period === "ytd") return { from: iso(new Date(y, 0, 1)), to: iso(now) };
+    // "current": reuse the page's active custom range if it has one.
+    if (searchedDates && searchedDates.from && searchedDates.to) return { from: searchedDates.from, to: searchedDates.to };
+    return null;
+  };
+
+  // The data the report renders. "current" reuses exactly what the page passed
+  // (its already-correct numbers). Any other period re-filters the FULL set and
+  // recomputes through the same shared accounting engine the pages delegate to,
+  // so the figures match what that period shows on screen.
+  const report = useMemo(() => {
+    if (period === "current") {
+      return {
+        items: Array.isArray(items) ? items : [],
+        revenues: revenues || {},
+        expenses: expenses || {},
+        totalCash: num(calculateTotalCash && calculateTotalCash()),
+        totalRevenue: num(calculateTotalRevenue && calculateTotalRevenue()),
+        totalExpenses: num(calculateTotalExpenses && calculateTotalExpenses()),
+        totalPayable: num(calculateTotalPayable && calculateTotalPayable()),
+        totalInventory: num(calculateTotalInventory && calculateTotalInventory()),
+      };
+    }
+    const source =
+      Array.isArray(allItems) && allItems.length
+        ? allItems
+        : Array.isArray(items)
+        ? items
+        : [];
+    const filtered = filterItemsByTimeRange(source, periodRange(), "");
+    const rev = {};
+    const exp = {};
+    filtered.forEach((t) => {
+      const amt = parseFloat(t.transactionAmount) || 0;
+      const p = t.transactionPurpose || t.purpose || "";
+      if (t.transactionType === "Receive") rev[p] = (rev[p] || 0) + amt;
+      else if (t.transactionType === "Pay" && t.subType !== "New_Item" && !t.payableId)
+        exp[p] = (exp[p] || 0) + amt;
+    });
+    return {
+      items: filtered,
+      revenues: rev,
+      expenses: exp,
+      totalCash: num(engCash(filtered, Number(initialBalance) || 0)),
+      totalRevenue: num(engRevenue(filtered)),
+      totalExpenses: num(engExpenses(filtered, source)),
+      totalPayable: num(engPayable(filtered, source, Number(initialoutstandingDebt) || 0)),
+      totalInventory: num(engInventory(filtered, Number(initialvalueableItems) || 0)),
+    };
+  }, [
+    period, fromDate, toDate, items, allItems, revenues, expenses,
+    calculateTotalCash, calculateTotalRevenue, calculateTotalExpenses,
+    calculateTotalPayable, calculateTotalInventory,
+    initialBalance, initialoutstandingDebt, initialvalueableItems,
+  ]);
+
+  // Full professional-statement line items (P&L + Balance Sheet), recomputed
+  // from the engine for the selected period so they are internally consistent.
+  const statements = useMemo(() => {
+    const source = Array.isArray(allItems) && allItems.length ? allItems : (Array.isArray(items) ? items : []);
+    const filtered = Array.isArray(report.items) ? report.items : [];
+    const r = periodRange();
+    const asOf = r && r.to ? new Date(r.to) : new Date();
+    const n = (v) => parseFloat(v) || 0;
+
+    const totalRevenue = n(engRevenue(filtered));
+    const cogs = n(engCOGS(filtered, source));
+    const grossProfit = totalRevenue - cogs;
+    const operatingExpenses = n(engOpex(filtered, source));
+    const depreciation = n(engDepExpense(source, r));
+    const totalExp = n(engExpenses(filtered, source)); // cogs + opex + otherExpense
+    const otherExpense = Math.max(0, totalExp - cogs - operatingExpenses);
+    const netIncome = totalRevenue - cogs - operatingExpenses - otherExpense - depreciation;
+
+    const cash = n(engCash(filtered, Number(initialBalance) || 0));
+    const inventory = n(engInventory(filtered, Number(initialvalueableItems) || 0));
+    const fixedAtCost = n(engFixedAtCost(filtered));
+    const accumDep = n(engAccumDep(source, asOf));
+    const netFixed = fixedAtCost - accumDep;
+    const payable = n(engPayable(filtered, source, Number(initialoutstandingDebt) || 0));
+    const openingEquity = (Number(initialBalance) || 0) + (Number(initialvalueableItems) || 0) - (Number(initialoutstandingDebt) || 0);
+    const retained = netIncome;
+
+    const totalCurrentAssets = cash + inventory;
+    const totalAssets = totalCurrentAssets + netFixed;
+    const totalEquity = openingEquity + retained;
+    const totalLE = payable + totalEquity;
+
+    const revLines = Object.entries(report.revenues || {}).filter(([, a]) => Math.abs(a) > 0.005);
+    const expLines = Object.entries(report.expenses || {}).filter(([, a]) => Math.abs(a) > 0.005);
+
+    return {
+      totalRevenue, cogs, grossProfit, operatingExpenses, depreciation, otherExpense, netIncome,
+      cash, inventory, totalCurrentAssets, fixedAtCost, accumDep, netFixed, totalAssets,
+      payable, openingEquity, retained, totalEquity, totalLE, revLines, expLines, asOf,
+      balanced: Math.abs(totalAssets - totalLE) < 0.01,
+    };
+  }, [report, items, allItems, initialBalance, initialvalueableItems, initialoutstandingDebt, period, fromDate, toDate, searchedDates]);
+
   // Translate PDF label: current language → English → key (never blank)
   const pt = (key) => {
     const fullKey = `pdf.${key}`;
@@ -94,7 +229,7 @@ const DownloadReportModal = ({
   };
 
   useEffect(() => {
-    const list = Array.isArray(items) ? items : [];
+    const list = Array.isArray(report.items) ? report.items : [];
     const bal = Number(initialBalance) || 0;
     const debt = Number(initialoutstandingDebt) || 0;
 
@@ -191,7 +326,7 @@ const DownloadReportModal = ({
     setRevenueOptions(getChartOptions(pt("revenueGrowth"), sortedDailyData.map((i) => i.revenue), sortedDailyData.map((i) => formatDateLabel(i.date)), FINANCIAL_COLORS.income));
     setPayableOptions(getChartOptions(pt("totalPayable"), sortedDailyData.map((i) => i.payable), sortedDailyData.map((i) => formatDateLabel(i.date)), FINANCIAL_COLORS.payable));
     setExpensesOptions(getChartOptions(pt("totalExpenses"), sortedDailyData.map((i) => i.expenses), sortedDailyData.map((i) => formatDateLabel(i.date)), FINANCIAL_COLORS.expense));
-  }, [items, initialBalance, initialoutstandingDebt]);
+  }, [report, initialBalance, initialoutstandingDebt]);
 
   // Wait for hidden chart divs to be in the DOM (so dashboard-only PDF can capture them)
   const waitForChartElements = (ids, timeoutMs = 6000, intervalMs = 100) =>
@@ -231,7 +366,13 @@ const captureChartAsImage = async (chartElementId) => {
 
   const formatCurrency = (amount) => {
     const num = parseFloat(amount) || 0;
-    return num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    // jsPDF's base font only renders Latin glyphs, so non-Latin currency symbols
+    // (₹, ₦, ฿, Amharic/Arabic marks) would draw as tofu boxes in the PDF. Use the
+    // symbol when it is ASCII ($, Br, kr, R$, A$…), otherwise fall back to the ISO
+    // code (e.g. "INR 1,000.00"), which always renders and is unambiguous.
+    const sym = currencySymbol();
+    const prefix = /^[\x20-\x7E]+$/.test(sym) ? sym : `${getCurrencyCode()} `;
+    return prefix + num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
   const formatDate = (dateString) => {
@@ -367,7 +508,7 @@ const captureChartAsImage = async (chartElementId) => {
     doc.setTextColor(65, 146, 111);
     doc.setFontSize(11);
     doc.setFont(dataFont(fontName), "bold");
-    doc.text(`$${formatCurrency(totalCash)}`, leftColX + labelWidth, yPos, { align: "right" });
+    doc.text(`${formatCurrency(totalCash)}`, leftColX + labelWidth, yPos, { align: "right" });
 
     doc.setTextColor(130, 130, 130);
     doc.setFontSize(8.5);
@@ -376,7 +517,7 @@ const captureChartAsImage = async (chartElementId) => {
     doc.setTextColor(43, 66, 125);
     doc.setFontSize(11);
     doc.setFont(dataFont(fontName), "bold");
-    doc.text(`$${formatCurrency(totalRevenue)}`, pageWidth - 20, yPos, { align: "right" });
+    doc.text(`${formatCurrency(totalRevenue)}`, pageWidth - 20, yPos, { align: "right" });
 
     yPos += 10;
 
@@ -388,7 +529,7 @@ const captureChartAsImage = async (chartElementId) => {
     doc.setTextColor(167, 86, 93);
     doc.setFontSize(11);
     doc.setFont(dataFont(fontName), "bold");
-    doc.text(`$${formatCurrency(totalPayable)}`, leftColX + labelWidth, yPos, { align: "right" });
+    doc.text(`${formatCurrency(totalPayable)}`, leftColX + labelWidth, yPos, { align: "right" });
 
     doc.setTextColor(130, 130, 130);
     doc.setFontSize(8.5);
@@ -397,7 +538,7 @@ const captureChartAsImage = async (chartElementId) => {
     doc.setTextColor(167, 86, 93);
     doc.setFontSize(11);
     doc.setFont(dataFont(fontName), "bold");
-    doc.text(`$${formatCurrency(totalExpenses)}`, pageWidth - 20, yPos, { align: "right" });
+    doc.text(`${formatCurrency(totalExpenses)}`, pageWidth - 20, yPos, { align: "right" });
 
     yPos += 20;
     return yPos; // ← caller must use this returned value
@@ -434,7 +575,7 @@ const captureChartAsImage = async (chartElementId) => {
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(13);
       doc.setFont(dataFont(fontName), "bold");
-      doc.text(`$${formatCurrency(item.value)}`, boxX + boxWidth / 2, yPos + 24, { align: "center" });
+      doc.text(`${formatCurrency(item.value)}`, boxX + boxWidth / 2, yPos + 24, { align: "center" });
     });
 
     return yPos + boxHeight;
@@ -494,9 +635,9 @@ const captureChartAsImage = async (chartElementId) => {
 
     const balanceSheetData = [
       [pt("accountDetail"), pt("currentValue")],
-      [pt("totalAssets"),        `$${formatCurrency(totalCash + totalInventory)}`],
-      [pt("currentLiabilities"), `($${formatCurrency(totalPayable)})`],
-      [pt("totalOwnerEquity"),   `$${formatCurrency(ownerEquity)}`],
+      [pt("totalAssets"),        `${formatCurrency(totalCash + totalInventory)}`],
+      [pt("currentLiabilities"), `(${formatCurrency(totalPayable)})`],
+      [pt("totalOwnerEquity"),   `${formatCurrency(ownerEquity)}`],
     ];
 
     autoTable(doc, {
@@ -533,22 +674,22 @@ const captureChartAsImage = async (chartElementId) => {
     yPos += 10;
 
     const incomeStatementData = [[pt("category"), pt("amount")]];
-    incomeStatementData.push([pt("revenue"), `$${formatCurrency(totalRevenue)}`]);
+    incomeStatementData.push([pt("revenue"), `${formatCurrency(totalRevenue)}`]);
     const purposeToPdf = (p) => (pdfLanguage ? translatePurposeToLanguage(p, pdfLanguage) : translatePurpose(p));
-    if (revenues && Object.keys(revenues).length > 0) {
-      Object.entries(revenues).forEach(([purpose, amount]) =>
-        incomeStatementData.push([`    ${purposeToPdf(purpose)}`, `$${formatCurrency(amount)}`])
+    if (report.revenues && Object.keys(report.revenues).length > 0) {
+      Object.entries(report.revenues).forEach(([purpose, amount]) =>
+        incomeStatementData.push([`    ${purposeToPdf(purpose)}`, `${formatCurrency(amount)}`])
       );
     } else {
-      incomeStatementData.push([`    ${pt("freightRevenue")}`, `$${formatCurrency(totalRevenue)}`]);
+      incomeStatementData.push([`    ${pt("freightRevenue")}`, `${formatCurrency(totalRevenue)}`]);
     }
-    incomeStatementData.push([pt("expenses"), `($${formatCurrency(totalExpenses)})`]);
-    if (expenses && Object.keys(expenses).length > 0) {
-      Object.entries(expenses).forEach(([purpose, amount]) =>
-        incomeStatementData.push([`    ${purposeToPdf(purpose)}`, `($${formatCurrency(amount)})`])
+    incomeStatementData.push([pt("expenses"), `(${formatCurrency(totalExpenses)})`]);
+    if (report.expenses && Object.keys(report.expenses).length > 0) {
+      Object.entries(report.expenses).forEach(([purpose, amount]) =>
+        incomeStatementData.push([`    ${purposeToPdf(purpose)}`, `(${formatCurrency(amount)})`])
       );
     }
-    incomeStatementData.push([pt("netIncome"), `$${formatCurrency(netIncome)}`]);
+    incomeStatementData.push([pt("netIncome"), `${formatCurrency(netIncome)}`]);
 
     autoTable(doc, {
       startY: yPos,
@@ -605,15 +746,15 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
   doc.text(pt("verifiedJournalEntries"), 21, yPos + 6);
   yPos += 10;
 
-  const safeItems = Array.isArray(items) ? items : [];
+  const safeItems = Array.isArray(report.items) ? report.items : [];
   const filteredItems = safeItems
     .filter((item) => (item.transactionPurpose || item.purpose || "") !== "Initial Cash Balance")
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const journalData = [[pt("date"), pt("description"), pt("debit"), pt("credit")]];
   filteredItems.forEach((item) => {
-    const debit = item.transactionType === "Receive" ? `$${formatCurrency(item.transactionAmount)}` : "-";
-    const credit = item.transactionType !== "Receive" ? `$${formatCurrency(item.transactionAmount)}` : "-";
+    const debit = item.transactionType === "Receive" ? `${formatCurrency(item.transactionAmount)}` : "-";
+    const credit = item.transactionType !== "Receive" ? `${formatCurrency(item.transactionAmount)}` : "-";
     const purpose = String(item.transactionPurpose || item.purpose || item.description || "").trim();
     const description = purpose
       ? (pdfLanguage ? translatePurposeToLanguage(purpose, pdfLanguage) : translatePurpose(purpose))
@@ -669,61 +810,62 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
   // Page 1: header + statement summary + balance sheet + income statement
   // Page 2+: header + journal entries
   // ══════════════════════════════════════════════════════════════════════════
-  const generateFinancialOnlyPages = (doc, pageWidth, pageHeight, pdfFont = "helvetica", scriptFonts = null, pdfLanguage = null) => {
-  const totalCash      = parseFloat(calculateTotalCash().replace(/,/g, "")) || 0;
-  const totalRevenue   = parseFloat(calculateTotalRevenue()) || 0;
-  const totalExpenses  = parseFloat(calculateTotalExpenses()) || 0;
-  const totalPayable   = parseFloat(calculateTotalPayable()) || 0;
-  const totalInventory = parseFloat(calculateTotalInventory()) || 0;
+  const generateFinancialOnlyPages = (doc, pageWidth, pageHeight, chartImages, pdfFont = "helvetica", scriptFonts = null, pdfLanguage = null) => {
+  const { totalCash, totalRevenue, totalExpenses, totalPayable, totalInventory } = report;
 
   addHeader(doc, pageWidth, pdfFont);
   let yPos = 50;
   yPos = addStatementSummary(doc, pageWidth, yPos, totalCash, totalRevenue, totalExpenses, totalPayable, pdfFont);
   yPos = addBalanceSheet(doc, pageWidth, yPos, totalCash, totalInventory, totalPayable, pdfFont);
   yPos = addIncomeStatement(doc, pageWidth, yPos, totalRevenue, totalExpenses, pdfFont, scriptFonts, pdfLanguage);
-  addJournalEntries(doc, pageWidth, pageHeight, yPos, pdfFont, scriptFonts, pdfLanguage);
 
-  // ── Stamp page 1 footer LAST so totalPages is correct ─────────────────────
+  // Optional: trend charts on their own page.
+  if (includeCharts && chartImages) {
+    doc.addPage();
+    addHeader(doc, pageWidth, pdfFont);
+    addCharts(doc, pageWidth, 50, chartImages, pdfFont);
+  }
+  // Pages drawn so far (statements, maybe charts) — these need footers stamped
+  // below. The ledger goes on its OWN fresh page and stamps its own footers.
+  const nonLedgerPages = doc.internal.getNumberOfPages();
+  if (includeLedger) {
+    doc.addPage();
+    addHeader(doc, pageWidth, pdfFont);
+    addJournalEntries(doc, pageWidth, pageHeight, 50, pdfFont, scriptFonts, pdfLanguage);
+  }
+
   const totalPages = doc.internal.getNumberOfPages();
-  doc.setPage(1);
-  addFooter(doc, pageWidth, pageHeight, 1, totalPages, false, pdfFont); // page 1 = not verified
+  for (let i = 1; i <= nonLedgerPages; i++) {
+    doc.setPage(i);
+    addFooter(doc, pageWidth, pageHeight, i, totalPages, false, pdfFont);
+  }
 };
 
   // ══════════════════════════════════════════════════════════════════════════
   // "Download Dashboard"
   // Page 1: header + 4 tiles + 2×2 charts + footer
   // ══════════════════════════════════════════════════════════════════════════
-  const generateDashboardOnlyPage = async (doc, pageWidth, pageHeight, chartImages, pdfFont = "helvetica") => {
-     // 🔍 DEBUG LOGS
-  const rawCash     = calculateTotalCash();
-  const rawRevenue  = calculateTotalRevenue();
-  const rawExpenses = calculateTotalExpenses();
-  const rawPayable  = calculateTotalPayable();
-
-  console.log("=== RAW RETURN VALUES ===");
-  console.log("calculateTotalCash()     →", rawCash,     "| type:", typeof rawCash);
-  console.log("calculateTotalRevenue()  →", rawRevenue,  "| type:", typeof rawRevenue);
-  console.log("calculateTotalExpenses() →", rawExpenses, "| type:", typeof rawExpenses);
-  console.log("calculateTotalPayable()  →", rawPayable,  "| type:", typeof rawPayable);
-
-  const totalCash     = parseFloat(rawCash.toString().replace(/,/g, ""))     || 0;
-  const totalRevenue  = parseFloat(rawRevenue.toString().replace(/,/g, ""))  || 0;
-  const totalExpenses = parseFloat(rawExpenses.toString().replace(/,/g, "")) || 0;
-  const totalPayable  = parseFloat(rawPayable.toString().replace(/,/g, ""))  || 0;
-
-  console.log("=== PARSED VALUES ===");
-  console.log("totalCash     →", totalCash);
-  console.log("totalRevenue  →", totalRevenue);
-  console.log("totalExpenses →", totalExpenses);
-  console.log("totalPayable  →", totalPayable);
+  const generateDashboardOnlyPage = async (doc, pageWidth, pageHeight, chartImages, pdfFont = "helvetica", scriptFonts = null, pdfLanguage = null) => {
+    const { totalCash, totalRevenue, totalExpenses, totalPayable } = report;
     addHeader(doc, pageWidth, pdfFont);
     let yPos = 50;
     yPos = addSummaryTiles(doc, pageWidth, yPos, totalCash, totalRevenue, totalExpenses, totalPayable, pdfFont);
     yPos += 15;
-    addCharts(doc, pageWidth, yPos, chartImages, pdfFont);
+    if (includeCharts && chartImages) {
+      addCharts(doc, pageWidth, yPos, chartImages, pdfFont);
+    }
 
+    const nonLedgerPages = doc.internal.getNumberOfPages();
+    if (includeLedger) {
+      doc.addPage();
+      addHeader(doc, pageWidth, pdfFont);
+      addJournalEntries(doc, pageWidth, pageHeight, 50, pdfFont, scriptFonts, pdfLanguage);
+    }
     const totalPages = doc.internal.getNumberOfPages();
-    addFooter(doc, pageWidth, pageHeight, 1, totalPages, false, pdfFont);
+    for (let i = 1; i <= nonLedgerPages; i++) {
+      doc.setPage(i);
+      addFooter(doc, pageWidth, pageHeight, i, totalPages, false, pdfFont);
+    }
   };
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -733,44 +875,37 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
   // Page 3+: header + journal entries
   // ══════════════════════════════════════════════════════════════════════════
   const generateBothPages = async (doc, pageWidth, pageHeight, chartImages, pdfFont = "helvetica", scriptFonts = null, pdfLanguage = null) => {
-    const totalCash      = parseFloat(calculateTotalCash().replace(/,/g, "")) || 0;
-    const totalRevenue   = parseFloat(calculateTotalRevenue()) || 0;
-    const totalExpenses  = parseFloat(calculateTotalExpenses()) || 0;
-    const totalPayable   = parseFloat(calculateTotalPayable()) || 0;
-    const totalInventory = parseFloat(calculateTotalInventory()) || 0;
+    const { totalCash, totalRevenue, totalExpenses, totalPayable, totalInventory } = report;
 
-    // ── Page 1: Dashboard — tiles + charts ──────────────────────────────────
+    // ── Page 1: Overview — tiles (+ charts if requested) ────────────────────
     addHeader(doc, pageWidth, pdfFont);
-    let dashYPos = 50; // ← own variable, never shared with Page 2
+    let dashYPos = 50;
     dashYPos = addSummaryTiles(doc, pageWidth, dashYPos, totalCash, totalRevenue, totalExpenses, totalPayable, pdfFont);
     dashYPos += 15;
-    addCharts(doc, pageWidth, dashYPos, chartImages, pdfFont);
-    // footer stamped at end once totalPages is known
+    if (includeCharts && chartImages) {
+      addCharts(doc, pageWidth, dashYPos, chartImages, pdfFont);
+    }
 
-    // ── Page 2: Financial Summary ────────────────────────────────────────────
+    // ── Page 2: Financial statements ────────────────────────────────────────
     doc.addPage();
     addHeader(doc, pageWidth, pdfFont);
-    let finYPos = 50; // ← own variable, fresh start at top of page 2
+    let finYPos = 50;
     finYPos = addStatementSummary(doc, pageWidth, finYPos, totalCash, totalRevenue, totalExpenses, totalPayable, pdfFont);
     finYPos = addBalanceSheet(doc, pageWidth, finYPos, totalCash, totalInventory, totalPayable, pdfFont);
     finYPos = addIncomeStatement(doc, pageWidth, finYPos, totalRevenue, totalExpenses, pdfFont, scriptFonts, pdfLanguage);
-    // footer stamped at end once totalPages is known
 
-    
-    // ── Page 3+: Journal Entries ─────────────────────────────────────────────
-   addJournalEntries(doc, pageWidth, pageHeight, finYPos, pdfFont, scriptFonts, pdfLanguage); // ← pass finYPos directly
+    // ── Optional ledger on its own fresh page (stamps its own footers) ──────
+    const nonLedgerPages = doc.internal.getNumberOfPages();
+    if (includeLedger) {
+      doc.addPage();
+      addHeader(doc, pageWidth, pdfFont);
+      addJournalEntries(doc, pageWidth, pageHeight, 50, pdfFont, scriptFonts, pdfLanguage);
+    }
 
-    // addJournalEntries stamps its own footers, but totalPages will be wrong — fixed below
-
-    // Fix all footers now that we know the real total page count
     const totalPages = doc.internal.getNumberOfPages();
-    doc.setPage(1);
-    addFooter(doc, pageWidth, pageHeight, 1, totalPages, false, pdfFont);
-    doc.setPage(2);
-    addFooter(doc, pageWidth, pageHeight, 2, totalPages, false, pdfFont);
-    for (let i = 3; i <= totalPages; i++) {
+    for (let i = 1; i <= nonLedgerPages; i++) {
       doc.setPage(i);
-      addFooter(doc, pageWidth, pageHeight, i, totalPages, true, pdfFont);
+      addFooter(doc, pageWidth, pageHeight, i, totalPages, false, pdfFont);
     }
   };
 
@@ -805,15 +940,60 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
       return null;
     }
   };
+  // Capture a hidden statement sheet (rendered HTML) as a full PDF page. The
+  // sheet carries its own header/footer, so no jsPDF chrome is added over it.
+  const addHtmlSheet = async (doc, elementId, pageWidth, pageHeight) => {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const canvas = await html2canvas(el, { scale: 2, backgroundColor: "#ffffff", logging: false, useCORS: true });
+    let w = pageWidth;
+    let h = (canvas.height * w) / canvas.width;
+    if (h > pageHeight) { h = pageHeight; w = (canvas.width * h) / canvas.height; }
+    doc.addImage(canvas.toDataURL("image/png"), "PNG", (pageWidth - w) / 2, 0, w, h);
+  };
+
+  // Compose the report from the selected type + toggles. Statements are rendered
+  // HTML sheets; Overview/charts/ledger use the jsPDF drawing helpers.
+  const composeReport = async (doc, pageWidth, pageHeight, chartImages, pdfFont, scriptFonts, lang) => {
+    const wantStatements = reportType === "statements" || reportType === "complete";
+    const wantOverview = reportType === "overview" || reportType === "complete";
+    const { totalCash, totalRevenue, totalExpenses, totalPayable } = report;
+    let started = false;
+    const newPage = () => { if (started) doc.addPage(); started = true; };
+    const jsPages = [];
+
+    if (wantStatements) {
+      newPage(); await addHtmlSheet(doc, "pnlSheet", pageWidth, pageHeight);
+      newPage(); await addHtmlSheet(doc, "bsSheet", pageWidth, pageHeight);
+    }
+    if (wantOverview) {
+      newPage(); addHeader(doc, pageWidth, pdfFont);
+      let y = addSummaryTiles(doc, pageWidth, 50, totalCash, totalRevenue, totalExpenses, totalPayable, pdfFont);
+      jsPages.push(doc.internal.getNumberOfPages());
+      if (includeCharts && chartImages) { y += 15; addCharts(doc, pageWidth, y, chartImages, pdfFont); }
+    } else if (includeCharts && chartImages) {
+      newPage(); addHeader(doc, pageWidth, pdfFont);
+      addCharts(doc, pageWidth, 50, chartImages, pdfFont);
+      jsPages.push(doc.internal.getNumberOfPages());
+    }
+    if (includeLedger) {
+      newPage(); addHeader(doc, pageWidth, pdfFont);
+      addJournalEntries(doc, pageWidth, pageHeight, 50, pdfFont, scriptFonts, lang); // stamps its own footers
+    }
+    const totalPages = doc.internal.getNumberOfPages();
+    jsPages.forEach((p) => { doc.setPage(p); addFooter(doc, pageWidth, pageHeight, p, totalPages, false, pdfFont); });
+  };
+
   // ══════════════════════════════════════════════════════════════════════════
   // Main PDF generator
   // ══════════════════════════════════════════════════════════════════════════
- const generatePDF = async (type) => {
+ const generatePDF = async () => {
+  const type = reportType; // statements | overview | complete
   setIsGenerating(true);
   try {
     let chartImages = {};
 
-    if (type === "dashboard" || type === "both") {
+    if (includeCharts) {
       const chartIds = ["cashFlowChart", "revenueChart", "payableChart", "expensesChart"];
       await waitForChartElements(chartIds);
       // Wait for ApexCharts to paint inside the hidden divs
@@ -878,8 +1058,8 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
       }
     }
 
-    // For financial/both reports, load Ethiopic and Arabic so dynamic content (e.g. descriptions saved in am/ar) renders correctly in any PDF language
-    if (type === "financial" || type === "both") {
+    // For reports with statements/ledger, load Ethiopic and Arabic so dynamic content (e.g. descriptions saved in am/ar) renders correctly in any PDF language
+    if (type === "statements" || type === "complete" || includeLedger) {
       if (!scriptFonts.ethiopic) {
         const ethiopicBase64 = await loadEthiopicFont();
         if (ethiopicBase64) {
@@ -904,13 +1084,7 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
       }
     }
 
-    if (type === "financial") {
-      generateFinancialOnlyPages(doc, pageWidth, pageHeight, pdfFont, scriptFonts, lang);
-    } else if (type === "dashboard") {
-      await generateDashboardOnlyPage(doc, pageWidth, pageHeight, chartImages, pdfFont);
-    } else if (type === "both") {
-      await generateBothPages(doc, pageWidth, pageHeight, chartImages, pdfFont, scriptFonts, lang);
-    }
+    await composeReport(doc, pageWidth, pageHeight, chartImages, pdfFont, scriptFonts, lang);
 
     const dateStr = new Date().toISOString().split("T")[0];
     const filename = `${(companyName || "Financial").replace(/\s+/g, "_")}_Report_${dateStr}.pdf`;
@@ -952,24 +1126,195 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
           </div>
         )}
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-          <Button onClick={() => generatePDF("financial")} disabled={isGenerating}
-            style={{ backgroundColor: "var(--surface-3)", borderColor: "var(--border-strong)", color: "var(--text-1)", padding: "12px 20px", fontSize: "14px", fontWeight: "600", borderRadius: "var(--r-md)" }}>
-            {isGenerating ? <Spinner size="sm" /> : dt("downloadFinancialReport")}
-          </Button>
-          <Button onClick={() => generatePDF("dashboard")} disabled={isGenerating}
-            style={{ backgroundColor: "var(--surface-3)", borderColor: "var(--border-strong)", color: "var(--text-1)", padding: "12px 20px", fontSize: "14px", fontWeight: "600", borderRadius: "var(--r-md)" }}>
-            {isGenerating ? <Spinner size="sm" /> : dt("downloadDashboard")}
-          </Button>
-          <Button onClick={() => generatePDF("both")} disabled={isGenerating}
-            style={{ backgroundColor: "var(--accent-solid)", borderColor: "var(--accent-solid)", color: "var(--accent-ink)", padding: "12px 20px", fontSize: "14px", fontWeight: "700", borderRadius: "var(--r-md)" }}>
-            {isGenerating ? <Spinner size="sm" /> : dt("downloadBoth")}
-          </Button>
-        </div>
+        {/* ── Hidden professional statement sheets (captured to the PDF) ───────── */}
+        {(() => {
+          const s = statements;
+          const m = (v) => formatCurrency(Math.abs(v));
+          const neg = (v) => `(${formatCurrency(Math.abs(v))})`;
+          const pr = periodRange();
+          const dLong = (d) => new Date(d).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
+          const endDate = pr && pr.to ? dLong(pr.to) : dLong(new Date());
+          const startDate = pr && pr.from ? dLong(pr.from) : null;
+          const preparedOn = dLong(new Date());
+          const entity = (companyName && String(companyName).trim()) || "Your Business";
+          const periodText = startDate ? `${startDate} – ${endDate}` : `Up to ${endDate}`;
 
-        <p style={{ color: "var(--text-3)", fontSize: "12px", marginTop: "20px", textAlign: "center", marginBottom: "0" }}>
-          {dt("pdfNote")}
-        </p>
+          const SERIF = "Georgia, 'Times New Roman', serif";
+          const SANS = "'Helvetica Neue', Arial, sans-serif";
+          const MONO = "'Courier New', ui-monospace, monospace";
+          const INK = "#1b1d21", MUTE = "#5f6670", FAINT = "#8b929b", RULE = "#d8dbe0", ACCENT = "#1f3a5f";
+          const sheet = { width: "720px", background: "#ffffff", color: INK, padding: "46px 48px", fontFamily: SANS, boxSizing: "border-box", marginBottom: "40px" };
+          const numTd = { textAlign: "right", fontFamily: MONO, fontSize: "12.5px", whiteSpace: "nowrap", padding: "5px 0", width: "26%" };
+          const lblTd = { padding: "5px 0", fontSize: "13px" };
+          const Head = ({ title, sub }) => (
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: `2px solid ${INK}`, paddingBottom: "14px" }}>
+                <div>
+                  <div style={{ fontFamily: SERIF, fontWeight: "bold", fontSize: "25px", lineHeight: 1.1 }}>{entity}</div>
+                  <div style={{ fontSize: "11px", letterSpacing: "0.14em", textTransform: "uppercase", color: MUTE, marginTop: "6px", fontWeight: 600 }}>Financial Statements</div>
+                </div>
+                <div style={{ fontSize: "10px", letterSpacing: "0.16em", textTransform: "uppercase", color: FAINT, fontWeight: 600 }}>Prepared with <span style={{ color: ACCENT }}>Meksova</span></div>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 26px", margin: "14px 0 2px" }}>
+                {[["Statement", title], ["Period", sub], ["Currency", getCurrencyCode()], ["Basis", "Accrual"], ["Prepared", preparedOn]].map(([k, v]) => (
+                  <div key={k} style={{ fontSize: "11px" }}>
+                    <div style={{ color: FAINT, textTransform: "uppercase", letterSpacing: "0.07em", fontSize: "9.5px", fontWeight: 600 }}>{k}</div>
+                    <div style={{ color: INK, fontWeight: 500, fontFamily: MONO }}>{v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+          const SecTitle = ({ children }) => (
+            <div style={{ fontFamily: SERIF, fontWeight: "bold", fontSize: "17px", margin: "30px 0 10px", paddingLeft: "10px", borderLeft: `3px solid ${ACCENT}` }}>{children}</div>
+          );
+          const grp = { ...lblTd, fontWeight: 700, paddingTop: "12px", fontSize: "13px" };
+          const item = { ...lblTd, paddingLeft: "18px", color: MUTE };
+          const itemNum = { ...numTd, color: MUTE };
+          const sub = { ...lblTd, fontWeight: 700, borderTop: `1px solid ${RULE}` };
+          const subNum = { ...numTd, fontWeight: 700, borderTop: `1px solid ${RULE}` };
+          const tot = { ...lblTd, fontWeight: 800, fontSize: "14px", borderTop: `2px solid ${INK}`, paddingTop: "8px" };
+          const totNum = { ...numTd, fontWeight: 800, fontSize: "14px", borderTop: `2px solid ${INK}`, paddingTop: "8px" };
+          const foot = { marginTop: "24px", paddingTop: "12px", borderTop: `1px solid ${RULE}`, fontSize: "10.5px", color: MUTE, lineHeight: 1.5 };
+          const discl = `Unaudited. Management accounts prepared from ${entity} records in Meksova. Figures in ${getCurrencyCode()}, rounded to the cent. Not a substitute for a tax return or an independent audit.`;
+
+          return (
+            <div style={{ position: "absolute", left: "-10000px", top: 0 }} aria-hidden="true">
+              {/* ===== Profit & Loss ===== */}
+              <div id="pnlSheet" style={sheet}>
+                <Head title="Profit & Loss" sub={periodText} />
+                <SecTitle>Statement of Profit &amp; Loss</SecTitle>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <tbody>
+                    <tr><td style={grp}>Revenue</td><td style={numTd}></td></tr>
+                    {s.revLines.length ? s.revLines.map(([p, a]) => (
+                      <tr key={"r" + p}><td style={item}>{translatePurpose(p) || "Income"}</td><td style={itemNum}>{m(a)}</td></tr>
+                    )) : <tr><td style={item}>Sales &amp; services</td><td style={itemNum}>{m(s.totalRevenue)}</td></tr>}
+                    <tr><td style={sub}>Total revenue</td><td style={subNum}>{m(s.totalRevenue)}</td></tr>
+                    {s.cogs > 0.005 && <tr><td style={item}>Cost of goods sold</td><td style={itemNum}>{neg(s.cogs)}</td></tr>}
+                    <tr><td style={sub}>Gross profit</td><td style={subNum}>{m(s.grossProfit)}</td></tr>
+                    <tr><td style={grp}>Operating expenses</td><td style={numTd}></td></tr>
+                    {s.expLines.map(([p, a]) => (
+                      <tr key={"e" + p}><td style={item}>{translatePurpose(p) || "Expense"}</td><td style={itemNum}>{neg(a)}</td></tr>
+                    ))}
+                    {s.depreciation > 0.005 && <tr><td style={item}>Depreciation</td><td style={itemNum}>{neg(s.depreciation)}</td></tr>}
+                    {s.otherExpense > 0.005 && <tr><td style={item}>Other expense</td><td style={itemNum}>{neg(s.otherExpense)}</td></tr>}
+                    <tr><td style={sub}>Total operating expenses</td><td style={subNum}>{neg(s.operatingExpenses + s.depreciation + s.otherExpense)}</td></tr>
+                    <tr><td style={tot}>Net income</td><td style={totNum}>{s.netIncome < 0 ? neg(s.netIncome) : m(s.netIncome)}</td></tr>
+                  </tbody>
+                </table>
+                <div style={foot}>{discl}<div style={{ marginTop: "10px", color: FAINT }}>Page 1</div></div>
+              </div>
+
+              {/* ===== Balance Sheet ===== */}
+              <div id="bsSheet" style={sheet}>
+                <Head title="Balance Sheet" sub={`As at ${endDate}`} />
+                <SecTitle>Balance Sheet</SecTitle>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <tbody>
+                    <tr><td style={grp}>Assets</td><td style={numTd}></td></tr>
+                    <tr><td style={item}>Cash on hand</td><td style={itemNum}>{m(s.cash)}</td></tr>
+                    <tr><td style={item}>Inventory</td><td style={itemNum}>{m(s.inventory)}</td></tr>
+                    <tr><td style={sub}>Total current assets</td><td style={subNum}>{m(s.totalCurrentAssets)}</td></tr>
+                    {s.fixedAtCost > 0.005 && <>
+                      <tr><td style={item}>Equipment &amp; vehicles, at cost</td><td style={itemNum}>{m(s.fixedAtCost)}</td></tr>
+                      <tr><td style={item}>Less: accumulated depreciation</td><td style={itemNum}>{neg(s.accumDep)}</td></tr>
+                      <tr><td style={sub}>Net fixed assets</td><td style={subNum}>{m(s.netFixed)}</td></tr>
+                    </>}
+                    <tr><td style={tot}>Total assets</td><td style={totNum}>{m(s.totalAssets)}</td></tr>
+                    <tr><td style={{ height: "10px" }}></td><td></td></tr>
+                    <tr><td style={grp}>Liabilities</td><td style={numTd}></td></tr>
+                    <tr><td style={item}>Accounts payable</td><td style={itemNum}>{m(s.payable)}</td></tr>
+                    <tr><td style={sub}>Total liabilities</td><td style={subNum}>{m(s.payable)}</td></tr>
+                    <tr><td style={grp}>Equity</td><td style={numTd}></td></tr>
+                    <tr><td style={item}>Owner's capital — opening</td><td style={itemNum}>{m(s.openingEquity)}</td></tr>
+                    <tr><td style={item}>Retained earnings (net income)</td><td style={itemNum}>{s.retained < 0 ? neg(s.retained) : m(s.retained)}</td></tr>
+                    <tr><td style={sub}>Total equity</td><td style={subNum}>{m(s.totalEquity)}</td></tr>
+                    <tr><td style={tot}>Total liabilities &amp; equity</td><td style={totNum}>{m(s.totalLE)}</td></tr>
+                  </tbody>
+                </table>
+                <div style={{ fontSize: "10.5px", color: s.balanced ? ACCENT : "#8f3a3a", marginTop: "10px", fontWeight: 600 }}>
+                  {s.balanced ? `Balanced — assets equal liabilities plus equity: ${m(s.totalAssets)} = ${m(s.totalLE)}` : `Note: assets ${m(s.totalAssets)} vs liabilities + equity ${m(s.totalLE)} (period-scoped balance sheet).`}
+                </div>
+                <div style={foot}>{discl}<div style={{ marginTop: "10px", color: FAINT }}>Page 2</div></div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {(() => {
+          const sectionLabel = { color: "var(--text-3)", fontSize: "11px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 8px" };
+          const chip = (active) => ({ padding: "7px 12px", borderRadius: "999px", border: `1px solid ${active ? "var(--accent-solid)" : "var(--border)"}`, background: active ? "rgba(59,130,246,0.14)" : "var(--surface-3)", color: "var(--text-1)", fontSize: "12.5px", cursor: "pointer", fontWeight: active ? 700 : 500 });
+          const typeCard = (active) => ({ textAlign: "left", padding: "12px 14px", borderRadius: "10px", border: `1px solid ${active ? "var(--accent-solid)" : "var(--border)"}`, background: active ? "rgba(59,130,246,0.10)" : "var(--surface-3)", color: "var(--text-1)", cursor: "pointer", width: "100%" });
+          const PERIODS = [
+            ["current", dt("periodCurrent")], ["month", dt("periodThisMonth")],
+            ["last-month", dt("periodLastMonth")], ["quarter", dt("periodQuarter")],
+            ["ytd", dt("periodYtd")], ["custom", dt("periodCustom")],
+          ];
+          const TYPES = [
+            ["statements", dt("typeStatements"), dt("typeStatementsDesc")],
+            ["overview", dt("typeOverview"), dt("typeOverviewDesc")],
+            ["complete", dt("typeComplete"), dt("typeCompleteDesc")],
+          ];
+          return (
+            <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+              <div>
+                <p style={sectionLabel}>{dt("reportPeriod")}</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "7px" }}>
+                  {PERIODS.map(([k, label]) => (
+                    <button key={k} type="button" style={chip(period === k)} onClick={() => setPeriod(k)}>{label}</button>
+                  ))}
+                </div>
+                {period === "custom" && (
+                  <div style={{ display: "flex", gap: "10px", marginTop: "10px", flexWrap: "wrap" }}>
+                    <label style={{ fontSize: "12px", color: "var(--text-2)", display: "flex", flexDirection: "column", gap: "4px", flex: 1, minWidth: "130px" }}>
+                      {dt("from")}
+                      <input type="date" value={fromDate} max={toDate || undefined} onChange={(e) => setFromDate(e.target.value)}
+                        style={{ background: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "6px", padding: "7px 9px" }} />
+                    </label>
+                    <label style={{ fontSize: "12px", color: "var(--text-2)", display: "flex", flexDirection: "column", gap: "4px", flex: 1, minWidth: "130px" }}>
+                      {dt("to")}
+                      <input type="date" value={toDate} min={fromDate || undefined} onChange={(e) => setToDate(e.target.value)}
+                        style={{ background: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "6px", padding: "7px 9px" }} />
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <p style={sectionLabel}>{dt("reportTypeLabel")}</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {TYPES.map(([k, title, desc]) => (
+                    <button key={k} type="button" style={typeCard(reportType === k)} onClick={() => setReportType(k)}>
+                      <div style={{ fontWeight: 700, fontSize: "13.5px" }}>{title}</div>
+                      <div style={{ fontSize: "12px", color: "var(--text-2)", marginTop: "2px" }}>{desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p style={sectionLabel}>{dt("includeLabel")}</p>
+                <label style={{ display: "flex", gap: "9px", alignItems: "center", color: "var(--text-1)", fontSize: "13px", cursor: "pointer", marginBottom: "6px" }}>
+                  <input type="checkbox" checked={includeCharts} onChange={(e) => setIncludeCharts(e.target.checked)} />
+                  {dt("includeCharts")}
+                </label>
+                <label style={{ display: "flex", gap: "9px", alignItems: "center", color: "var(--text-1)", fontSize: "13px", cursor: "pointer" }}>
+                  <input type="checkbox" checked={includeLedger} onChange={(e) => setIncludeLedger(e.target.checked)} />
+                  {dt("includeLedger")}
+                </label>
+              </div>
+
+              <Button onClick={() => generatePDF()} disabled={isGenerating || (period === "custom" && (!fromDate || !toDate))}
+                style={{ backgroundColor: "var(--accent-solid)", borderColor: "var(--accent-solid)", color: "var(--accent-ink, #fff)", padding: "13px 20px", fontSize: "14px", fontWeight: 700, borderRadius: "var(--r-md)" }}>
+                {isGenerating ? <Spinner size="sm" /> : dt("generateReport")}
+              </Button>
+              <p style={{ color: "var(--text-3)", fontSize: "12px", textAlign: "center", margin: 0 }}>
+                {dt("pdfNote")}
+              </p>
+            </div>
+          );
+        })()}
       </ModalBody>
     </Modal>
   );
