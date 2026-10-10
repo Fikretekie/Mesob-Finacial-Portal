@@ -940,151 +940,66 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
       return null;
     }
   };
-  // Capture a hidden statement sheet (rendered HTML) as a full PDF page. The
-  // sheet carries its own header/footer, so no jsPDF chrome is added over it.
-  const addHtmlSheet = async (doc, elementId, pageWidth, pageHeight) => {
+  // Capture a hidden HTML sheet into the PDF, slicing a tall sheet across as
+  // many pages as needed (so a long ledger paginates). `first` tells it whether
+  // the current doc page is still blank (reuse it) or a new page is needed.
+  const addHtmlSheet = async (doc, elementId, pageWidth, pageHeight, first) => {
     const el = document.getElementById(elementId);
-    if (!el) return;
+    if (!el) return first;
     const canvas = await html2canvas(el, { scale: 2, backgroundColor: "#ffffff", logging: false, useCORS: true });
-    let w = pageWidth;
-    let h = (canvas.height * w) / canvas.width;
-    if (h > pageHeight) { h = pageHeight; w = (canvas.width * h) / canvas.height; }
-    doc.addImage(canvas.toDataURL("image/png"), "PNG", (pageWidth - w) / 2, 0, w, h);
+    const pxPerMm = canvas.width / pageWidth;
+    const pageHpx = Math.floor(pageHeight * pxPerMm);
+    let rendered = 0;
+    let isFirst = first;
+    while (rendered < canvas.height) {
+      const sliceH = Math.min(pageHpx, canvas.height - rendered);
+      const slice = document.createElement("canvas");
+      slice.width = canvas.width;
+      slice.height = sliceH;
+      const ctx = slice.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, slice.width, slice.height);
+      ctx.drawImage(canvas, 0, rendered, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+      if (!isFirst) doc.addPage();
+      isFirst = false;
+      doc.addImage(slice.toDataURL("image/png"), "PNG", 0, 0, pageWidth, sliceH / pxPerMm);
+      rendered += sliceH;
+    }
+    return false;
   };
 
-  // Compose the report from the selected type + toggles. Statements are rendered
-  // HTML sheets; Overview/charts/ledger use the jsPDF drawing helpers.
-  const composeReport = async (doc, pageWidth, pageHeight, chartImages, pdfFont, scriptFonts, lang) => {
+  // Compose the whole report from HTML sheets so every page shares the same
+  // professional look (no old jsPDF tiles/charts/tables).
+  const composeReport = async (doc, pageWidth, pageHeight) => {
     const wantStatements = reportType === "statements" || reportType === "complete";
     const wantOverview = reportType === "overview" || reportType === "complete";
-    const { totalCash, totalRevenue, totalExpenses, totalPayable } = report;
-    let started = false;
-    const newPage = () => { if (started) doc.addPage(); started = true; };
-    const jsPages = [];
+    let first = true;
+    const sheet = async (id) => { first = await addHtmlSheet(doc, id, pageWidth, pageHeight, first); };
 
-    if (wantStatements) {
-      newPage(); await addHtmlSheet(doc, "pnlSheet", pageWidth, pageHeight);
-      newPage(); await addHtmlSheet(doc, "bsSheet", pageWidth, pageHeight);
-    }
-    if (wantOverview) {
-      newPage(); addHeader(doc, pageWidth, pdfFont);
-      let y = addSummaryTiles(doc, pageWidth, 50, totalCash, totalRevenue, totalExpenses, totalPayable, pdfFont);
-      jsPages.push(doc.internal.getNumberOfPages());
-      if (includeCharts && chartImages) { y += 15; addCharts(doc, pageWidth, y, chartImages, pdfFont); }
-    } else if (includeCharts && chartImages) {
-      newPage(); addHeader(doc, pageWidth, pdfFont);
-      addCharts(doc, pageWidth, 50, chartImages, pdfFont);
-      jsPages.push(doc.internal.getNumberOfPages());
-    }
-    if (includeLedger) {
-      newPage(); addHeader(doc, pageWidth, pdfFont);
-      addJournalEntries(doc, pageWidth, pageHeight, 50, pdfFont, scriptFonts, lang); // stamps its own footers
-    }
-    const totalPages = doc.internal.getNumberOfPages();
-    jsPages.forEach((p) => { doc.setPage(p); addFooter(doc, pageWidth, pageHeight, p, totalPages, false, pdfFont); });
+    if (wantStatements) { await sheet("pnlSheet"); await sheet("bsSheet"); }
+    if (wantOverview) await sheet("glanceSheet");
+    if (includeCharts) await sheet("chartsSheet");
+    if (includeLedger) await sheet("ledgerSheet");
   };
 
   // ══════════════════════════════════════════════════════════════════════════
   // Main PDF generator
   // ══════════════════════════════════════════════════════════════════════════
  const generatePDF = async () => {
-  const type = reportType; // statements | overview | complete
   setIsGenerating(true);
   try {
-    let chartImages = {};
-
+    // The whole PDF is now rendered from HTML sheets (the browser handles fonts,
+    // including Amharic/Arabic/Tigrinya), so no jsPDF font embedding is needed.
+    // Give any charts a moment to finish painting before capture.
     if (includeCharts) {
-      const chartIds = ["cashFlowChart", "revenueChart", "payableChart", "expensesChart"];
-      await waitForChartElements(chartIds);
-      // Wait for ApexCharts to paint inside the hidden divs
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-
-      // Capture all 4 charts in parallel instead of sequentially
-      const [cashFlowImg, revenueImg, payableImg, expensesImg] = await Promise.all([
-        captureChartAsImage('cashFlowChart'),
-        captureChartAsImage('revenueChart'),
-        captureChartAsImage('payableChart'),
-        captureChartAsImage('expensesChart'),
-      ]);
-
-      console.log('Chart capture:', {
-        cashFlow: cashFlowImg ? 'ok' : 'fail',
-        revenue: revenueImg ? 'ok' : 'fail',
-        payable: payableImg ? 'ok' : 'fail',
-        expenses: expensesImg ? 'ok' : 'fail'
-      });
-
-      chartImages = { cashFlowImg, revenueImg, payableImg, expensesImg };
+      await new Promise((resolve) => setTimeout(resolve, 1200));
     }
 
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
-    const pageWidth  = doc.internal.pageSize.getWidth();
+    const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    // Use script-specific fonts so non-Latin text (Arabic, Amharic, Tigrinya) renders correctly
-    const lang = currentLanguage || i18n.language || "en";
-    let pdfFont = "helvetica";
-    const scriptFonts = { ethiopic: null, arabic: null };
-
-    if (lang === "am" || lang === "ti") {
-      const ethiopicBase64 = await loadEthiopicFont();
-      if (ethiopicBase64) {
-        try {
-          doc.addFileToVFS("NotoSansEthiopic-Regular.ttf", ethiopicBase64);
-          doc.addFont("NotoSansEthiopic-Regular.ttf", "NotoSansEthiopic", "normal");
-          doc.addFont("NotoSansEthiopic-Regular.ttf", "NotoSansEthiopic", "bold");
-          pdfFont = "NotoSansEthiopic";
-          scriptFonts.ethiopic = "NotoSansEthiopic";
-        } catch (e) {
-          console.warn("Could not register Ethiopic font:", e);
-        }
-      } else {
-        console.warn("Add NotoSansEthiopic-Regular.ttf to public/fonts/ for Amharic/Tigrinya PDF support.");
-      }
-    } else if (lang === "ar") {
-      const arabicBase64 = await loadArabicFont();
-      if (arabicBase64) {
-        try {
-          doc.addFileToVFS("Amiri-Regular.ttf", arabicBase64);
-          doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
-          doc.addFont("Amiri-Regular.ttf", "Amiri", "bold");
-          pdfFont = "Amiri";
-          scriptFonts.arabic = "Amiri";
-        } catch (e) {
-          console.warn("Could not register Arabic font:", e);
-        }
-      } else {
-        console.warn("Add Amiri-Regular.ttf to public/fonts/ for Arabic PDF support.");
-      }
-    }
-
-    // For reports with statements/ledger, load Ethiopic and Arabic so dynamic content (e.g. descriptions saved in am/ar) renders correctly in any PDF language
-    if (type === "statements" || type === "complete" || includeLedger) {
-      if (!scriptFonts.ethiopic) {
-        const ethiopicBase64 = await loadEthiopicFont();
-        if (ethiopicBase64) {
-          try {
-            doc.addFileToVFS("NotoSansEthiopic-Regular.ttf", ethiopicBase64);
-            doc.addFont("NotoSansEthiopic-Regular.ttf", "NotoSansEthiopic", "normal");
-            doc.addFont("NotoSansEthiopic-Regular.ttf", "NotoSansEthiopic", "bold");
-            scriptFonts.ethiopic = "NotoSansEthiopic";
-          } catch (e) { /* already added or failed */ }
-        }
-      }
-      if (!scriptFonts.arabic) {
-        const arabicBase64 = await loadArabicFont();
-        if (arabicBase64) {
-          try {
-            doc.addFileToVFS("Amiri-Regular.ttf", arabicBase64);
-            doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
-            doc.addFont("Amiri-Regular.ttf", "Amiri", "bold");
-            scriptFonts.arabic = "Amiri";
-          } catch (e) { /* already added or failed */ }
-        }
-      }
-    }
-
-    await composeReport(doc, pageWidth, pageHeight, chartImages, pdfFont, scriptFonts, lang);
+    await composeReport(doc, pageWidth, pageHeight);
 
     const dateStr = new Date().toISOString().split("T")[0];
     const filename = `${(companyName || "Financial").replace(/\s+/g, "_")}_Report_${dateStr}.pdf`;
@@ -1104,28 +1019,6 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
      {dt("title")}
       </ModalHeader>
       <ModalBody style={{ backgroundColor: "transparent", padding: "24px" }}>
-        {/* Hidden off-screen charts for capture */}
-        {cashOnHandOptions && (
-          <div style={{ position: 'absolute', left: '-10000px', width: '500px', height: '300px' }}>
-            <div id="cashFlowChart"><ReactApexChart options={cashOnHandOptions} series={cashOnHandOptions.series} type="area" height={300} width={500} /></div>
-          </div>
-        )}
-        {revenueOptions && (
-          <div style={{ position: 'absolute', left: '-10000px', width: '500px', height: '300px' }}>
-            <div id="revenueChart"><ReactApexChart options={revenueOptions} series={revenueOptions.series} type="area" height={300} width={500} /></div>
-          </div>
-        )}
-        {payableOptions && (
-          <div style={{ position: 'absolute', left: '-10000px', width: '500px', height: '300px' }}>
-            <div id="payableChart"><ReactApexChart options={payableOptions} series={payableOptions.series} type="area" height={300} width={500} /></div>
-          </div>
-        )}
-        {expensesOptions && (
-          <div style={{ position: 'absolute', left: '-10000px', width: '500px', height: '300px' }}>
-            <div id="expensesChart"><ReactApexChart options={expensesOptions} series={expensesOptions.series} type="area" height={300} width={500} /></div>
-          </div>
-        )}
-
         {/* ── Hidden professional statement sheets (captured to the PDF) ───────── */}
         {(() => {
           const s = statements;
@@ -1237,6 +1130,81 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
                   {s.balanced ? `Balanced — assets equal liabilities plus equity: ${m(s.totalAssets)} = ${m(s.totalLE)}` : `Note: assets ${m(s.totalAssets)} vs liabilities + equity ${m(s.totalLE)} (period-scoped balance sheet).`}
                 </div>
                 <div style={foot}>{discl}<div style={{ marginTop: "10px", color: FAINT }}>Page 2</div></div>
+              </div>
+
+              {/* ===== Performance Overview (at a glance) ===== */}
+              <div id="glanceSheet" style={sheet}>
+                <Head title="Performance Overview" sub={periodText} />
+                <SecTitle>At a glance</SecTitle>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <tbody>
+                    {[
+                      ["Total revenue", m(s.totalRevenue)],
+                      ["Cost of goods sold", s.cogs > 0.005 ? neg(s.cogs) : m(0)],
+                      ["Gross profit", m(s.grossProfit)],
+                      ["Operating expenses", neg(s.operatingExpenses + s.depreciation + s.otherExpense)],
+                      ["Net income", s.netIncome < 0 ? neg(s.netIncome) : m(s.netIncome)],
+                      ["Net margin", s.totalRevenue > 0.005 ? `${((100 * s.netIncome) / s.totalRevenue).toFixed(1)}%` : "—"],
+                      ["Cash on hand", m(s.cash)],
+                      ["Total payable (unpaid)", m(s.payable)],
+                    ].map(([k, v], i) => (
+                      <tr key={k} style={{ borderBottom: "1px solid #edeef0" }}>
+                        <td style={{ padding: "9px 0", fontSize: "13px", color: MUTE }}>{k}</td>
+                        <td style={{ padding: "9px 0", fontFamily: MONO, fontSize: "13px", textAlign: "right", fontWeight: (k === "Net income" ? 700 : 400), color: INK }}>{v}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div style={foot}>{discl}</div>
+              </div>
+
+              {/* ===== Trends (charts) ===== */}
+              <div id="chartsSheet" style={sheet}>
+                <Head title="Trends" sub={periodText} />
+                <SecTitle>Trends</SecTitle>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "8px" }}>
+                  {[["Cash on hand", cashOnHandOptions], ["Revenue", revenueOptions], ["Total payable", payableOptions], ["Expenses", expensesOptions]].map(([label, opt], i) => (
+                    <div key={i} style={{ border: `1px solid ${RULE}`, borderRadius: "6px", padding: "10px 12px" }}>
+                      <div style={{ fontSize: "10.5px", textTransform: "uppercase", letterSpacing: "0.06em", color: MUTE, fontWeight: 600, marginBottom: "4px" }}>{label}</div>
+                      {opt ? <ReactApexChart options={{ ...opt, title: { text: "" }, colors: [ACCENT], fill: { type: "solid", opacity: 0.12 } }} series={opt.series} type="area" height={150} width={305} /> : <div style={{ height: 150 }} />}
+                    </div>
+                  ))}
+                </div>
+                <div style={foot}>{discl}</div>
+              </div>
+
+              {/* ===== Transaction Ledger ===== */}
+              <div id="ledgerSheet" style={sheet}>
+                <Head title="Transaction Ledger" sub={periodText} />
+                <SecTitle>Transaction Ledger</SecTitle>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      {["Date", "Description", "Debit", "Credit"].map((h, i) => (
+                        <th key={h} style={{ fontSize: "9.5px", letterSpacing: "0.07em", textTransform: "uppercase", color: FAINT, fontWeight: 600, textAlign: i >= 2 ? "right" : "left", padding: "0 0 7px", borderBottom: `1px solid ${RULE}` }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(Array.isArray(report.items) ? report.items : [])
+                      .filter((t) => (t.transactionPurpose || t.purpose || "") !== "Initial Cash Balance")
+                      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                      .map((t, i) => {
+                        const amt = formatCurrency(Math.abs(parseFloat(t.transactionAmount) || 0));
+                        const isRec = t.transactionType === "Receive";
+                        const desc = translatePurpose(t.transactionPurpose || t.purpose || "") || (isRec ? "Income" : "Expense");
+                        return (
+                          <tr key={i} style={{ borderBottom: "1px solid #edeef0" }}>
+                            <td style={{ padding: "5px 0", fontFamily: MONO, fontSize: "10.5px", color: MUTE, whiteSpace: "nowrap", verticalAlign: "top" }}>{formatDate(t.createdAt)}</td>
+                            <td style={{ padding: "5px 10px", fontSize: "11.5px", color: INK }}>{desc}</td>
+                            <td style={{ padding: "5px 0", fontFamily: MONO, fontSize: "11px", textAlign: "right", color: INK }}>{isRec ? amt : "–"}</td>
+                            <td style={{ padding: "5px 0", fontFamily: MONO, fontSize: "11px", textAlign: "right", color: INK }}>{!isRec ? amt : "–"}</td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+                <div style={foot}>{discl}</div>
               </div>
             </div>
           );
