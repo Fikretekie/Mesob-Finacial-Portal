@@ -1050,7 +1050,15 @@
     "notConnected": "Non connecté",
     "comingSoonHint": "Bientôt disponible — nous finalisons la configuration.",
     "securityNote": "Sécurité de niveau bancaire. Nous ne voyons ni ne stockons jamais vos identifiants.",
-    "loading": "Vérification des connexions…"
+    "loading": "Vérification des connexions…",
+    "via": "via",
+    "lastSynced": "Dernière synchro {{ago}}",
+    "justNow": "à l’instant",
+    "minsAgo": "il y a {{n}} min",
+    "hrsAgo": "il y a {{n}} h",
+    "daysAgo": "il y a {{n}} j",
+    "toReview": "{{n}} à vérifier",
+    "openAccount": "Ouvrir les transactions {{name}}"
   },
   "transactionReview": {
     "title": "Examiner les transactions",

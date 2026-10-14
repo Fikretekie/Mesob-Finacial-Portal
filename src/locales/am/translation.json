@@ -1050,7 +1050,15 @@
     "notConnected": "አልተገናኘም",
     "comingSoonHint": "በቅርቡ ይገኛል — ዝግጅቱን እያጠናቀቅን ነው።",
     "securityNote": "የባንክ ደረጃ ደህንነት። የመግቢያ መረጃዎን ፈጽሞ አናይም ወይም አናስቀምጥም።",
-    "loading": "ግንኙነቶችን በማረጋገጥ ላይ…"
+    "loading": "ግንኙነቶችን በማረጋገጥ ላይ…",
+    "via": "በ",
+    "lastSynced": "መጨረሻ የተመሳሰለው {{ago}}",
+    "justNow": "አሁን",
+    "minsAgo": "ከ{{n}} ደቂቃ በፊት",
+    "hrsAgo": "ከ{{n}} ሰዓት በፊት",
+    "daysAgo": "ከ{{n}} ቀን በፊት",
+    "toReview": "{{n}} ለግምገማ",
+    "openAccount": "የ{{name}} ግብይቶችን ክፈት"
   },
   "transactionReview": {
     "title": "ግብይቶችን ይገምግሙ",

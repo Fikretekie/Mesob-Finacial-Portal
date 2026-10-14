@@ -1050,7 +1050,15 @@
     "notConnected": "Lama xirin",
     "comingSoonHint": "Dhawaan la heli doono — waxaan dhammaynaynaa dejinta.",
     "securityNote": "Amniga heerka bangiga. Marnaba ma aragno mana kaydinno xogtaada gelitaanka.",
-    "loading": "Hubinta xiriirrada…"
+    "loading": "Hubinta xiriirrada…",
+    "via": "via",
+    "lastSynced": "La isku halleeyay {{ago}}",
+    "justNow": "hadda",
+    "minsAgo": "{{n}}daq kahor",
+    "hrsAgo": "{{n}}saac kahor",
+    "daysAgo": "{{n}}maalin kahor",
+    "toReview": "{{n}} dib loo eego",
+    "openAccount": "Fur dhaqdhaqaaqa {{name}}"
   },
   "transactionReview": {
     "title": "Dib u eeg macaamilada",

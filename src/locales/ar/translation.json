@@ -1050,7 +1050,15 @@
     "notConnected": "غير متصل",
     "comingSoonHint": "متاح قريبًا — نُنهي الإعداد.",
     "securityNote": "أمان بمستوى البنوك. لا نرى بيانات دخولك ولا نخزّنها أبدًا.",
-    "loading": "جارٍ التحقق من التكاملات…"
+    "loading": "جارٍ التحقق من التكاملات…",
+    "via": "عبر",
+    "lastSynced": "آخر مزامنة {{ago}}",
+    "justNow": "الآن",
+    "minsAgo": "قبل {{n}} د",
+    "hrsAgo": "قبل {{n}} س",
+    "daysAgo": "قبل {{n}} ي",
+    "toReview": "{{n}} للمراجعة",
+    "openAccount": "فتح معاملات {{name}}"
   },
   "transactionReview": {
     "title": "مراجعة المعاملات",

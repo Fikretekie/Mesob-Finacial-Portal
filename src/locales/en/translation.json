@@ -1042,7 +1042,15 @@
     "notConnected": "Not connected",
     "comingSoonHint": "Available soon — we're finishing the setup.",
     "securityNote": "Bank-grade security. We never see or store your login credentials.",
-    "loading": "Checking connections…"
+    "loading": "Checking connections…",
+    "via": "via",
+    "lastSynced": "Last synced {{ago}}",
+    "justNow": "just now",
+    "minsAgo": "{{n}}m ago",
+    "hrsAgo": "{{n}}h ago",
+    "daysAgo": "{{n}}d ago",
+    "toReview": "{{n}} to review",
+    "openAccount": "Open {{name}} transactions"
   },
   "transactionReview": {
     "title": "Review transactions",

@@ -1050,7 +1050,15 @@
     "notConnected": "No conectado",
     "comingSoonHint": "Disponible pronto — estamos terminando la configuración.",
     "securityNote": "Seguridad de nivel bancario. Nunca vemos ni guardamos tus credenciales.",
-    "loading": "Verificando conexiones…"
+    "loading": "Verificando conexiones…",
+    "via": "vía",
+    "lastSynced": "Última sincronización {{ago}}",
+    "justNow": "ahora mismo",
+    "minsAgo": "hace {{n}} min",
+    "hrsAgo": "hace {{n}} h",
+    "daysAgo": "hace {{n}} d",
+    "toReview": "{{n}} por revisar",
+    "openAccount": "Abrir transacciones de {{name}}"
   },
   "transactionReview": {
     "title": "Revisar transacciones",

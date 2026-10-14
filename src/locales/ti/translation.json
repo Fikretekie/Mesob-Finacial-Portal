@@ -1050,7 +1050,15 @@
     "notConnected": "ኣይተራኸበን",
     "comingSoonHint": "ኣብ ቀረባ ይርከብ — ነቲ ምድላው ንውድኦ ኣለና።",
     "securityNote": "ናይ ባንክ ደረጃ ውሕስነት። ናይ መእተዊ ሓበሬታኹም ፈጺምና ኣይንርእን ኣይነቐምጥን።",
-    "loading": "ርክባት ይረጋገጽ ኣሎ…"
+    "loading": "ርክባት ይረጋገጽ ኣሎ…",
+    "via": "ብ",
+    "lastSynced": "መወዳእታ ዝተመሳሰለ {{ago}}",
+    "justNow": "ሕጂ",
+    "minsAgo": "ቅድሚ {{n}} ደቒቕ",
+    "hrsAgo": "ቅድሚ {{n}} ሰዓት",
+    "daysAgo": "ቅድሚ {{n}} መዓልቲ",
+    "toReview": "{{n}} ንግምገማ",
+    "openAccount": "ናይ {{name}} ግብይታት ክፈት"
   },
   "transactionReview": {
     "title": "ትራንሳክሺናት ገምግም",
