@@ -24,6 +24,7 @@ import {
   getCurrentBusinessId,
   getDefaultBusinessName,
   switchToBusiness,
+  setActiveBusinessSilently,
   switchToDefaultBusiness,
   previewBusinessSeat,
   addBusinessSeat,
@@ -119,8 +120,15 @@ function BusinessSwitcher() {
     setError("");
     try {
       const created = await createBusiness(newName.trim(), newType);
-      await addBusinessSeat();
-      switchToBusiness(created); // reloads the app on the new business
+      const seatRes = await addBusinessSeat();
+      // PayPal returns an approval URL — the business is created; make it active
+      // (no reload) and send the owner to PayPal to approve the seat charge.
+      if (seatRes && seatRes.approvalUrl) {
+        setActiveBusinessSilently(created);
+        window.location.href = seatRes.approvalUrl;
+        return;
+      }
+      switchToBusiness(created); // Stripe (silent): reload on the new business
     } catch (err) {
       console.error("Add business failed:", err);
       setError("Could not add business. Please try again.");
