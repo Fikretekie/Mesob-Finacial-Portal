@@ -71,6 +71,40 @@ export async function updateTeamMember(memberId, fields) {
   return res.data;
 }
 
+// ── Paid teammate seat billing (mirrors businessStorage's BusinessSeat) ──────
+// The owner + their first teammate are free; the 2nd teammate onward adds a
+// $9.99/mo seat to the owner's Stripe subscription. These call the TeamSeat
+// Lambda routes; they fail soft so a teammate is never blocked if billing is
+// momentarily unavailable (the backend is the source of truth for the charge).
+
+/** What adding the next paid teammate would cost (no charge — just a lookup). */
+export async function previewTeamSeat() {
+  const res = await axios.get(apiUrl(ROUTES.TEAM_SEAT), {
+    params: { userId: ownerId() },
+    headers: await authHeader(),
+  });
+  return res.data;
+}
+
+/** Add one paid teammate seat to the subscription. Call after a paid invite. */
+export async function addTeamSeat() {
+  const res = await axios.post(
+    apiUrl(ROUTES.TEAM_SEAT),
+    { userId: ownerId() },
+    { headers: await authHeader() }
+  );
+  return res.data;
+}
+
+/** Remove one paid teammate seat (call when a paid teammate is removed). */
+export async function removeTeamSeat() {
+  const res = await axios.delete(apiUrl(ROUTES.TEAM_SEAT), {
+    params: { userId: ownerId() },
+    headers: await authHeader(),
+  });
+  return res.data;
+}
+
 /** Remove / revoke a teammate by their member id. */
 export async function removeTeamMember(memberId) {
   const res = await axios.delete(apiUrl(`${ROUTES.TEAM}/${memberId}`), {

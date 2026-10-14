@@ -19,6 +19,8 @@ import {
   removeTeamMember,
   fetchTeamLog,
   fetchOwnerBilling,
+  addTeamSeat,
+  removeTeamSeat,
   DEFAULT_PERMS,
   TEAM_ROLES,
 } from "utils/teamStorage";
@@ -228,6 +230,12 @@ function Team() {
         subscriptionId: paidSeat ? billing?.subscriptionId || "" : "",
         perms: invitePerms,
       });
+      // Owner + 1st teammate are free; the 2nd teammate onward adds a $9.99/mo
+      // seat. Charge after the invite succeeds; don't block the teammate if the
+      // seat call fails (backend remains the source of truth).
+      if (paidSeat && canCharge) {
+        try { await addTeamSeat(); } catch (seatErr) { console.error("Add team seat failed:", seatErr); }
+      }
       resetInvite();
       load();
     } catch (err) {
@@ -243,9 +251,14 @@ function Team() {
 
   const handleRemove = async (m) => {
     setRemovingId(m.id || m.memberId || m.email);
+    // The 1st teammate is free, so dropping from 2+ teammates frees a paid seat.
+    const wasPaidSeat = members.length >= 2;
     try {
       await removeTeamMember(m.id || m.memberId);
       setMembers((prev) => prev.filter((x) => x !== m));
+      if (wasPaidSeat && canCharge) {
+        try { await removeTeamSeat(); } catch (seatErr) { console.error("Remove team seat failed:", seatErr); }
+      }
     } catch (err) {
       console.error("Remove member failed:", err);
     } finally {
