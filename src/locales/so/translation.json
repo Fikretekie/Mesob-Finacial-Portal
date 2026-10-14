@@ -1036,8 +1036,9 @@
     "permsHint": "Daawashada had iyo jeer waa la oggol yahay. Calaamadee waxa xubintani beddeli karto.",
     "viewOnly": "daawo kaliya",
     "paypalSeatSuccess": "Kursiga waa la ansixiyay — hadda wuxuu ku jiraa rukunkaaga PayPal.",
-    "paypalSeatCancel": "Ansixinta kursiga waa la joojiyay.",
-    "paypalSeatCardNote": "Waxaad ku ansixin doontaa PayPal — halkaas waxaad ku isticmaali kartaa hadhaaga PayPal ama kaadhka debit/credit."
+    "paypalSeatCancel": "Ansixinta kursiga waa la joojiyay — xubin lama darin.",
+    "paypalSeatCardNote": "Waxaad ku ansixin doontaa PayPal — halkaas waxaad ku isticmaali kartaa hadhaaga PayPal ama kaadhka debit/credit.",
+    "paypalSeatPostError": "Kursigaaga waa la ansixiyay, laakiin xubinta ku darista way fashilantay — fadlan dib u dir casuumaadda."
   },
   "connections": {
     "title": "Xiriirrada",

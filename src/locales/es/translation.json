@@ -1036,8 +1036,9 @@
     "permsHint": "Ver siempre está permitido. Marca lo que este compañero puede cambiar.",
     "viewOnly": "solo ver",
     "paypalSeatSuccess": "Asiento aprobado — ya está en tu suscripción de PayPal.",
-    "paypalSeatCancel": "Se canceló la aprobación del asiento.",
-    "paypalSeatCardNote": "Lo aprobarás en PayPal — puedes usar tu saldo de PayPal o una tarjeta de débito/crédito allí."
+    "paypalSeatCancel": "Se canceló la aprobación del asiento — no se agregó ningún miembro.",
+    "paypalSeatCardNote": "Lo aprobarás en PayPal — puedes usar tu saldo de PayPal o una tarjeta de débito/crédito allí.",
+    "paypalSeatPostError": "Tu asiento fue aprobado, pero no se pudo agregar al miembro — envía la invitación de nuevo."
   },
   "connections": {
     "title": "Conexiones",

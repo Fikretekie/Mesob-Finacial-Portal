@@ -31,6 +31,11 @@ import {
   removeBusinessSeat,
 } from "utils/businessStorage";
 
+// Holds the new-business details across a PayPal seat approval redirect. The
+// business is NOT created until we return approved, so an abandoned approval
+// provisions no business and leaves the seat unapproved (never charged).
+const PENDING_BUSINESS_KEY = "mksv_pending_business";
+
 /** Lets an account switch between multiple businesses, or add a new one.
  * Always visible in the navbar -- additive, doesn't change single-business
  * accounts' behavior until they actually add a second business. */
@@ -58,6 +63,44 @@ function BusinessSwitcher() {
 
   useEffect(() => {
     fetchBusinesses().then(setBusinesses).catch(() => {});
+  }, []);
+
+  // Returning from a PayPal business-seat approval (?paypalSeat=success|cancel).
+  // The business was deliberately NOT created before the redirect — create it
+  // now that the seat is approved, or discard the stashed details if cancelled.
+  // Only acts when a business is stashed, so a teammate-seat return landing on
+  // another page (handled in Team.js) is left untouched.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get("paypalSeat");
+    if (!p) return;
+    let pending = null;
+    try {
+      pending = JSON.parse(sessionStorage.getItem(PENDING_BUSINESS_KEY) || "null");
+    } catch (e) { /* ignore */ }
+    if (!pending) return; // not a business-seat return
+    try { sessionStorage.removeItem(PENDING_BUSINESS_KEY); } catch (e) { /* ignore */ }
+
+    const stripParam = () => {
+      const u = new URL(window.location.href);
+      u.searchParams.delete("paypalSeat");
+      window.history.replaceState({}, "", u.toString());
+    };
+
+    if (p === "success") {
+      (async () => {
+        try {
+          const created = await createBusiness(pending.name, pending.businessType);
+          setActiveBusinessSilently(created);
+          stripParam();
+          window.location.reload(); // pick up the new active business everywhere
+        } catch (err) {
+          console.error("Create business after PayPal approval failed:", err);
+          stripParam();
+        }
+      })();
+    } else {
+      stripParam(); // cancelled → nothing created, stash already cleared
+    }
   }, []);
 
   const currentId = getCurrentBusinessId();
@@ -119,16 +162,35 @@ function BusinessSwitcher() {
     setSaving(true);
     setError("");
     try {
-      const created = await createBusiness(newName.trim(), newType);
-      const seatRes = await addBusinessSeat();
-      // PayPal returns an approval URL — the business is created; make it active
-      // (no reload) and send the owner to PayPal to approve the seat charge.
-      if (seatRes && seatRes.approvalUrl) {
-        setActiveBusinessSilently(created);
-        window.location.href = seatRes.approvalUrl;
-        return;
+      const isPaypal = preview && preview.provider === "PAYPAL";
+
+      // PayPal's seat charge is an async approval the owner can abandon. Don't
+      // create the business up front — reserve the seat, stash the details, and
+      // create the business only when we return approved (?paypalSeat=success).
+      // Abandoning the PayPal page provisions no business and never charges.
+      if (isPaypal) {
+        const seatRes = await addBusinessSeat();
+        if (seatRes && seatRes.approvalUrl) {
+          try {
+            sessionStorage.setItem(
+              PENDING_BUSINESS_KEY,
+              JSON.stringify({ name: newName.trim(), businessType: newType })
+            );
+          } catch (e) {
+            /* storage blocked (private mode): fall through and create now */
+          }
+          window.location.href = seatRes.approvalUrl;
+          return;
+        }
+        // No approval URL (shouldn't happen on a paid add) — create below.
       }
-      switchToBusiness(created); // Stripe (silent): reload on the new business
+
+      const created = await createBusiness(newName.trim(), newType);
+      // Stripe charges silently and synchronously, so add the seat now.
+      if (!isPaypal) {
+        await addBusinessSeat();
+      }
+      switchToBusiness(created); // reload on the new business
     } catch (err) {
       console.error("Add business failed:", err);
       setError("Could not add business. Please try again.");

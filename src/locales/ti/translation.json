@@ -1036,8 +1036,9 @@
     "permsHint": "ምርኣይ ኩሉ ግዜ ይፍቀድ። እዚ ኣባል እንታይ ክቕይር ከም ዝኽእል ምልክት ግበሩ።",
     "viewOnly": "ምርኣይ ጥራይ",
     "paypalSeatSuccess": "መንበር ጸዲቑ — ሕጂ ኣብ ናይ PayPal subscription ኣሎ።",
-    "paypalSeatCancel": "ፍቓድ መንበር ተሰሪዙ።",
-    "paypalSeatCardNote": "ነዚ ኣብ PayPal ክትቕበሎ ኢኻ — ኣብኡ ናይ PayPal ተረፍ ሕሳብካ ወይ ዴቢት/ክሬዲት ካርድ ክትጥቀም ትኽእል።"
+    "paypalSeatCancel": "ፍቓድ መንበር ተሰሪዙ — ዝኾነ ኣባል ኣይተወሰኸን።",
+    "paypalSeatCardNote": "ነዚ ኣብ PayPal ክትቕበሎ ኢኻ — ኣብኡ ናይ PayPal ተረፍ ሕሳብካ ወይ ዴቢት/ክሬዲት ካርድ ክትጥቀም ትኽእል።",
+    "paypalSeatPostError": "መንበርካ ጸዲቑ፡ ግን ነቲ ኣባል ምውሳኽ ኣይተዓወተን — በጃኻ ነቲ ዕድመ ደጊምካ ስደዶ።"
   },
   "connections": {
     "title": "ርክባት",

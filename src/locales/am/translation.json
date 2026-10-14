@@ -1036,8 +1036,9 @@
     "permsHint": "ማየት ሁልጊዜ ይፈቀዳል። ይህ አባል ምን መለወጥ እንደሚችል ምልክት ያድርጉ።",
     "viewOnly": "ማየት ብቻ",
     "paypalSeatSuccess": "መቀመጫ ጸድቋል — አሁን በPayPal ደንበኝነትዎ ላይ ነው።",
-    "paypalSeatCancel": "የመቀመጫ ፈቃድ ተሰርዟል።",
-    "paypalSeatCardNote": "ይህን በPayPal ያጸድቃሉ — እዚያ የPayPal ቀሪ ሂሳብዎን ወይም የዴቢት/ክሬዲት ካርድ መጠቀም ይችላሉ።"
+    "paypalSeatCancel": "የመቀመጫ ፈቃድ ተሰርዟል — ምንም የቡድን አባል አልተጨመረም።",
+    "paypalSeatCardNote": "ይህን በPayPal ያጸድቃሉ — እዚያ የPayPal ቀሪ ሂሳብዎን ወይም የዴቢት/ክሬዲት ካርድ መጠቀም ይችላሉ።",
+    "paypalSeatPostError": "መቀመጫዎ ጸድቋል፣ ነገር ግን የቡድን አባሉን ማከል አልተሳካም — እባክዎ ግብዣውን እንደገና ይላኩ።"
   },
   "connections": {
     "title": "ግንኙነቶች",

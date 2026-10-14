@@ -1028,8 +1028,9 @@
     "permsHint": "Viewing is always allowed. Tick what this teammate can change.",
     "viewOnly": "view only",
     "paypalSeatSuccess": "Seat approved — it's now on your PayPal subscription.",
-    "paypalSeatCancel": "Seat approval was cancelled.",
-    "paypalSeatCardNote": "You'll approve this on PayPal — you can use your PayPal balance or a debit/credit card there."
+    "paypalSeatCancel": "Seat approval was cancelled — no teammate was added.",
+    "paypalSeatCardNote": "You'll approve this on PayPal — you can use your PayPal balance or a debit/credit card there.",
+    "paypalSeatPostError": "Your seat was approved, but adding the teammate failed — please send the invite again."
   },
   "connections": {
     "title": "Connections",

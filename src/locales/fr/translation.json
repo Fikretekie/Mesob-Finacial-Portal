@@ -1036,8 +1036,9 @@
     "permsHint": "La consultation est toujours autorisée. Cochez ce que ce collègue peut modifier.",
     "viewOnly": "lecture seule",
     "paypalSeatSuccess": "Siège approuvé — il est maintenant sur votre abonnement PayPal.",
-    "paypalSeatCancel": "L'approbation du siège a été annulée.",
-    "paypalSeatCardNote": "Vous l'approuverez sur PayPal — vous pouvez y utiliser votre solde PayPal ou une carte de débit/crédit."
+    "paypalSeatCancel": "L'approbation du siège a été annulée — aucun coéquipier n'a été ajouté.",
+    "paypalSeatCardNote": "Vous l'approuverez sur PayPal — vous pouvez y utiliser votre solde PayPal ou une carte de débit/crédit.",
+    "paypalSeatPostError": "Votre siège a été approuvé, mais l'ajout du coéquipier a échoué — veuillez renvoyer l'invitation."
   },
   "connections": {
     "title": "Connexions",
