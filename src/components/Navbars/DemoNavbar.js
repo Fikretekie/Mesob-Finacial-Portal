@@ -3,29 +3,19 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { can } from "utils/permissions";
 import {
-  Collapse,
   Navbar,
-  NavbarToggler,
-  NavbarBrand,
   Nav,
-  NavItem,
   Dropdown,
   DropdownToggle,
   DropdownMenu,
   DropdownItem,
   Container,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
 } from "reactstrap";
 import axios from "axios";
 import { apiUrl, ROUTES } from "../../config/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faDownload } from "@fortawesome/free-solid-svg-icons";
 
-import { adminRoutes, getCustomerRoutes } from "routes.js";
 import { setCurrency } from "store/currencySlice";
 import { signOut } from "aws-amplify/auth";
 import { useTranslation } from "react-i18next";
@@ -55,7 +45,6 @@ function DemoNavbar(props) {
     } catch (e) {}
     setTheme(next);
   };
-  const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
   const [companyName, setCompanyName] = useState("");
@@ -152,13 +141,6 @@ function DemoNavbar(props) {
 
   const dropdownToggle = () => setDropdownOpen(!dropdownOpen);
   const accountDropdownToggle = () => setAccountDropdownOpen(!accountDropdownOpen);
-  const toggleHelpModal = () => setHelpModalOpen(!helpModalOpen);
-
-  const socialLinks = [
-    { href: "https://www.facebook.com/profile.php?id=61579534023491", icon: "fab fa-facebook", color: "#1877F2", glow: "rgba(24,119,242,0.35)" },
-    { href: "https://www.tiktok.com/@mesob85?_t=ZT-8yzttOuwr1r&_r=1", icon: "fab fa-tiktok", color: "#ffffff", glow: "rgba(255,255,255,0.15)" },
-    { href: "https://www.instagram.com/mesobfinancial?igsh=eWNoNWNoaG45cHI0", icon: "fab fa-instagram", color: "#E4405F", glow: "rgba(228,64,95,0.35)" },
-  ];
 
   const handleLogout = async () => {
     try {
@@ -196,17 +178,6 @@ function DemoNavbar(props) {
       // Other pages: open navbar modal (no report data available)
       setShowDownloadReportModal(true);
     }
-  };
-
-  const allRoutes = [...adminRoutes, ...getCustomerRoutes()];
-  const getBrand = () => {
-    let brand;
-    allRoutes.forEach((prop) => {
-      if (prop.layout + prop.path === location.pathname) {
-        brand = prop.nameKey ? t(prop.nameKey, prop.name) : prop.name;
-      }
-    });
-    return brand;
   };
 
   const openSidebar = () => {
@@ -276,7 +247,7 @@ function DemoNavbar(props) {
                     display: "block",
                     width: "28px",
                     height: "3px",
-                    backgroundColor: "white",
+                    backgroundColor: "var(--text-1)",
                     margin: "4px 0",
                     transition: "0.3s ease-in-out",
                     transform: isOpen ? "translateY(8px) rotate(45deg)" : "none",
@@ -288,7 +259,7 @@ function DemoNavbar(props) {
                     display: isOpen ? "none" : "block",
                     width: "28px",
                     height: "3px",
-                    backgroundColor: "white",
+                    backgroundColor: "var(--text-1)",
                     margin: "4px 0",
                     transition: "0.3s ease-in-out",
                   }}
@@ -299,7 +270,7 @@ function DemoNavbar(props) {
                     display: "block",
                     width: "28px",
                     height: "3px",
-                    backgroundColor: "white",
+                    backgroundColor: "var(--text-1)",
                     margin: "4px 0",
                     transition: "0.3s ease-in-out",
                     transform: isOpen ? "translateY(-8px) rotate(-45deg)" : "none",
@@ -343,11 +314,9 @@ function DemoNavbar(props) {
               )}
             </button>
 
-            {!isMobile && (
-              <NavbarBrand href="/" style={{ marginLeft: "1rem" }}>
-                {getBrand()}
-              </NavbarBrand>
-            )}
+            {/* Page name intentionally not shown here: every page renders its
+                own H1 and the sidebar marks the active route, so a navbar brand
+                was a third, redundant copy of the title. */}
           </div>
 
           {/* ── CENTER: Company Name ── */}
@@ -476,14 +445,14 @@ function DemoNavbar(props) {
                     </span>
                   )}
                 </DropdownToggle>
-                <DropdownMenu end style={{ backgroundColor: "white", maxWidth: "calc(100vw - 16px)" }}>
-                  <DropdownItem onClick={toggleHelpModal}>
-                    <i className="now-ui-icons ui-2_settings-90 mr-2" />
-                    {t("navbar.helpSupport")}
+                <DropdownMenu end style={{ maxWidth: "calc(100vw - 16px)" }}>
+                  <DropdownItem onClick={() => navigate(userRole === 1 ? "/admin/profile" : "/customer/profile")}>
+                    <svg className="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                    {t("nav.account", "Account")}
                   </DropdownItem>
                   <DropdownItem divider />
                   <DropdownItem onClick={handleLogout}>
-                    <i className="now-ui-icons ui-1_simple-remove mr-2" />
+                    <svg className="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
                     {t("navbar.logout")}
                   </DropdownItem>
                 </DropdownMenu>
@@ -513,103 +482,6 @@ function DemoNavbar(props) {
         searchedDates={null}
       />
 
-      {/* ── Help & Support Modal ── */}
-      <Modal
-        isOpen={helpModalOpen}
-        toggle={toggleHelpModal}
-        centered
-        modalClassName="dark-modal"
-        contentClassName="bg-transparent border-0 shadow-none"
-      >
-        <ModalHeader
-          toggle={toggleHelpModal}
-          style={{
-            background: "#111827",
-            borderBottom: "1px solid #1e293b",
-            borderRadius: "18px 18px 0 0",
-            padding: "1.1rem 1.5rem",
-          }}
-        >
-          <span style={{ color: "#ffffff", fontWeight: 700, fontSize: "1.1rem" }}>
-            {t("navbar.helpSupport")}
-          </span>
-        </ModalHeader>
-
-        <ModalBody style={{ background: "#0d1117", padding: "2rem 1.75rem" }}>
-          <p style={{ color: "#64748b", textAlign: "center", marginBottom: "2rem", fontSize: "0.9rem" }}>
-            {t("navbar.helpIntro")}
-          </p>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1.75rem" }}>
-            {/* Phone */}
-            <a href="tel:+16149665005" style={{ textDecoration: "none" }}>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "1rem", background: "rgba(30,41,59,0.6)", border: "1px solid rgba(59,130,246,0.15)", borderRadius: "12px", padding: "1rem 1.25rem", transition: "all 0.25s ease", cursor: "pointer" }}
-                onMouseEnter={e => { e.currentTarget.style.border = "1px solid rgba(59,130,246,0.45)"; e.currentTarget.style.background = "rgba(59,130,246,0.08)"; }}
-                onMouseLeave={e => { e.currentTarget.style.border = "1px solid rgba(59,130,246,0.15)"; e.currentTarget.style.background = "rgba(30,41,59,0.6)"; }}
-              >
-                <div style={{ width: "44px", height: "44px", flexShrink: 0, background: "linear-gradient(135deg,#3b82f6,#1d4ed8)", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(59,130,246,0.3)" }}>
-                  <i className="now-ui-icons tech_mobile" style={{ color: "#fff", fontSize: "18px" }} />
-                </div>
-                <div>
-                  <p style={{ color: "#94a3b8", fontSize: "0.72rem", margin: 0, letterSpacing: "0.06em", textTransform: "uppercase" }}>{t("navbar.phone")}</p>
-                  <p style={{ color: "#e2e8f0", fontWeight: 600, margin: 0, fontSize: "0.95rem" }}>+1 (614) 966-5005</p>
-                </div>
-              </div>
-            </a>
-
-            {/* Email */}
-            <a href="mailto:info@meksova.com" style={{ textDecoration: "none" }}>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "1rem", background: "rgba(30,41,59,0.6)", border: "1px solid rgba(99,102,241,0.15)", borderRadius: "12px", padding: "1rem 1.25rem", transition: "all 0.25s ease", cursor: "pointer" }}
-                onMouseEnter={e => { e.currentTarget.style.border = "1px solid rgba(99,102,241,0.45)"; e.currentTarget.style.background = "rgba(99,102,241,0.08)"; }}
-                onMouseLeave={e => { e.currentTarget.style.border = "1px solid rgba(99,102,241,0.15)"; e.currentTarget.style.background = "rgba(30,41,59,0.6)"; }}
-              >
-                <div style={{ width: "44px", height: "44px", flexShrink: 0, background: "linear-gradient(135deg,#6366f1,#4338ca)", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(99,102,241,0.3)" }}>
-                  <i className="now-ui-icons ui-1_email-85" style={{ color: "#fff", fontSize: "18px" }} />
-                </div>
-                <div>
-                  <p style={{ color: "#94a3b8", fontSize: "0.72rem", margin: 0, letterSpacing: "0.06em", textTransform: "uppercase" }}>{t("navbar.email")}</p>
-                  <p style={{ color: "#e2e8f0", fontWeight: 600, margin: 0, fontSize: "0.95rem" }}>info@meksova.com</p>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <div style={{ borderTop: "1px solid #1e293b", marginBottom: "1.5rem" }} />
-
-          <p style={{ color: "#64748b", fontSize: "0.75rem", textAlign: "center", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "1rem" }}>
-            {t("navbar.followUs")}
-          </p>
-
-          <div style={{ display: "flex", justifyContent: "center", gap: "1rem" }}>
-            {socialLinks.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ width: "46px", height: "46px", background: "rgba(30,41,59,0.7)", border: "1px solid #1e293b", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", color: item.color, fontSize: "20px", transition: "all 0.25s ease", textDecoration: "none" }}
-                onMouseEnter={e => { e.currentTarget.style.boxShadow = `0 4px 16px ${item.glow}`; e.currentTarget.style.borderColor = item.color; e.currentTarget.style.background = "rgba(30,41,59,1)"; }}
-                onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = "#1e293b"; e.currentTarget.style.background = "rgba(30,41,59,0.7)"; }}
-              >
-                <i className={item.icon} />
-              </a>
-            ))}
-          </div>
-        </ModalBody>
-
-        <ModalFooter style={{ background: "#111827", borderTop: "1px solid #1e293b", borderRadius: "0 0 18px 18px", justifyContent: "center", padding: "0.875rem 1.5rem" }}>
-          <button
-            onClick={toggleHelpModal}
-            style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "9px", color: "#94a3b8", padding: "8px 28px", fontSize: "0.875rem", cursor: "pointer", transition: "all 0.2s ease" }}
-            onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "#334155"; }}
-            onMouseLeave={e => { e.currentTarget.style.color = "#94a3b8"; e.currentTarget.style.background = "#1e293b"; }}
-          >
-            {t("navbar.close")}
-          </button>
-        </ModalFooter>
-      </Modal>
     </>
   );
 }

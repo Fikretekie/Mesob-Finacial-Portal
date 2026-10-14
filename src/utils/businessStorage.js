@@ -78,8 +78,9 @@ export async function addBusinessSeat() {
     userId,
     email,
     origin: billingOrigin(),
+    redirectUrl: billingOrigin(), // PayPal path builds its return URL from this
   });
-  return res.data;
+  return res.data; // Stripe: { success }. PayPal: { approvalUrl } to redirect to.
 }
 
 /** Removes one extra-business charge (call when a business is deleted). */
@@ -87,7 +88,7 @@ export async function removeBusinessSeat() {
   const userId = currentUserId();
   const email = localStorage.getItem("user_email");
   await axios.delete(apiUrl(ROUTES.BUSINESS_SEAT), {
-    params: { userId, email, origin: billingOrigin() },
+    params: { userId, email, origin: billingOrigin(), redirectUrl: billingOrigin() },
   });
 }
 
@@ -119,6 +120,16 @@ export function switchToBusiness(business) {
   localStorage.setItem("businessType", business.businessType);
   localStorage.setItem("companyName", business.name);
   window.location.reload();
+}
+
+/** Same as switchToBusiness but WITHOUT a reload — used before a PayPal redirect
+ * (a reload would abort the redirect). The new business is active when the app
+ * reloads on return from PayPal. */
+export function setActiveBusinessSilently(business) {
+  ensureDefaultBusinessCaptured();
+  localStorage.setItem(CURRENT_BUSINESS_ID_KEY, business.businessId);
+  localStorage.setItem("businessType", business.businessType);
+  localStorage.setItem("companyName", business.name);
 }
 
 /** Switches back to the account's original/first business. */

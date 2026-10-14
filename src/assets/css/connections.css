@@ -1,83 +1,319 @@
-.conn-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 14px;
+.conn-sync-msg {
+  margin: 0 0 16px;
+  padding: 11px 14px;
+  background: color-mix(in srgb, var(--green, #00D97E) 14%, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--green, #00D97E) 40%, var(--border));
+  border-radius: var(--r-md);
+  color: var(--text-1);
+  font-size: 0.9rem;
+  cursor: pointer;
 }
-@media (min-width: 640px) {
-  .conn-grid { grid-template-columns: 1fr 1fr; }
+
+/* Single column of roomy, full-width integration cards (only a couple of
+   providers — a 2-up grid just cramps them). */
+.conn-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .conn-card {
+  position: relative;
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 18px;
-  background: var(--surface-1);
+  flex-direction: column;
+  background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
+  box-shadow: var(--shadow-1);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.conn-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-2); }
+.conn-card-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+}
+/* Connected cards carry a green state bar on the left edge. */
+.conn-card--on::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--green, #00D97E);
+}
+
+/* The main row of a connected card is a big click target → its transactions. */
+.conn-card-main--click { cursor: pointer; border-radius: var(--r-md); }
+.conn-card-main--click:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-ring, rgba(59, 130, 246, 0.45));
 }
 
 .conn-ico {
   flex: 0 0 auto;
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   border-radius: 12px;
   display: grid;
   place-items: center;
   color: var(--accent);
-  background: rgba(59, 130, 246, 0.12);
-  border: 1px solid rgba(59, 130, 246, 0.28);
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
 }
-.conn-ico--pos { color: var(--green, #34d399); background: rgba(52, 196, 137, 0.12); border-color: rgba(52, 196, 137, 0.3); }
+.conn-ico--pos {
+  color: var(--green, #34d399);
+  background: color-mix(in srgb, var(--green, #00D97E) 12%, transparent);
+  border-color: color-mix(in srgb, var(--green, #00D97E) 30%, transparent);
+}
 
 .conn-body { flex: 1; min-width: 0; }
-.conn-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.conn-name { font-weight: 700; font-size: 0.98rem; color: var(--text-1); }
-.conn-desc { color: var(--text-2); font-size: 0.85rem; margin: 6px 0 0; line-height: 1.45; }
-.conn-meta { color: var(--text-3); font-size: 0.78rem; margin: 6px 0 0; }
+.conn-name-row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.conn-name { font-weight: 700; font-size: 1rem; color: var(--text-1); letter-spacing: -0.01em; }
+.conn-via {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-3);
+  margin-top: 3px;
+}
+.conn-desc { color: var(--text-2); font-size: 0.85rem; margin: 7px 0 0; line-height: 1.45; max-width: 46ch; }
+
+.conn-meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-top: 8px; }
+.conn-meta { color: var(--text-3); font-size: 0.78rem; }
+.conn-meta--sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--green, #34d399);
+  font-weight: 600;
+}
+.conn-meta--sync::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
 
 .conn-chip {
+  display: inline-flex;
+  align-items: center;
   font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  padding: 3px 8px;
+  padding: 3px 9px;
   border-radius: 999px;
   color: var(--text-3);
   background: var(--surface-3);
   border: 1px solid var(--border);
 }
-.conn-chip--soon { color: var(--amber, #e6b25f); background: rgba(230, 178, 95, 0.12); border-color: rgba(230, 178, 95, 0.3); }
-.conn-chip--on { color: var(--green, #34d399); background: rgba(52, 196, 137, 0.12); border-color: rgba(52, 196, 137, 0.3); }
+.conn-chip--soon {
+  color: var(--amber, #e6b25f);
+  background: color-mix(in srgb, var(--amber, #FFA53B) 14%, transparent);
+  border-color: color-mix(in srgb, var(--amber, #FFA53B) 34%, transparent);
+}
+.conn-chip--on {
+  color: var(--green, #34d399);
+  background: color-mix(in srgb, var(--green, #00D97E) 14%, transparent);
+  border-color: color-mix(in srgb, var(--green, #00D97E) 34%, transparent);
+}
+
+/* "N to review" count — the discoverability cue that there's work waiting. */
+.conn-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+}
+
+/* Trailing controls on a connected card: small secondary actions + chevron. */
+.conn-trail {
+  flex: 0 0 auto;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.conn-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-3);
+  color: var(--text-3);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: color .15s ease, border-color .15s ease, background .15s ease;
+}
+.conn-icon-btn:hover:not(:disabled) { color: var(--text-1); border-color: var(--text-3); }
+.conn-icon-btn--danger:hover:not(:disabled) {
+  color: var(--red, #ef4444);
+  border-color: var(--red, #ef4444);
+  background: color-mix(in srgb, var(--red, #ef4444) 10%, transparent);
+}
+.conn-icon-btn:disabled { opacity: .6; cursor: default; }
+.conn-chevron {
+  color: var(--text-3);
+  display: grid;
+  place-items: center;
+  transition: color .15s ease, transform .15s ease;
+}
+.conn-card-main--click:hover .conn-chevron { color: var(--accent); transform: translateX(2px); }
 
 .conn-action { flex: 0 0 auto; align-self: center; }
+.conn-action-group { display: flex; flex-direction: column; gap: 8px; align-items: stretch; min-width: 148px; }
 .conn-btn {
-  height: 36px;
-  padding: 0 16px;
+  height: 38px;
+  padding: 0 18px;
   border: none;
   border-radius: 999px;
   font-weight: 700;
   font-size: 0.85rem;
-  color: #fff;
+  color: var(--accent-ink, #fff);
   cursor: pointer;
+  white-space: nowrap;
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-solid) 100%);
+  box-shadow: 0 6px 18px -8px var(--accent-ring, rgba(59, 130, 246, 0.6));
   transition: transform .15s ease, filter .15s ease;
 }
 .conn-btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.06); }
 .conn-btn--ghost {
   background: transparent;
+  box-shadow: none;
   color: var(--text-2);
   border: 1px solid var(--border-strong);
 }
+.conn-btn--ghost:hover:not(:disabled) { color: var(--text-1); border-color: var(--text-3); filter: none; transform: translateY(-1px); }
 .conn-btn:disabled { opacity: .6; cursor: default; }
+
+/* Loading placeholder so the action doesn't flash Connect → Connected. */
+.conn-skel {
+  width: 148px;
+  height: 38px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--surface-3) 25%, var(--surface-2) 37%, var(--surface-3) 63%);
+  background-size: 300% 100%;
+  animation: conn-shimmer 1.3s ease-in-out infinite;
+}
+@keyframes conn-shimmer {
+  0% { background-position: 150% 0; }
+  100% { background-position: -150% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .conn-skel { animation: none; }
+  .conn-card:hover { transform: none; }
+  .conn-btn:hover:not(:disabled) { transform: none; }
+}
 
 .conn-note {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   justify-content: center;
   margin-top: 20px;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-1);
   color: var(--text-3);
   font-size: 0.8rem;
 }
 .conn-note svg { color: var(--text-3); flex: 0 0 auto; }
+
+@media (max-width: 560px) {
+  .conn-card-main { flex-wrap: wrap; }
+  .conn-action { width: 100%; }
+  .conn-action-group { align-items: stretch; min-width: 0; }
+  .conn-btn, .conn-skel { width: 100%; }
+  .conn-trail { width: 100%; justify-content: flex-end; padding-left: 62px; }
+}
+
+/* ── Extra section: auto-sync toggle + recent-activity preview ───────────── */
+.conn-extra {
+  border-top: 1px solid var(--border);
+  padding: 14px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.conn-autosync { display: flex; align-items: center; gap: 12px; }
+.conn-switch {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 24px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-3);
+  padding: 0;
+  position: relative;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+.conn-switch--on { background: var(--accent-solid); border-color: var(--accent); }
+.conn-switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left .15s ease;
+}
+.conn-switch--on .conn-switch-knob { left: 18px; }
+.conn-autosync-text { display: flex; flex-direction: column; min-width: 0; }
+.conn-autosync-label { font-size: 0.85rem; font-weight: 600; color: var(--text-1); }
+.conn-autosync-hint { font-size: 0.75rem; color: var(--text-3); margin-top: 1px; }
+
+.conn-preview { display: flex; flex-direction: column; gap: 2px; }
+.conn-preview-head {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 4px;
+}
+.conn-preview-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: baseline;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.conn-preview-name { color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conn-preview-date { color: var(--text-3); font-size: 0.75rem; white-space: nowrap; }
+.conn-preview-amt { font-weight: 700; color: var(--red, #ef4444); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.conn-preview-amt--pos { color: var(--green, #00D97E); }
+.conn-preview-all {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.conn-preview-all svg { width: 16px; height: 16px; }
+.conn-preview-all:hover { text-decoration: underline; }

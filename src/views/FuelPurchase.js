@@ -5,6 +5,7 @@ import { Card, CardBody, Button } from "reactstrap";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import { fetchFuelPurchases, saveFuelPurchase } from "utils/fuelStorage";
 import { US_STATES } from "utils/usStates";
+import { currencySymbol } from "utils/currency";
 
 function dateKeyOf(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -226,7 +227,7 @@ function FuelPurchase() {
                     {p.state} · {p.date}
                   </span>
                   {p.totalCost ? (
-                    <span style={{ fontSize: "11px", color: "#9A9A9A" }}>${Number(p.totalCost).toFixed(2)}</span>
+                    <span style={{ fontSize: "11px", color: "#9A9A9A" }}>{currencySymbol()}{Number(p.totalCost).toFixed(2)}</span>
                   ) : null}
                 </div>
                 <span style={{ fontSize: "14px", fontWeight: 600 }}>

@@ -74,3 +74,59 @@ export async function disconnectProvider(providerId) {
   });
   return res.data;
 }
+export async function exchangePublicToken(providerId, publicToken) {
+  const businessId = getCurrentBusinessId();
+  const res = await axios.post(apiUrl(ROUTES.CONNECTIONS), {
+    userId: ownerId(),
+    provider: providerId,
+    action: "exchange",
+    publicToken,
+    ...(businessId ? { businessId } : {}),
+  });
+  return res.data;
+}
+/** Pull newly available bank transactions since the last sync. */
+export async function syncTransactions() {
+  const res = await axios.get(apiUrl(`${ROUTES.CONNECTIONS}/sync`), {
+    params: { userId: ownerId() },
+  });
+  return res.data; // { transactions: [...] }
+}
+
+/** Write the selected transactions into Meksova and clear the whole reviewed
+ * batch (added + skipped) from the pending list, optionally flipping autoImportAll. */
+export async function confirmTransactions(transactions, reviewedIds, autoImportAll) {
+  const res = await axios.post(apiUrl(`${ROUTES.CONNECTIONS}/confirm`), {
+    userId: ownerId(),
+    transactions,
+    reviewedIds,
+    ...(typeof autoImportAll === "boolean" ? { autoImportAll } : {}),
+  });
+  return res.data;
+}
+
+// ── Square (POS) ─────────────────────────────────────────────────────────────
+// Unlike Plaid, Square has no review screen: every Square payment is a business
+// sale, so the backend writes them straight in as income. The OAuth flow returns
+// to /customer/connections with a ?code= query param, which we exchange here.
+
+/** Exchange the Square OAuth `code` (from the redirect back) for an access token. */
+export async function exchangeSquareCode(code) {
+  const businessId = getCurrentBusinessId();
+  const res = await axios.post(apiUrl(ROUTES.CONNECTIONS), {
+    userId: ownerId(),
+    provider: "square",
+    action: "exchange",
+    code,
+    ...(businessId ? { businessId } : {}),
+  });
+  return res.data;
+}
+
+/** Pull new Square payments since the last sync and write them in as income. */
+export async function syncSquareTransactions() {
+  const res = await axios.get(apiUrl(`${ROUTES.CONNECTIONS}/square-sync`), {
+    params: { userId: ownerId() },
+  });
+  return res.data;
+}

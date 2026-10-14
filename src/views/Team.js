@@ -19,11 +19,17 @@ import {
   removeTeamMember,
   fetchTeamLog,
   fetchOwnerBilling,
+  addTeamSeat,
+  removeTeamSeat,
   DEFAULT_PERMS,
   TEAM_ROLES,
 } from "utils/teamStorage";
 import { fetchBusinesses, getDefaultBusinessName } from "utils/businessStorage";
 import "../assets/css/team.css";
+
+// Holds the invite across a PayPal seat approval redirect. The teammate is NOT
+// created until we return approved, so an abandoned approval provisions nobody.
+const PENDING_TEAMMATE_KEY = "mksv_pending_teammate";
 
 const initials = (s) =>
   (s || "?")
@@ -63,14 +69,16 @@ function Team() {
   };
   const [log, setLog] = useState([]); // recent teammate activity (owner only)
   const [billing, setBilling] = useState(null); // owner's subscription status
+  const [seatNotice, setSeatNotice] = useState(""); // PayPal seat approval return
 
   // Billing model: the first teammate is free; each additional one ($9.99/mo)
-  // needs an active card subscription.
+  // needs an active paid subscription (card OR PayPal). Stripe charges silently;
+  // PayPal sends the owner to approve the seat.
   const canCharge = !!(
     billing &&
     billing.subscription &&
     billing.isPaid &&
-    billing.paymentType === "STRIPE" &&
+    ["STRIPE", "PAYPAL"].includes(billing.paymentType) &&
     billing.subscriptionId
   );
   const paidSeat = members.length >= 1; // this new user is the 2nd+ → paid
@@ -180,6 +188,54 @@ function Team() {
     }
   }, []);
 
+  // Returning from a PayPal seat approval (?paypalSeat=success|cancel). The
+  // teammate was deliberately NOT created before the redirect — create it now
+  // that the seat is approved, or discard the stashed invite if cancelled.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get("paypalSeat");
+    if (!p) return;
+    const stripParam = () => {
+      const u = new URL(window.location.href);
+      u.searchParams.delete("paypalSeat");
+      window.history.replaceState({}, "", u.toString());
+    };
+
+    let pending = null;
+    try {
+      pending = JSON.parse(sessionStorage.getItem(PENDING_TEAMMATE_KEY) || "null");
+    } catch (e) { /* ignore */ }
+    try { sessionStorage.removeItem(PENDING_TEAMMATE_KEY); } catch (e) { /* ignore */ }
+
+    if (p === "success") {
+      if (pending) {
+        // Seat approved → provision the teammate the owner just paid for.
+        inviteTeamMember(pending)
+          .then(() => {
+            setSeatNotice(t("team.paypalSeatSuccess", "Seat approved — teammate added."));
+            load();
+          })
+          .catch((err) => {
+            console.error("Create teammate after PayPal approval failed:", err);
+            setSeatNotice(
+              t(
+                "team.paypalSeatPostError",
+                "Your seat was approved, but adding the teammate failed — please send the invite again."
+              )
+            );
+          });
+      } else {
+        setSeatNotice(
+          t("team.paypalSeatSuccess", "Seat approved — it's now on your PayPal subscription.")
+        );
+      }
+    } else {
+      setSeatNotice(
+        t("team.paypalSeatCancel", "Seat approval was cancelled — no teammate was added.")
+      );
+    }
+    stripParam();
+  }, [t]);
+
   const resetInvite = () => {
     setShowInvite(false);
     setEmail("");
@@ -220,14 +276,46 @@ function Team() {
     setSending(true);
     setError("");
     try {
-      await inviteTeamMember({
+      const invitePayload = {
         email,
         role,
         password,
         businessIds: inviteBiz,
         subscriptionId: paidSeat ? billing?.subscriptionId || "" : "",
         perms: invitePerms,
-      });
+      };
+      const isPaypal =
+        paidSeat && canCharge && (billing?.paymentType || "").toUpperCase() === "PAYPAL";
+
+      // PayPal's seat charge is an async approval the owner can abandon, so
+      // DON'T create the teammate up front. Reserve the seat first, stash the
+      // invite, and create the teammate only when we return approved
+      // (?paypalSeat=success, below). Abandoning the PayPal page provisions no
+      // teammate and leaves the seat subscription unapproved (never charged).
+      if (isPaypal) {
+        const seatRes = await addTeamSeat(window.location.origin);
+        if (seatRes && seatRes.approvalUrl) {
+          try {
+            sessionStorage.setItem(PENDING_TEAMMATE_KEY, JSON.stringify(invitePayload));
+          } catch (e) {
+            /* storage blocked (private mode): fall through and create now */
+          }
+          window.location.href = seatRes.approvalUrl;
+          return;
+        }
+        // No approval URL came back (shouldn't happen on a paid add) — fall
+        // through and create the teammate rather than silently dropping it.
+      }
+
+      await inviteTeamMember(invitePayload);
+      // Stripe charges silently and synchronously, so the seat is safe to add
+      // once the teammate exists; don't block the teammate if the seat call
+      // fails (backend remains the source of truth).
+      if (paidSeat && canCharge && !isPaypal) {
+        try {
+          await addTeamSeat(window.location.origin);
+        } catch (seatErr) { console.error("Add team seat failed:", seatErr); }
+      }
       resetInvite();
       load();
     } catch (err) {
@@ -243,9 +331,14 @@ function Team() {
 
   const handleRemove = async (m) => {
     setRemovingId(m.id || m.memberId || m.email);
+    // The 1st teammate is free, so dropping from 2+ teammates frees a paid seat.
+    const wasPaidSeat = members.length >= 2;
     try {
       await removeTeamMember(m.id || m.memberId);
       setMembers((prev) => prev.filter((x) => x !== m));
+      if (wasPaidSeat && canCharge) {
+        try { await removeTeamSeat(window.location.origin); } catch (seatErr) { console.error("Remove team seat failed:", seatErr); }
+      }
     } catch (err) {
       console.error("Remove member failed:", err);
     } finally {
@@ -281,6 +374,12 @@ function Team() {
           </button>
         )}
       </div>
+
+      {seatNotice && (
+        <div className="team-seat-note" role="status" style={{ cursor: "pointer" }} onClick={() => setSeatNotice("")}>
+          {seatNotice}
+        </div>
+      )}
 
       <div className="team-card">
         {/* Owner row (always present) */}
@@ -386,7 +485,14 @@ function Team() {
             <div className="team-seat-note">{t("team.firstFree")}</div>
           ) : billing ? (
             canCharge ? (
-              <div className="team-seat-note">{t("team.seatNote")}</div>
+              <>
+                <div className="team-seat-note">{t("team.seatNote")}</div>
+                {billing.paymentType === "PAYPAL" && (
+                  <div className="team-seat-note">
+                    {t("team.paypalSeatCardNote", "You'll approve this on PayPal — you can use your PayPal balance or a debit/credit card there.")}
+                  </div>
+                )}
+              </>
             ) : (
               <div className="team-seat-note team-seat-note--warn">{t("team.needSubscription")}</div>
             )

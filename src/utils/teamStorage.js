@@ -71,6 +71,43 @@ export async function updateTeamMember(memberId, fields) {
   return res.data;
 }
 
+// ── Paid teammate seat billing (mirrors businessStorage's BusinessSeat) ──────
+// The owner + their first teammate are free; the 2nd teammate onward adds a
+// $9.99/mo seat to the owner's Stripe subscription. These call the TeamSeat
+// Lambda routes; they fail soft so a teammate is never blocked if billing is
+// momentarily unavailable (the backend is the source of truth for the charge).
+
+/** What adding the next paid teammate would cost (no charge — just a lookup). */
+export async function previewTeamSeat() {
+  const res = await axios.get(apiUrl(ROUTES.TEAM_SEAT), {
+    params: { userId: ownerId() },
+    headers: await authHeader(),
+  });
+  return res.data;
+}
+
+/** Add one paid teammate seat. For Stripe it charges the card silently; for
+ * PayPal the response carries an `approvalUrl` the caller must redirect to.
+ * `redirectUrl` (the app origin) lets the backend pick live vs sandbox PayPal
+ * and build the return URL. */
+export async function addTeamSeat(redirectUrl) {
+  const res = await axios.post(
+    apiUrl(ROUTES.TEAM_SEAT),
+    { userId: ownerId(), redirectUrl: redirectUrl || "" },
+    { headers: await authHeader() }
+  );
+  return res.data;
+}
+
+/** Remove one paid teammate seat (call when a paid teammate is removed). */
+export async function removeTeamSeat(redirectUrl) {
+  const res = await axios.delete(apiUrl(ROUTES.TEAM_SEAT), {
+    params: { userId: ownerId(), redirectUrl: redirectUrl || "" },
+    headers: await authHeader(),
+  });
+  return res.data;
+}
+
 /** Remove / revoke a teammate by their member id. */
 export async function removeTeamMember(memberId) {
   const res = await axios.delete(apiUrl(`${ROUTES.TEAM}/${memberId}`), {

@@ -169,6 +169,8 @@ export const ROUTES = {
   CREATE_PORTAL_SESSION: "Subscription/PortalSession",
   /** Extra-business seat billing (GET preview, POST add, DELETE remove). */
   BUSINESS_SEAT: "Subscription/BusinessSeat",
+  /** Paid teammate seat billing (GET preview, POST add, DELETE remove). */
+  TEAM_SEAT: "Subscription/TeamSeat",
   PRICE: "price",
   EXISTING_USER_CHECK: "existingusercheck",
   CREATE_EVENT: "createevent",

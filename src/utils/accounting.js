@@ -253,6 +253,87 @@ export function calculateTotalInventory(filteredItems, initialValueableItems = 0
   return Math.max(0, newItemsTotal - saleInventoryCost + num(initialValueableItems)).toFixed(2);
 }
 
+// ── Depreciation (book) ──────────────────────────────────────────────────────
+// Fixed assets lose value over time. Two methods are supported per asset:
+//   - straight_line: cost spread evenly over `usefulLifeYears` (monthly prorated)
+//   - section_179:   full cost written off in the period it was purchased
+// These are book estimates to help a small business see net asset value and a
+// more realistic profit — not a substitute for a tax preparer's schedule.
+
+/** Whole months an asset has been in service, under the full-month (a.k.a.
+ *  mid-month) convention small businesses keep their books on: the month an
+ *  asset is placed in service counts as a full month, and depreciation then
+ *  accrues one whole month at a time. This avoids the odd daily-prorated cents
+ *  (e.g. $3.30 on a week-old asset) that continuous proration produced, and
+ *  matches how a monthly depreciation schedule actually reads ($15, $30, …). */
+function monthsInService(start, asOf) {
+  if (!start || asOf < start) return 0;
+  const months =
+    (asOf.getFullYear() - start.getFullYear()) * 12 +
+    (asOf.getMonth() - start.getMonth()) +
+    1; // +1: the acquisition month itself counts as a full month
+  return Math.max(0, months);
+}
+
+/** Fixed-asset purchases, as depreciable lots. Assets that have since been sold
+ *  (a sale_fixed disposal referencing them) are excluded — you don't depreciate
+ *  something you no longer own; its gain/loss already captures the economics. */
+export function getFixedAssetLots(allItems) {
+  const disposedIds = new Set(
+    (allItems || [])
+      .filter(
+        (t) =>
+          t.transactionType === "Receive" &&
+          t.subType === "sale_fixed" &&
+          t.soldTransactionId != null
+      )
+      .map((t) => t.soldTransactionId)
+  );
+  return (allItems || [])
+    .filter((t) => {
+      const isNewItemFixed = t.transactionType === "New_Item" && t.assetType === "fixed";
+      const isPayableFixed =
+        t.transactionType === "Payable" && t.assetType === "fixed" && t.subType === "New_Item";
+      return (isNewItemFixed || isPayableFixed) && !disposedIds.has(t.id);
+    })
+    .map((t) => ({
+      cost: num(t.originalAmount || t.transactionAmount),
+      date: t.createdAt ? new Date(t.createdAt) : null,
+      method: t.depreciationMethod === "section_179" ? "section_179" : "straight_line",
+      lifeYears: num(t.usefulLifeYears) > 0 ? num(t.usefulLifeYears) : 5,
+      name: t.assetName || t.transactionPurpose || "Fixed asset",
+    }));
+}
+
+/** Accumulated depreciation of one lot as of a date. */
+function lotAccumulated(lot, asOf) {
+  if (!lot.date || asOf < lot.date) return 0;
+  if (lot.method === "section_179") return lot.cost; // fully expensed at purchase
+  const monthsElapsed = monthsInService(lot.date, asOf);
+  const annual = lot.cost / lot.lifeYears;
+  const accumulated = (monthsElapsed / 12) * annual;
+  return Math.min(lot.cost, Math.max(0, accumulated));
+}
+
+/** Total accumulated depreciation across all fixed assets as of a date. */
+export function calculateAccumulatedDepreciation(allItems, asOf = new Date()) {
+  const when = asOf ? new Date(asOf) : new Date();
+  return getFixedAssetLots(allItems)
+    .reduce((sum, lot) => sum + lotAccumulated(lot, when), 0)
+    .toFixed(2);
+}
+
+/** Depreciation expense recognized within a period (range = {from,to} or null
+ *  for "up to now"). It is the change in accumulated depreciation over the
+ *  window, so each dollar of cost is expensed exactly once over the asset's life. */
+export function calculateDepreciationExpense(allItems, range = null) {
+  const to = range && range.to ? new Date(range.to) : new Date();
+  const from = range && range.from ? new Date(range.from) : new Date(0);
+  return getFixedAssetLots(allItems)
+    .reduce((sum, lot) => sum + (lotAccumulated(lot, to) - lotAccumulated(lot, from)), 0)
+    .toFixed(2);
+}
+
 export function calculateTotalFixedAssets(filteredItems) {
   const fixedAdded = (filteredItems || []).reduce((sum, item) => {
     const isNewItemFixed = item.transactionType === "New_Item" && item.assetType === "fixed";

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Modal,
   ModalHeader,
@@ -8,6 +8,20 @@ import {
 } from "reactstrap";
 import i18n from "../i18n";
 import { translatePurpose, translatePurposeToLanguage } from "../utils/translatedBusinessTypes";
+import { currencySymbol, getCurrencyCode } from "../utils/currency";
+import {
+  filterItemsByTimeRange,
+  calculateTotalRevenue as engRevenue,
+  calculateTotalExpenses as engExpenses,
+  calculateTotalCash as engCash,
+  calculateTotalPayable as engPayable,
+  calculateTotalInventory as engInventory,
+  calculateCOGS as engCOGS,
+  calculateOperatingExpenses as engOpex,
+  calculateTotalFixedAssets as engFixedAtCost,
+  calculateAccumulatedDepreciation as engAccumDep,
+  calculateDepreciationExpense as engDepExpense,
+} from "../utils/accounting";
 
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -60,6 +74,7 @@ const DownloadReportModal = ({
   toggle,
   companyName,
   items,
+  allItems,
   revenues,
   expenses,
   initialBalance,
@@ -79,6 +94,126 @@ const DownloadReportModal = ({
   const [payableOptions, setPayableOptions] = useState(null);
   const [expensesOptions, setExpensesOptions] = useState(null);
 
+  // ── Export options ──────────────────────────────────────────────────────────
+  const [reportType, setReportType] = useState("statements"); // statements | overview | complete
+  const [includeCharts, setIncludeCharts] = useState(false);
+  const [includeLedger, setIncludeLedger] = useState(false);
+  const [period, setPeriod] = useState("current");            // current | month | last-month | quarter | ytd | custom
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
+  const num = (v) => parseFloat(String(v ?? 0).replace(/,/g, "")) || 0;
+
+  // filterItemsByTimeRange only filters on a {from,to} range, so turn each
+  // preset into concrete dates. Returns null for "all" (no bound).
+  const periodRange = () => {
+    const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    if (period === "custom") return fromDate && toDate ? { from: fromDate, to: toDate } : null;
+    if (period === "month") return { from: iso(new Date(y, m, 1)), to: iso(new Date(y, m + 1, 0)) };
+    if (period === "last-month") return { from: iso(new Date(y, m - 1, 1)), to: iso(new Date(y, m, 0)) };
+    if (period === "quarter") { const qs = Math.floor(m / 3) * 3; return { from: iso(new Date(y, qs, 1)), to: iso(new Date(y, qs + 3, 0)) }; }
+    if (period === "ytd") return { from: iso(new Date(y, 0, 1)), to: iso(now) };
+    // "current": reuse the page's active custom range if it has one.
+    if (searchedDates && searchedDates.from && searchedDates.to) return { from: searchedDates.from, to: searchedDates.to };
+    return null;
+  };
+
+  // The data the report renders. "current" reuses exactly what the page passed
+  // (its already-correct numbers). Any other period re-filters the FULL set and
+  // recomputes through the same shared accounting engine the pages delegate to,
+  // so the figures match what that period shows on screen.
+  const report = useMemo(() => {
+    if (period === "current") {
+      return {
+        items: Array.isArray(items) ? items : [],
+        revenues: revenues || {},
+        expenses: expenses || {},
+        totalCash: num(calculateTotalCash && calculateTotalCash()),
+        totalRevenue: num(calculateTotalRevenue && calculateTotalRevenue()),
+        totalExpenses: num(calculateTotalExpenses && calculateTotalExpenses()),
+        totalPayable: num(calculateTotalPayable && calculateTotalPayable()),
+        totalInventory: num(calculateTotalInventory && calculateTotalInventory()),
+      };
+    }
+    const source =
+      Array.isArray(allItems) && allItems.length
+        ? allItems
+        : Array.isArray(items)
+        ? items
+        : [];
+    const filtered = filterItemsByTimeRange(source, periodRange(), "");
+    const rev = {};
+    const exp = {};
+    filtered.forEach((t) => {
+      const amt = parseFloat(t.transactionAmount) || 0;
+      const p = t.transactionPurpose || t.purpose || "";
+      if (t.transactionType === "Receive") rev[p] = (rev[p] || 0) + amt;
+      else if (t.transactionType === "Pay" && t.subType !== "New_Item" && !t.payableId)
+        exp[p] = (exp[p] || 0) + amt;
+    });
+    return {
+      items: filtered,
+      revenues: rev,
+      expenses: exp,
+      totalCash: num(engCash(filtered, Number(initialBalance) || 0)),
+      totalRevenue: num(engRevenue(filtered)),
+      totalExpenses: num(engExpenses(filtered, source)),
+      totalPayable: num(engPayable(filtered, source, Number(initialoutstandingDebt) || 0)),
+      totalInventory: num(engInventory(filtered, Number(initialvalueableItems) || 0)),
+    };
+  }, [
+    period, fromDate, toDate, items, allItems, revenues, expenses,
+    calculateTotalCash, calculateTotalRevenue, calculateTotalExpenses,
+    calculateTotalPayable, calculateTotalInventory,
+    initialBalance, initialoutstandingDebt, initialvalueableItems,
+  ]);
+
+  // Full professional-statement line items (P&L + Balance Sheet), recomputed
+  // from the engine for the selected period so they are internally consistent.
+  const statements = useMemo(() => {
+    const source = Array.isArray(allItems) && allItems.length ? allItems : (Array.isArray(items) ? items : []);
+    const filtered = Array.isArray(report.items) ? report.items : [];
+    const r = periodRange();
+    const asOf = r && r.to ? new Date(r.to) : new Date();
+    const n = (v) => parseFloat(v) || 0;
+
+    const totalRevenue = n(engRevenue(filtered));
+    const cogs = n(engCOGS(filtered, source));
+    const grossProfit = totalRevenue - cogs;
+    const operatingExpenses = n(engOpex(filtered, source));
+    const depreciation = n(engDepExpense(source, r));
+    const totalExp = n(engExpenses(filtered, source)); // cogs + opex + otherExpense
+    const otherExpense = Math.max(0, totalExp - cogs - operatingExpenses);
+    const netIncome = totalRevenue - cogs - operatingExpenses - otherExpense - depreciation;
+
+    const cash = n(engCash(filtered, Number(initialBalance) || 0));
+    const inventory = n(engInventory(filtered, Number(initialvalueableItems) || 0));
+    const fixedAtCost = n(engFixedAtCost(filtered));
+    const accumDep = n(engAccumDep(source, asOf));
+    const netFixed = fixedAtCost - accumDep;
+    const payable = n(engPayable(filtered, source, Number(initialoutstandingDebt) || 0));
+    const openingEquity = (Number(initialBalance) || 0) + (Number(initialvalueableItems) || 0) - (Number(initialoutstandingDebt) || 0);
+    const retained = netIncome;
+
+    const totalCurrentAssets = cash + inventory;
+    const totalAssets = totalCurrentAssets + netFixed;
+    const totalEquity = openingEquity + retained;
+    const totalLE = payable + totalEquity;
+
+    const revLines = Object.entries(report.revenues || {}).filter(([, a]) => Math.abs(a) > 0.005);
+    const expLines = Object.entries(report.expenses || {}).filter(([, a]) => Math.abs(a) > 0.005);
+
+    return {
+      totalRevenue, cogs, grossProfit, operatingExpenses, depreciation, otherExpense, netIncome,
+      cash, inventory, totalCurrentAssets, fixedAtCost, accumDep, netFixed, totalAssets,
+      payable, openingEquity, retained, totalEquity, totalLE, revLines, expLines, asOf,
+      balanced: Math.abs(totalAssets - totalLE) < 0.01,
+    };
+  }, [report, items, allItems, initialBalance, initialvalueableItems, initialoutstandingDebt, period, fromDate, toDate, searchedDates]);
+
   // Translate PDF label: current language → English → key (never blank)
   const pt = (key) => {
     const fullKey = `pdf.${key}`;
@@ -94,7 +229,7 @@ const DownloadReportModal = ({
   };
 
   useEffect(() => {
-    const list = Array.isArray(items) ? items : [];
+    const list = Array.isArray(report.items) ? report.items : [];
     const bal = Number(initialBalance) || 0;
     const debt = Number(initialoutstandingDebt) || 0;
 
@@ -191,7 +326,7 @@ const DownloadReportModal = ({
     setRevenueOptions(getChartOptions(pt("revenueGrowth"), sortedDailyData.map((i) => i.revenue), sortedDailyData.map((i) => formatDateLabel(i.date)), FINANCIAL_COLORS.income));
     setPayableOptions(getChartOptions(pt("totalPayable"), sortedDailyData.map((i) => i.payable), sortedDailyData.map((i) => formatDateLabel(i.date)), FINANCIAL_COLORS.payable));
     setExpensesOptions(getChartOptions(pt("totalExpenses"), sortedDailyData.map((i) => i.expenses), sortedDailyData.map((i) => formatDateLabel(i.date)), FINANCIAL_COLORS.expense));
-  }, [items, initialBalance, initialoutstandingDebt]);
+  }, [report, initialBalance, initialoutstandingDebt]);
 
   // Wait for hidden chart divs to be in the DOM (so dashboard-only PDF can capture them)
   const waitForChartElements = (ids, timeoutMs = 6000, intervalMs = 100) =>
@@ -231,7 +366,13 @@ const captureChartAsImage = async (chartElementId) => {
 
   const formatCurrency = (amount) => {
     const num = parseFloat(amount) || 0;
-    return num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    // jsPDF's base font only renders Latin glyphs, so non-Latin currency symbols
+    // (₹, ₦, ฿, Amharic/Arabic marks) would draw as tofu boxes in the PDF. Use the
+    // symbol when it is ASCII ($, Br, kr, R$, A$…), otherwise fall back to the ISO
+    // code (e.g. "INR 1,000.00"), which always renders and is unambiguous.
+    const sym = currencySymbol();
+    const prefix = /^[\x20-\x7E]+$/.test(sym) ? sym : `${getCurrencyCode()} `;
+    return prefix + num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
   const formatDate = (dateString) => {
@@ -367,7 +508,7 @@ const captureChartAsImage = async (chartElementId) => {
     doc.setTextColor(65, 146, 111);
     doc.setFontSize(11);
     doc.setFont(dataFont(fontName), "bold");
-    doc.text(`$${formatCurrency(totalCash)}`, leftColX + labelWidth, yPos, { align: "right" });
+    doc.text(`${formatCurrency(totalCash)}`, leftColX + labelWidth, yPos, { align: "right" });
 
     doc.setTextColor(130, 130, 130);
     doc.setFontSize(8.5);
@@ -376,7 +517,7 @@ const captureChartAsImage = async (chartElementId) => {
     doc.setTextColor(43, 66, 125);
     doc.setFontSize(11);
     doc.setFont(dataFont(fontName), "bold");
-    doc.text(`$${formatCurrency(totalRevenue)}`, pageWidth - 20, yPos, { align: "right" });
+    doc.text(`${formatCurrency(totalRevenue)}`, pageWidth - 20, yPos, { align: "right" });
 
     yPos += 10;
 
@@ -388,7 +529,7 @@ const captureChartAsImage = async (chartElementId) => {
     doc.setTextColor(167, 86, 93);
     doc.setFontSize(11);
     doc.setFont(dataFont(fontName), "bold");
-    doc.text(`$${formatCurrency(totalPayable)}`, leftColX + labelWidth, yPos, { align: "right" });
+    doc.text(`${formatCurrency(totalPayable)}`, leftColX + labelWidth, yPos, { align: "right" });
 
     doc.setTextColor(130, 130, 130);
     doc.setFontSize(8.5);
@@ -397,7 +538,7 @@ const captureChartAsImage = async (chartElementId) => {
     doc.setTextColor(167, 86, 93);
     doc.setFontSize(11);
     doc.setFont(dataFont(fontName), "bold");
-    doc.text(`$${formatCurrency(totalExpenses)}`, pageWidth - 20, yPos, { align: "right" });
+    doc.text(`${formatCurrency(totalExpenses)}`, pageWidth - 20, yPos, { align: "right" });
 
     yPos += 20;
     return yPos; // ← caller must use this returned value
@@ -434,7 +575,7 @@ const captureChartAsImage = async (chartElementId) => {
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(13);
       doc.setFont(dataFont(fontName), "bold");
-      doc.text(`$${formatCurrency(item.value)}`, boxX + boxWidth / 2, yPos + 24, { align: "center" });
+      doc.text(`${formatCurrency(item.value)}`, boxX + boxWidth / 2, yPos + 24, { align: "center" });
     });
 
     return yPos + boxHeight;
@@ -494,9 +635,9 @@ const captureChartAsImage = async (chartElementId) => {
 
     const balanceSheetData = [
       [pt("accountDetail"), pt("currentValue")],
-      [pt("totalAssets"),        `$${formatCurrency(totalCash + totalInventory)}`],
-      [pt("currentLiabilities"), `($${formatCurrency(totalPayable)})`],
-      [pt("totalOwnerEquity"),   `$${formatCurrency(ownerEquity)}`],
+      [pt("totalAssets"),        `${formatCurrency(totalCash + totalInventory)}`],
+      [pt("currentLiabilities"), `(${formatCurrency(totalPayable)})`],
+      [pt("totalOwnerEquity"),   `${formatCurrency(ownerEquity)}`],
     ];
 
     autoTable(doc, {
@@ -533,22 +674,22 @@ const captureChartAsImage = async (chartElementId) => {
     yPos += 10;
 
     const incomeStatementData = [[pt("category"), pt("amount")]];
-    incomeStatementData.push([pt("revenue"), `$${formatCurrency(totalRevenue)}`]);
+    incomeStatementData.push([pt("revenue"), `${formatCurrency(totalRevenue)}`]);
     const purposeToPdf = (p) => (pdfLanguage ? translatePurposeToLanguage(p, pdfLanguage) : translatePurpose(p));
-    if (revenues && Object.keys(revenues).length > 0) {
-      Object.entries(revenues).forEach(([purpose, amount]) =>
-        incomeStatementData.push([`    ${purposeToPdf(purpose)}`, `$${formatCurrency(amount)}`])
+    if (report.revenues && Object.keys(report.revenues).length > 0) {
+      Object.entries(report.revenues).forEach(([purpose, amount]) =>
+        incomeStatementData.push([`    ${purposeToPdf(purpose)}`, `${formatCurrency(amount)}`])
       );
     } else {
-      incomeStatementData.push([`    ${pt("freightRevenue")}`, `$${formatCurrency(totalRevenue)}`]);
+      incomeStatementData.push([`    ${pt("freightRevenue")}`, `${formatCurrency(totalRevenue)}`]);
     }
-    incomeStatementData.push([pt("expenses"), `($${formatCurrency(totalExpenses)})`]);
-    if (expenses && Object.keys(expenses).length > 0) {
-      Object.entries(expenses).forEach(([purpose, amount]) =>
-        incomeStatementData.push([`    ${purposeToPdf(purpose)}`, `($${formatCurrency(amount)})`])
+    incomeStatementData.push([pt("expenses"), `(${formatCurrency(totalExpenses)})`]);
+    if (report.expenses && Object.keys(report.expenses).length > 0) {
+      Object.entries(report.expenses).forEach(([purpose, amount]) =>
+        incomeStatementData.push([`    ${purposeToPdf(purpose)}`, `(${formatCurrency(amount)})`])
       );
     }
-    incomeStatementData.push([pt("netIncome"), `$${formatCurrency(netIncome)}`]);
+    incomeStatementData.push([pt("netIncome"), `${formatCurrency(netIncome)}`]);
 
     autoTable(doc, {
       startY: yPos,
@@ -605,15 +746,15 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
   doc.text(pt("verifiedJournalEntries"), 21, yPos + 6);
   yPos += 10;
 
-  const safeItems = Array.isArray(items) ? items : [];
+  const safeItems = Array.isArray(report.items) ? report.items : [];
   const filteredItems = safeItems
     .filter((item) => (item.transactionPurpose || item.purpose || "") !== "Initial Cash Balance")
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const journalData = [[pt("date"), pt("description"), pt("debit"), pt("credit")]];
   filteredItems.forEach((item) => {
-    const debit = item.transactionType === "Receive" ? `$${formatCurrency(item.transactionAmount)}` : "-";
-    const credit = item.transactionType !== "Receive" ? `$${formatCurrency(item.transactionAmount)}` : "-";
+    const debit = item.transactionType === "Receive" ? `${formatCurrency(item.transactionAmount)}` : "-";
+    const credit = item.transactionType !== "Receive" ? `${formatCurrency(item.transactionAmount)}` : "-";
     const purpose = String(item.transactionPurpose || item.purpose || item.description || "").trim();
     const description = purpose
       ? (pdfLanguage ? translatePurposeToLanguage(purpose, pdfLanguage) : translatePurpose(purpose))
@@ -669,61 +810,62 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
   // Page 1: header + statement summary + balance sheet + income statement
   // Page 2+: header + journal entries
   // ══════════════════════════════════════════════════════════════════════════
-  const generateFinancialOnlyPages = (doc, pageWidth, pageHeight, pdfFont = "helvetica", scriptFonts = null, pdfLanguage = null) => {
-  const totalCash      = parseFloat(calculateTotalCash().replace(/,/g, "")) || 0;
-  const totalRevenue   = parseFloat(calculateTotalRevenue()) || 0;
-  const totalExpenses  = parseFloat(calculateTotalExpenses()) || 0;
-  const totalPayable   = parseFloat(calculateTotalPayable()) || 0;
-  const totalInventory = parseFloat(calculateTotalInventory()) || 0;
+  const generateFinancialOnlyPages = (doc, pageWidth, pageHeight, chartImages, pdfFont = "helvetica", scriptFonts = null, pdfLanguage = null) => {
+  const { totalCash, totalRevenue, totalExpenses, totalPayable, totalInventory } = report;
 
   addHeader(doc, pageWidth, pdfFont);
   let yPos = 50;
   yPos = addStatementSummary(doc, pageWidth, yPos, totalCash, totalRevenue, totalExpenses, totalPayable, pdfFont);
   yPos = addBalanceSheet(doc, pageWidth, yPos, totalCash, totalInventory, totalPayable, pdfFont);
   yPos = addIncomeStatement(doc, pageWidth, yPos, totalRevenue, totalExpenses, pdfFont, scriptFonts, pdfLanguage);
-  addJournalEntries(doc, pageWidth, pageHeight, yPos, pdfFont, scriptFonts, pdfLanguage);
 
-  // ── Stamp page 1 footer LAST so totalPages is correct ─────────────────────
+  // Optional: trend charts on their own page.
+  if (includeCharts && chartImages) {
+    doc.addPage();
+    addHeader(doc, pageWidth, pdfFont);
+    addCharts(doc, pageWidth, 50, chartImages, pdfFont);
+  }
+  // Pages drawn so far (statements, maybe charts) — these need footers stamped
+  // below. The ledger goes on its OWN fresh page and stamps its own footers.
+  const nonLedgerPages = doc.internal.getNumberOfPages();
+  if (includeLedger) {
+    doc.addPage();
+    addHeader(doc, pageWidth, pdfFont);
+    addJournalEntries(doc, pageWidth, pageHeight, 50, pdfFont, scriptFonts, pdfLanguage);
+  }
+
   const totalPages = doc.internal.getNumberOfPages();
-  doc.setPage(1);
-  addFooter(doc, pageWidth, pageHeight, 1, totalPages, false, pdfFont); // page 1 = not verified
+  for (let i = 1; i <= nonLedgerPages; i++) {
+    doc.setPage(i);
+    addFooter(doc, pageWidth, pageHeight, i, totalPages, false, pdfFont);
+  }
 };
 
   // ══════════════════════════════════════════════════════════════════════════
   // "Download Dashboard"
   // Page 1: header + 4 tiles + 2×2 charts + footer
   // ══════════════════════════════════════════════════════════════════════════
-  const generateDashboardOnlyPage = async (doc, pageWidth, pageHeight, chartImages, pdfFont = "helvetica") => {
-     // 🔍 DEBUG LOGS
-  const rawCash     = calculateTotalCash();
-  const rawRevenue  = calculateTotalRevenue();
-  const rawExpenses = calculateTotalExpenses();
-  const rawPayable  = calculateTotalPayable();
-
-  console.log("=== RAW RETURN VALUES ===");
-  console.log("calculateTotalCash()     →", rawCash,     "| type:", typeof rawCash);
-  console.log("calculateTotalRevenue()  →", rawRevenue,  "| type:", typeof rawRevenue);
-  console.log("calculateTotalExpenses() →", rawExpenses, "| type:", typeof rawExpenses);
-  console.log("calculateTotalPayable()  →", rawPayable,  "| type:", typeof rawPayable);
-
-  const totalCash     = parseFloat(rawCash.toString().replace(/,/g, ""))     || 0;
-  const totalRevenue  = parseFloat(rawRevenue.toString().replace(/,/g, ""))  || 0;
-  const totalExpenses = parseFloat(rawExpenses.toString().replace(/,/g, "")) || 0;
-  const totalPayable  = parseFloat(rawPayable.toString().replace(/,/g, ""))  || 0;
-
-  console.log("=== PARSED VALUES ===");
-  console.log("totalCash     →", totalCash);
-  console.log("totalRevenue  →", totalRevenue);
-  console.log("totalExpenses →", totalExpenses);
-  console.log("totalPayable  →", totalPayable);
+  const generateDashboardOnlyPage = async (doc, pageWidth, pageHeight, chartImages, pdfFont = "helvetica", scriptFonts = null, pdfLanguage = null) => {
+    const { totalCash, totalRevenue, totalExpenses, totalPayable } = report;
     addHeader(doc, pageWidth, pdfFont);
     let yPos = 50;
     yPos = addSummaryTiles(doc, pageWidth, yPos, totalCash, totalRevenue, totalExpenses, totalPayable, pdfFont);
     yPos += 15;
-    addCharts(doc, pageWidth, yPos, chartImages, pdfFont);
+    if (includeCharts && chartImages) {
+      addCharts(doc, pageWidth, yPos, chartImages, pdfFont);
+    }
 
+    const nonLedgerPages = doc.internal.getNumberOfPages();
+    if (includeLedger) {
+      doc.addPage();
+      addHeader(doc, pageWidth, pdfFont);
+      addJournalEntries(doc, pageWidth, pageHeight, 50, pdfFont, scriptFonts, pdfLanguage);
+    }
     const totalPages = doc.internal.getNumberOfPages();
-    addFooter(doc, pageWidth, pageHeight, 1, totalPages, false, pdfFont);
+    for (let i = 1; i <= nonLedgerPages; i++) {
+      doc.setPage(i);
+      addFooter(doc, pageWidth, pageHeight, i, totalPages, false, pdfFont);
+    }
   };
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -733,44 +875,37 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
   // Page 3+: header + journal entries
   // ══════════════════════════════════════════════════════════════════════════
   const generateBothPages = async (doc, pageWidth, pageHeight, chartImages, pdfFont = "helvetica", scriptFonts = null, pdfLanguage = null) => {
-    const totalCash      = parseFloat(calculateTotalCash().replace(/,/g, "")) || 0;
-    const totalRevenue   = parseFloat(calculateTotalRevenue()) || 0;
-    const totalExpenses  = parseFloat(calculateTotalExpenses()) || 0;
-    const totalPayable   = parseFloat(calculateTotalPayable()) || 0;
-    const totalInventory = parseFloat(calculateTotalInventory()) || 0;
+    const { totalCash, totalRevenue, totalExpenses, totalPayable, totalInventory } = report;
 
-    // ── Page 1: Dashboard — tiles + charts ──────────────────────────────────
+    // ── Page 1: Overview — tiles (+ charts if requested) ────────────────────
     addHeader(doc, pageWidth, pdfFont);
-    let dashYPos = 50; // ← own variable, never shared with Page 2
+    let dashYPos = 50;
     dashYPos = addSummaryTiles(doc, pageWidth, dashYPos, totalCash, totalRevenue, totalExpenses, totalPayable, pdfFont);
     dashYPos += 15;
-    addCharts(doc, pageWidth, dashYPos, chartImages, pdfFont);
-    // footer stamped at end once totalPages is known
+    if (includeCharts && chartImages) {
+      addCharts(doc, pageWidth, dashYPos, chartImages, pdfFont);
+    }
 
-    // ── Page 2: Financial Summary ────────────────────────────────────────────
+    // ── Page 2: Financial statements ────────────────────────────────────────
     doc.addPage();
     addHeader(doc, pageWidth, pdfFont);
-    let finYPos = 50; // ← own variable, fresh start at top of page 2
+    let finYPos = 50;
     finYPos = addStatementSummary(doc, pageWidth, finYPos, totalCash, totalRevenue, totalExpenses, totalPayable, pdfFont);
     finYPos = addBalanceSheet(doc, pageWidth, finYPos, totalCash, totalInventory, totalPayable, pdfFont);
     finYPos = addIncomeStatement(doc, pageWidth, finYPos, totalRevenue, totalExpenses, pdfFont, scriptFonts, pdfLanguage);
-    // footer stamped at end once totalPages is known
 
-    
-    // ── Page 3+: Journal Entries ─────────────────────────────────────────────
-   addJournalEntries(doc, pageWidth, pageHeight, finYPos, pdfFont, scriptFonts, pdfLanguage); // ← pass finYPos directly
+    // ── Optional ledger on its own fresh page (stamps its own footers) ──────
+    const nonLedgerPages = doc.internal.getNumberOfPages();
+    if (includeLedger) {
+      doc.addPage();
+      addHeader(doc, pageWidth, pdfFont);
+      addJournalEntries(doc, pageWidth, pageHeight, 50, pdfFont, scriptFonts, pdfLanguage);
+    }
 
-    // addJournalEntries stamps its own footers, but totalPages will be wrong — fixed below
-
-    // Fix all footers now that we know the real total page count
     const totalPages = doc.internal.getNumberOfPages();
-    doc.setPage(1);
-    addFooter(doc, pageWidth, pageHeight, 1, totalPages, false, pdfFont);
-    doc.setPage(2);
-    addFooter(doc, pageWidth, pageHeight, 2, totalPages, false, pdfFont);
-    for (let i = 3; i <= totalPages; i++) {
+    for (let i = 1; i <= nonLedgerPages; i++) {
       doc.setPage(i);
-      addFooter(doc, pageWidth, pageHeight, i, totalPages, true, pdfFont);
+      addFooter(doc, pageWidth, pageHeight, i, totalPages, false, pdfFont);
     }
   };
 
@@ -805,112 +940,66 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
       return null;
     }
   };
+  // Capture a hidden HTML sheet into the PDF, slicing a tall sheet across as
+  // many pages as needed (so a long ledger paginates). `first` tells it whether
+  // the current doc page is still blank (reuse it) or a new page is needed.
+  const addHtmlSheet = async (doc, elementId, pageWidth, pageHeight, first) => {
+    const el = document.getElementById(elementId);
+    if (!el) return first;
+    const canvas = await html2canvas(el, { scale: 2, backgroundColor: "#ffffff", logging: false, useCORS: true });
+    const pxPerMm = canvas.width / pageWidth;
+    const pageHpx = Math.floor(pageHeight * pxPerMm);
+    let rendered = 0;
+    let isFirst = first;
+    while (rendered < canvas.height) {
+      const sliceH = Math.min(pageHpx, canvas.height - rendered);
+      const slice = document.createElement("canvas");
+      slice.width = canvas.width;
+      slice.height = sliceH;
+      const ctx = slice.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, slice.width, slice.height);
+      ctx.drawImage(canvas, 0, rendered, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+      if (!isFirst) doc.addPage();
+      isFirst = false;
+      doc.addImage(slice.toDataURL("image/png"), "PNG", 0, 0, pageWidth, sliceH / pxPerMm);
+      rendered += sliceH;
+    }
+    return false;
+  };
+
+  // Compose the whole report from HTML sheets so every page shares the same
+  // professional look (no old jsPDF tiles/charts/tables).
+  const composeReport = async (doc, pageWidth, pageHeight) => {
+    const wantStatements = reportType === "statements" || reportType === "complete";
+    const wantOverview = reportType === "overview" || reportType === "complete";
+    let first = true;
+    const sheet = async (id) => { first = await addHtmlSheet(doc, id, pageWidth, pageHeight, first); };
+
+    if (wantStatements) { await sheet("pnlSheet"); await sheet("bsSheet"); }
+    if (wantOverview) await sheet("glanceSheet");
+    if (includeCharts) await sheet("chartsSheet");
+    if (includeLedger) await sheet("ledgerSheet");
+  };
+
   // ══════════════════════════════════════════════════════════════════════════
   // Main PDF generator
   // ══════════════════════════════════════════════════════════════════════════
- const generatePDF = async (type) => {
+ const generatePDF = async () => {
   setIsGenerating(true);
   try {
-    let chartImages = {};
-
-    if (type === "dashboard" || type === "both") {
-      const chartIds = ["cashFlowChart", "revenueChart", "payableChart", "expensesChart"];
-      await waitForChartElements(chartIds);
-      // Wait for ApexCharts to paint inside the hidden divs
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-
-      // Capture all 4 charts in parallel instead of sequentially
-      const [cashFlowImg, revenueImg, payableImg, expensesImg] = await Promise.all([
-        captureChartAsImage('cashFlowChart'),
-        captureChartAsImage('revenueChart'),
-        captureChartAsImage('payableChart'),
-        captureChartAsImage('expensesChart'),
-      ]);
-
-      console.log('Chart capture:', {
-        cashFlow: cashFlowImg ? 'ok' : 'fail',
-        revenue: revenueImg ? 'ok' : 'fail',
-        payable: payableImg ? 'ok' : 'fail',
-        expenses: expensesImg ? 'ok' : 'fail'
-      });
-
-      chartImages = { cashFlowImg, revenueImg, payableImg, expensesImg };
+    // The whole PDF is now rendered from HTML sheets (the browser handles fonts,
+    // including Amharic/Arabic/Tigrinya), so no jsPDF font embedding is needed.
+    // Give any charts a moment to finish painting before capture.
+    if (includeCharts) {
+      await new Promise((resolve) => setTimeout(resolve, 1200));
     }
 
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
-    const pageWidth  = doc.internal.pageSize.getWidth();
+    const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    // Use script-specific fonts so non-Latin text (Arabic, Amharic, Tigrinya) renders correctly
-    const lang = currentLanguage || i18n.language || "en";
-    let pdfFont = "helvetica";
-    const scriptFonts = { ethiopic: null, arabic: null };
-
-    if (lang === "am" || lang === "ti") {
-      const ethiopicBase64 = await loadEthiopicFont();
-      if (ethiopicBase64) {
-        try {
-          doc.addFileToVFS("NotoSansEthiopic-Regular.ttf", ethiopicBase64);
-          doc.addFont("NotoSansEthiopic-Regular.ttf", "NotoSansEthiopic", "normal");
-          doc.addFont("NotoSansEthiopic-Regular.ttf", "NotoSansEthiopic", "bold");
-          pdfFont = "NotoSansEthiopic";
-          scriptFonts.ethiopic = "NotoSansEthiopic";
-        } catch (e) {
-          console.warn("Could not register Ethiopic font:", e);
-        }
-      } else {
-        console.warn("Add NotoSansEthiopic-Regular.ttf to public/fonts/ for Amharic/Tigrinya PDF support.");
-      }
-    } else if (lang === "ar") {
-      const arabicBase64 = await loadArabicFont();
-      if (arabicBase64) {
-        try {
-          doc.addFileToVFS("Amiri-Regular.ttf", arabicBase64);
-          doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
-          doc.addFont("Amiri-Regular.ttf", "Amiri", "bold");
-          pdfFont = "Amiri";
-          scriptFonts.arabic = "Amiri";
-        } catch (e) {
-          console.warn("Could not register Arabic font:", e);
-        }
-      } else {
-        console.warn("Add Amiri-Regular.ttf to public/fonts/ for Arabic PDF support.");
-      }
-    }
-
-    // For financial/both reports, load Ethiopic and Arabic so dynamic content (e.g. descriptions saved in am/ar) renders correctly in any PDF language
-    if (type === "financial" || type === "both") {
-      if (!scriptFonts.ethiopic) {
-        const ethiopicBase64 = await loadEthiopicFont();
-        if (ethiopicBase64) {
-          try {
-            doc.addFileToVFS("NotoSansEthiopic-Regular.ttf", ethiopicBase64);
-            doc.addFont("NotoSansEthiopic-Regular.ttf", "NotoSansEthiopic", "normal");
-            doc.addFont("NotoSansEthiopic-Regular.ttf", "NotoSansEthiopic", "bold");
-            scriptFonts.ethiopic = "NotoSansEthiopic";
-          } catch (e) { /* already added or failed */ }
-        }
-      }
-      if (!scriptFonts.arabic) {
-        const arabicBase64 = await loadArabicFont();
-        if (arabicBase64) {
-          try {
-            doc.addFileToVFS("Amiri-Regular.ttf", arabicBase64);
-            doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
-            doc.addFont("Amiri-Regular.ttf", "Amiri", "bold");
-            scriptFonts.arabic = "Amiri";
-          } catch (e) { /* already added or failed */ }
-        }
-      }
-    }
-
-    if (type === "financial") {
-      generateFinancialOnlyPages(doc, pageWidth, pageHeight, pdfFont, scriptFonts, lang);
-    } else if (type === "dashboard") {
-      await generateDashboardOnlyPage(doc, pageWidth, pageHeight, chartImages, pdfFont);
-    } else if (type === "both") {
-      await generateBothPages(doc, pageWidth, pageHeight, chartImages, pdfFont, scriptFonts, lang);
-    }
+    await composeReport(doc, pageWidth, pageHeight);
 
     const dateStr = new Date().toISOString().split("T")[0];
     const filename = `${(companyName || "Financial").replace(/\s+/g, "_")}_Report_${dateStr}.pdf`;
@@ -930,46 +1019,402 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
      {dt("title")}
       </ModalHeader>
       <ModalBody style={{ backgroundColor: "transparent", padding: "24px" }}>
-        {/* Hidden off-screen charts for capture */}
-        {cashOnHandOptions && (
-          <div style={{ position: 'absolute', left: '-10000px', width: '500px', height: '300px' }}>
-            <div id="cashFlowChart"><ReactApexChart options={cashOnHandOptions} series={cashOnHandOptions.series} type="area" height={300} width={500} /></div>
-          </div>
-        )}
-        {revenueOptions && (
-          <div style={{ position: 'absolute', left: '-10000px', width: '500px', height: '300px' }}>
-            <div id="revenueChart"><ReactApexChart options={revenueOptions} series={revenueOptions.series} type="area" height={300} width={500} /></div>
-          </div>
-        )}
-        {payableOptions && (
-          <div style={{ position: 'absolute', left: '-10000px', width: '500px', height: '300px' }}>
-            <div id="payableChart"><ReactApexChart options={payableOptions} series={payableOptions.series} type="area" height={300} width={500} /></div>
-          </div>
-        )}
-        {expensesOptions && (
-          <div style={{ position: 'absolute', left: '-10000px', width: '500px', height: '300px' }}>
-            <div id="expensesChart"><ReactApexChart options={expensesOptions} series={expensesOptions.series} type="area" height={300} width={500} /></div>
-          </div>
-        )}
+        {/* ── Hidden professional statement sheets (captured to the PDF) ───────── */}
+        {(() => {
+          const s = statements;
+          const n2 = (v) => (Math.abs(Number(v) || 0)).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          const money = (v) => formatCurrency(Math.abs(v));
+          const neg = (v) => `(${n2(v)})`;
+          const pr = periodRange();
+          const dLong = (d) => new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+          const endDate = pr && pr.to ? dLong(pr.to) : dLong(new Date());
+          const startDate = pr && pr.from ? dLong(pr.from) : null;
+          const preparedOn = dLong(new Date());
+          const entity = (companyName && String(companyName).trim()) || "Your Business";
+          const periodText = startDate ? `${startDate} – ${endDate}` : `Up to ${endDate}`;
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-          <Button onClick={() => generatePDF("financial")} disabled={isGenerating}
-            style={{ backgroundColor: "var(--surface-3)", borderColor: "var(--border-strong)", color: "var(--text-1)", padding: "12px 20px", fontSize: "14px", fontWeight: "600", borderRadius: "var(--r-md)" }}>
-            {isGenerating ? <Spinner size="sm" /> : dt("downloadFinancialReport")}
-          </Button>
-          <Button onClick={() => generatePDF("dashboard")} disabled={isGenerating}
-            style={{ backgroundColor: "var(--surface-3)", borderColor: "var(--border-strong)", color: "var(--text-1)", padding: "12px 20px", fontSize: "14px", fontWeight: "600", borderRadius: "var(--r-md)" }}>
-            {isGenerating ? <Spinner size="sm" /> : dt("downloadDashboard")}
-          </Button>
-          <Button onClick={() => generatePDF("both")} disabled={isGenerating}
-            style={{ backgroundColor: "var(--accent-solid)", borderColor: "var(--accent-solid)", color: "var(--accent-ink)", padding: "12px 20px", fontSize: "14px", fontWeight: "700", borderRadius: "var(--r-md)" }}>
-            {isGenerating ? <Spinner size="sm" /> : dt("downloadBoth")}
-          </Button>
-        </div>
+          // ── Clean-corporate (Stripe / Mercury) palette ──────────────────────
+          const SANS = "'Segoe UI','Helvetica Neue',Helvetica,Arial,system-ui,sans-serif";
+          const INK = "#111418", BODY = "#3b424c", MUTE = "#6b7280", FAINT = "#9aa1ab";
+          const HAIR = "#ebedf0", HAIRS = "#d7dbe0", ACCENT = "#1f3a5f", SOFT = "#f4f7fb", POS = "#15803d";
+          const C = ["#1f3a5f", "#2f7d7b", "#c08a2d", "#a85d4a", "#7a8796"];
 
-        <p style={{ color: "var(--text-3)", fontSize: "12px", marginTop: "20px", textAlign: "center", marginBottom: "0" }}>
-          {dt("pdfNote")}
-        </p>
+          // ── Which sheet is last → carries the Notes & responsibility block ──
+          const wantStatements = reportType === "statements" || reportType === "complete";
+          const wantOverview = reportType === "overview" || reportType === "complete";
+          const lastSheet = includeLedger ? "ledgerSheet" : includeCharts ? "chartsSheet" : wantOverview ? "glanceSheet" : wantStatements ? "bsSheet" : "glanceSheet";
+
+          // ── Top-expenses donut slices (top 5, rest grouped as "Other") ──────
+          let expEntries = Object.entries(report.expenses || {}).map(([p, a]) => [translatePurpose(p) || p, Math.abs(a)]).filter(([, a]) => a > 0.005);
+          if (s.depreciation > 0.005) expEntries.push(["Depreciation", s.depreciation]);
+          expEntries.sort((a, b) => b[1] - a[1]);
+          let slices = expEntries;
+          if (expEntries.length > 5) {
+            const other = expEntries.slice(4).reduce((t, [, a]) => t + a, 0);
+            slices = [...expEntries.slice(0, 4), ["Other", other]];
+          }
+          const expTotal = slices.reduce((t, [, a]) => t + a, 0);
+          const hasDonut = slices.length >= 2;
+
+          // ── Cash trend endpoint value + growth for the hero chart ───────────
+          const cData = (cashOnHandOptions && cashOnHandOptions.series && cashOnHandOptions.series[0] && cashOnHandOptions.series[0].data) || [];
+          const cCats = (cashOnHandOptions && cashOnHandOptions.xaxis && cashOnHandOptions.xaxis.categories) || [];
+          const cFirst = cData.find((v) => Math.abs(v) > 0.005);
+          const cLast = cData.length ? cData[cData.length - 1] : 0;
+          const cDelta = cFirst && Math.abs(cFirst) > 0.005 ? ((cLast - cFirst) / Math.abs(cFirst)) * 100 : null;
+
+          // ── Style objects ───────────────────────────────────────────────────
+          const sheet = { width: "720px", background: "#ffffff", color: INK, padding: "44px 50px 38px", fontFamily: SANS, boxSizing: "border-box", marginBottom: "40px", fontVariantNumeric: "tabular-nums" };
+          const tdc = { padding: "7px 0", fontSize: "13px", verticalAlign: "baseline" };
+          const numTd = { ...tdc, textAlign: "right", width: "28%", whiteSpace: "nowrap" };
+          const grp = { ...tdc, fontWeight: 600, paddingTop: "14px", color: INK };
+          const item = { ...tdc, paddingLeft: "20px", color: BODY };
+          const itemNum = { ...numTd, color: BODY };
+          const sub = { ...tdc, fontWeight: 600, borderTop: `1px solid ${HAIR}`, paddingTop: "8px" };
+          const subNum = { ...numTd, fontWeight: 600, borderTop: `1px solid ${HAIR}`, paddingTop: "8px" };
+          const tot = { ...tdc, fontWeight: 700, fontSize: "14px", borderTop: `1.5px solid ${INK}`, paddingTop: "9px" };
+          const totNum = { ...numTd, fontWeight: 700, fontSize: "14px", borderTop: `1.5px solid ${INK}`, paddingTop: "9px" };
+          const totBand = { ...tot, background: SOFT, paddingLeft: "12px", borderTopLeftRadius: "4px" };
+          const totBandNum = { ...totNum, background: SOFT, paddingRight: "12px", borderTopRightRadius: "4px" };
+          const cardStyle = { border: `1px solid ${HAIR}`, borderRadius: "8px", padding: "14px 16px 10px", marginTop: "14px" };
+          const cardHead = { display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "12px", marginBottom: "8px" };
+          const cardTitle = { fontSize: "10px", letterSpacing: "0.08em", textTransform: "uppercase", color: MUTE, fontWeight: 700 };
+          const cardVal = { fontSize: "19px", fontWeight: 600, letterSpacing: "-0.01em", color: INK, whiteSpace: "nowrap" };
+
+          // ── Chart option builders (clean light restyle of the dashboard data) ─
+          const heroOpts = (opt) => ({
+            ...opt, title: { text: "" }, colors: [ACCENT], fill: { type: "solid", opacity: 0.1 },
+            stroke: { curve: "smooth", width: 2 }, dataLabels: { enabled: false },
+            chart: { ...(opt.chart || {}), type: "area", toolbar: { show: false }, zoom: { enabled: false }, animations: { enabled: false }, background: "transparent" },
+            grid: { show: true, borderColor: HAIR, xaxis: { lines: { show: false } } },
+            xaxis: { ...(opt.xaxis || {}), labels: { show: true, style: { colors: MUTE, fontSize: "9px" } }, axisBorder: { show: false }, axisTicks: { show: false }, tooltip: { enabled: false } },
+            yaxis: { labels: { show: true, style: { colors: FAINT, fontSize: "9px" }, formatter: (v) => formatCurrency(v) } },
+            markers: { size: 0 }, legend: { show: false }, tooltip: { enabled: false },
+            annotations: cData.length && cCats.length ? { points: [{ x: cCats[cCats.length - 1], y: cLast, marker: { size: 4, fillColor: ACCENT, strokeColor: "#ffffff", strokeWidth: 2 }, label: { borderColor: ACCENT, offsetY: 0, style: { background: ACCENT, color: "#ffffff", fontSize: "10px", fontWeight: 700, padding: { left: 7, right: 7, top: 3, bottom: 3 } }, text: formatCurrency(cLast) } }] } : {},
+          });
+          const tileOpts = (opt, color) => ({
+            ...opt, title: { text: "" }, colors: [color], fill: { type: "solid", opacity: 0.1 },
+            stroke: { curve: "smooth", width: 2 }, dataLabels: { enabled: false },
+            chart: { ...(opt.chart || {}), type: "area", toolbar: { show: false }, zoom: { enabled: false }, animations: { enabled: false }, sparkline: { enabled: true } },
+            grid: { show: false }, markers: { size: 0 }, legend: { show: false }, tooltip: { enabled: false },
+            xaxis: { ...(opt.xaxis || {}), labels: { show: false }, axisBorder: { show: false }, axisTicks: { show: false } },
+            yaxis: { labels: { show: false } },
+          });
+          const donutOpts = {
+            chart: { type: "donut", animations: { enabled: false }, toolbar: { show: false }, background: "transparent" },
+            labels: slices.map((x) => x[0]), colors: C, legend: { show: false }, dataLabels: { enabled: false },
+            stroke: { width: 1, colors: ["#ffffff"] }, tooltip: { enabled: false },
+            plotOptions: { pie: { donut: { size: "70%", labels: { show: true, name: { show: false }, value: { show: true, fontSize: "17px", fontWeight: 700, color: INK, offsetY: 6, formatter: (v) => formatCurrency(v) }, total: { show: true, showAlways: true, label: "TOTAL", fontSize: "10px", color: MUTE, formatter: () => formatCurrency(expTotal) } } } } },
+          };
+
+          // ── Shared components ────────────────────────────────────────────────
+          const Head = ({ statement, metaLabel, metaValue }) => (
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingBottom: "17px", borderBottom: `1px solid ${HAIRS}` }}>
+                <div>
+                  <div style={{ fontSize: "22px", fontWeight: 600, letterSpacing: "-0.01em", lineHeight: 1.15 }}>{entity}</div>
+                  <div style={{ fontSize: "10px", letterSpacing: "0.16em", textTransform: "uppercase", color: MUTE, marginTop: "7px", fontWeight: 600 }}>Financial Statements</div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: "13px", letterSpacing: "0.26em", textTransform: "uppercase", fontWeight: 700, color: ACCENT }}>Meksova</div>
+                  <div style={{ fontSize: "9.5px", letterSpacing: "0.1em", textTransform: "uppercase", color: FAINT, marginTop: "5px", fontWeight: 600 }}>Prepared {preparedOn}</div>
+                </div>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 32px", margin: "17px 0 2px" }}>
+                {[["Statement", statement], [metaLabel, metaValue], ["Currency", getCurrencyCode()], ["Basis", "Accrual"]].map(([k, v]) => (
+                  <div key={k}>
+                    <div style={{ fontSize: "9px", letterSpacing: "0.09em", textTransform: "uppercase", color: FAINT, fontWeight: 700 }}>{k}</div>
+                    <div style={{ fontSize: "12px", color: INK, fontWeight: 500, marginTop: "2px" }}>{v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+          const Kpis = ({ items }) => (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1px", background: HAIRS, border: `1px solid ${HAIRS}`, borderRadius: "6px", overflow: "hidden", margin: "24px 0 6px" }}>
+              {items.map(([l, v]) => (
+                <div key={l} style={{ background: SOFT, padding: "14px 18px" }}>
+                  <div style={{ fontSize: "9.5px", letterSpacing: "0.09em", textTransform: "uppercase", color: ACCENT, fontWeight: 700 }}>{l}</div>
+                  <div style={{ fontSize: "21px", fontWeight: 600, letterSpacing: "-0.01em", marginTop: "6px", color: INK }}>{v}</div>
+                </div>
+              ))}
+            </div>
+          );
+          const Sec = ({ children }) => (
+            <div style={{ fontSize: "15px", fontWeight: 600, margin: "28px 0 6px", paddingLeft: "11px", borderLeft: `3px solid ${ACCENT}`, letterSpacing: "-0.005em" }}>{children}</div>
+          );
+          const Foot = ({ id }) => (
+            <>
+              {id === lastSheet && (
+                <div style={{ marginTop: "24px", padding: "14px 16px", border: `1px solid ${HAIRS}`, borderLeft: `3px solid ${ACCENT}`, borderRadius: "6px", background: SOFT }}>
+                  <div style={{ fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: ACCENT, fontWeight: 700, marginBottom: "7px" }}>Notes &amp; responsibility</div>
+                  <div style={{ fontSize: "11px", lineHeight: 1.65, color: BODY }}>These statements are prepared on an accrual basis from records entered by the business in Meksova, and are unaudited. The user is solely responsible for the accuracy and completeness of the information entered. Meksova is not responsible for inaccuracies in user-provided data. These statements are not a substitute for a tax return or an independent audit.</div>
+                </div>
+              )}
+              <div style={{ marginTop: "24px", paddingTop: "12px", borderTop: `1px solid ${HAIR}`, fontSize: "10px", color: MUTE, display: "flex", justifyContent: "space-between", gap: "20px" }}>
+                <span>Unaudited · {entity} · Confidential</span>
+                <span style={{ color: FAINT }}>Prepared with Meksova</span>
+              </div>
+            </>
+          );
+
+          return (
+            <div style={{ position: "absolute", left: "-10000px", top: 0 }} aria-hidden="true">
+              {/* ===== Profit & Loss ===== */}
+              <div id="pnlSheet" style={sheet}>
+                <Head statement="Profit & Loss" metaLabel="Period" metaValue={periodText} />
+                <Kpis items={[
+                  ["Total revenue", money(s.totalRevenue)],
+                  ["Net income", s.netIncome < 0 ? `(${money(s.netIncome)})` : money(s.netIncome)],
+                  ["Net margin", s.totalRevenue > 0.005 ? `${((100 * s.netIncome) / s.totalRevenue).toFixed(1)}%` : "—"],
+                ]} />
+                <Sec>Statement of Profit &amp; Loss</Sec>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <tbody>
+                    <tr><td style={grp}>Revenue</td><td style={numTd}></td></tr>
+                    {s.revLines.length ? s.revLines.map(([p, a]) => (
+                      <tr key={"r" + p}><td style={item}>{translatePurpose(p) || "Income"}</td><td style={itemNum}>{n2(a)}</td></tr>
+                    )) : <tr><td style={item}>Sales &amp; services</td><td style={itemNum}>{n2(s.totalRevenue)}</td></tr>}
+                    <tr><td style={sub}>Total revenue</td><td style={subNum}>{n2(s.totalRevenue)}</td></tr>
+                    {s.cogs > 0.005 && <tr><td style={item}>Cost of goods sold</td><td style={itemNum}>{neg(s.cogs)}</td></tr>}
+                    <tr><td style={sub}>Gross profit</td><td style={subNum}>{n2(s.grossProfit)}</td></tr>
+                    <tr><td style={grp}>Operating expenses</td><td style={numTd}></td></tr>
+                    {s.expLines.map(([p, a]) => (
+                      <tr key={"e" + p}><td style={item}>{translatePurpose(p) || "Expense"}</td><td style={itemNum}>{neg(a)}</td></tr>
+                    ))}
+                    {s.depreciation > 0.005 && <tr><td style={item}>Depreciation</td><td style={itemNum}>{neg(s.depreciation)}</td></tr>}
+                    {s.otherExpense > 0.005 && <tr><td style={item}>Other expense</td><td style={itemNum}>{neg(s.otherExpense)}</td></tr>}
+                    <tr><td style={sub}>Total operating expenses</td><td style={subNum}>{neg(s.operatingExpenses + s.depreciation + s.otherExpense)}</td></tr>
+                    <tr><td style={totBand}>Net income</td><td style={{ ...totBandNum, color: s.netIncome < 0 ? BODY : POS }}>{s.netIncome < 0 ? `(${money(s.netIncome)})` : money(s.netIncome)}</td></tr>
+                  </tbody>
+                </table>
+                <Foot id="pnlSheet" />
+              </div>
+
+              {/* ===== Balance Sheet ===== */}
+              <div id="bsSheet" style={sheet}>
+                <Head statement="Balance Sheet" metaLabel="As at" metaValue={endDate} />
+                <Kpis items={[
+                  ["Total assets", money(s.totalAssets)],
+                  ["Liabilities", money(s.payable)],
+                  ["Owner's equity", money(s.totalEquity)],
+                ]} />
+                <Sec>Balance Sheet</Sec>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <tbody>
+                    <tr><td style={grp}>Assets</td><td style={numTd}></td></tr>
+                    <tr><td style={item}>Cash on hand</td><td style={itemNum}>{n2(s.cash)}</td></tr>
+                    <tr><td style={item}>Inventory</td><td style={itemNum}>{n2(s.inventory)}</td></tr>
+                    <tr><td style={sub}>Total current assets</td><td style={subNum}>{n2(s.totalCurrentAssets)}</td></tr>
+                    {s.fixedAtCost > 0.005 && <>
+                      <tr><td style={item}>Equipment &amp; vehicles, at cost</td><td style={itemNum}>{n2(s.fixedAtCost)}</td></tr>
+                      <tr><td style={item}>Less: accumulated depreciation</td><td style={itemNum}>{neg(s.accumDep)}</td></tr>
+                      <tr><td style={sub}>Net fixed assets</td><td style={subNum}>{n2(s.netFixed)}</td></tr>
+                    </>}
+                    <tr><td style={tot}>Total assets</td><td style={totNum}>{money(s.totalAssets)}</td></tr>
+                    <tr><td style={{ height: "10px" }}></td><td></td></tr>
+                    <tr><td style={grp}>Liabilities</td><td style={numTd}></td></tr>
+                    <tr><td style={item}>Accounts payable</td><td style={itemNum}>{n2(s.payable)}</td></tr>
+                    <tr><td style={sub}>Total liabilities</td><td style={subNum}>{n2(s.payable)}</td></tr>
+                    <tr><td style={grp}>Equity</td><td style={numTd}></td></tr>
+                    <tr><td style={item}>Owner's capital — opening</td><td style={itemNum}>{n2(s.openingEquity)}</td></tr>
+                    <tr><td style={item}>Retained earnings (net income)</td><td style={itemNum}>{s.retained < 0 ? neg(s.retained) : n2(s.retained)}</td></tr>
+                    <tr><td style={sub}>Total equity</td><td style={subNum}>{n2(s.totalEquity)}</td></tr>
+                    <tr><td style={totBand}>Total liabilities &amp; equity</td><td style={totBandNum}>{money(s.totalLE)}</td></tr>
+                  </tbody>
+                </table>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: "7px", marginTop: "14px", fontSize: "11px", fontWeight: 600, color: s.balanced ? ACCENT : "#8f3a3a", background: s.balanced ? SOFT : "#fbeeee", border: `1px solid ${s.balanced ? "#dbe4f0" : "#f0d4d4"}`, padding: "7px 12px", borderRadius: "6px" }}>
+                  <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: s.balanced ? POS : "#8f3a3a", display: "inline-block" }}></span>
+                  {s.balanced ? `Balanced — assets equal liabilities plus equity: ${money(s.totalAssets)} = ${money(s.totalLE)}` : `Assets ${money(s.totalAssets)} vs liabilities + equity ${money(s.totalLE)} (period-scoped balance sheet).`}
+                </div>
+                <Foot id="bsSheet" />
+              </div>
+
+              {/* ===== Performance Overview (at a glance) ===== */}
+              <div id="glanceSheet" style={sheet}>
+                <Head statement="Performance Overview" metaLabel="Period" metaValue={periodText} />
+                <Sec>At a glance</Sec>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <tbody>
+                    {[
+                      ["Total revenue", money(s.totalRevenue), false],
+                      ["Cost of goods sold", s.cogs > 0.005 ? neg(s.cogs) : n2(0), false],
+                      ["Gross profit", n2(s.grossProfit), false],
+                      ["Operating expenses", neg(s.operatingExpenses + s.depreciation + s.otherExpense), false],
+                      ["Net income", s.netIncome < 0 ? `(${money(s.netIncome)})` : money(s.netIncome), true],
+                      ["Net margin", s.totalRevenue > 0.005 ? `${((100 * s.netIncome) / s.totalRevenue).toFixed(1)}%` : "—", false],
+                      ["Cash on hand", money(s.cash), false],
+                      ["Total payable (unpaid)", money(s.payable), false],
+                    ].map(([k, v, key]) => (
+                      <tr key={k} style={{ borderBottom: `1px solid ${HAIR}` }}>
+                        <td style={{ padding: "9px 0", fontSize: "13px", color: BODY, fontWeight: key ? 700 : 400 }}>{k}</td>
+                        <td style={{ padding: "9px 0", fontSize: "13px", textAlign: "right", fontWeight: key ? 700 : 500, color: key && s.netIncome >= 0 ? POS : INK }}>{v}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <Foot id="glanceSheet" />
+              </div>
+
+              {/* ===== Trends (dashboard-style charts) ===== */}
+              <div id="chartsSheet" style={sheet}>
+                <Head statement="Trends" metaLabel="Period" metaValue={periodText} />
+                <Sec>Trends</Sec>
+
+                <div style={cardStyle}>
+                  <div style={cardHead}>
+                    <div style={cardTitle}>Cash on hand</div>
+                    <div style={cardVal}>
+                      {money(report.totalCash)}
+                      {cDelta != null && <span style={{ fontSize: "11px", fontWeight: 600, marginLeft: "7px", color: cDelta >= 0 ? POS : "#a85d4a" }}>{cDelta >= 0 ? "▲" : "▼"} {Math.abs(cDelta).toFixed(0)}%</span>}
+                    </div>
+                  </div>
+                  {cashOnHandOptions ? <ReactApexChart options={heroOpts(cashOnHandOptions)} series={cashOnHandOptions.series} type="area" height={180} width={618} /> : <div style={{ height: 180 }} />}
+                </div>
+
+                {hasDonut && (
+                  <div style={cardStyle}>
+                    <div style={cardTitle}>Top expenses</div>
+                    <div style={{ display: "flex", gap: "18px", alignItems: "center", flexWrap: "wrap", marginTop: "6px" }}>
+                      <ReactApexChart options={donutOpts} series={slices.map((x) => x[1])} type="donut" width={210} height={210} />
+                      <div style={{ flex: 1, minWidth: "230px" }}>
+                        {slices.map(([name, amt], i) => (
+                          <div key={name} style={{ display: "flex", alignItems: "center", gap: "9px", padding: "5px 0", fontSize: "12px", borderBottom: `1px solid ${HAIR}` }}>
+                            <span style={{ width: "10px", height: "10px", borderRadius: "2px", flex: "none", background: C[i % C.length] }}></span>
+                            <span style={{ flex: 1, color: BODY }}>{name}</span>
+                            <span style={{ fontWeight: 600, color: INK }}>{money(amt)}</span>
+                            <span style={{ color: FAINT, width: "46px", textAlign: "right" }}>{expTotal > 0 ? Math.round((100 * amt) / expTotal) : 0}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginTop: "14px" }}>
+                  <div style={{ ...cardStyle, marginTop: 0 }}>
+                    <div style={cardHead}><div style={cardTitle}>Revenue</div><div style={{ ...cardVal, fontSize: "15px" }}>{money(report.totalRevenue)}</div></div>
+                    {revenueOptions ? <ReactApexChart options={tileOpts(revenueOptions, "#2f7d7b")} series={revenueOptions.series} type="area" height={120} width={300} /> : <div style={{ height: 120 }} />}
+                  </div>
+                  <div style={{ ...cardStyle, marginTop: 0 }}>
+                    <div style={cardHead}><div style={cardTitle}>Total payable</div><div style={{ ...cardVal, fontSize: "15px" }}>{money(report.totalPayable)}</div></div>
+                    {payableOptions ? <ReactApexChart options={tileOpts(payableOptions, "#a85d4a")} series={payableOptions.series} type="area" height={120} width={300} /> : <div style={{ height: 120 }} />}
+                  </div>
+                </div>
+
+                <Foot id="chartsSheet" />
+              </div>
+
+              {/* ===== Transaction Ledger ===== */}
+              <div id="ledgerSheet" style={sheet}>
+                <Head statement="Transaction Ledger" metaLabel="Period" metaValue={periodText} />
+                <Sec>Transaction Ledger</Sec>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      {["Date", "Description", "Debit", "Credit"].map((h, i) => (
+                        <th key={h} style={{ fontSize: "9px", letterSpacing: "0.07em", textTransform: "uppercase", color: FAINT, fontWeight: 700, textAlign: i >= 2 ? "right" : "left", padding: "0 0 8px", borderBottom: `1px solid ${HAIRS}` }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(Array.isArray(report.items) ? report.items : [])
+                      .filter((t) => (t.transactionPurpose || t.purpose || "") !== "Initial Cash Balance")
+                      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                      .map((t, i) => {
+                        const amt = n2(parseFloat(t.transactionAmount) || 0);
+                        const isRec = t.transactionType === "Receive";
+                        const desc = translatePurpose(t.transactionPurpose || t.purpose || "") || (isRec ? "Income" : "Expense");
+                        return (
+                          <tr key={i} style={{ borderBottom: `1px solid ${HAIR}` }}>
+                            <td style={{ padding: "6px 0", fontSize: "11px", color: MUTE, whiteSpace: "nowrap", verticalAlign: "top" }}>{formatDate(t.createdAt)}</td>
+                            <td style={{ padding: "6px 10px 6px 0", fontSize: "12px", color: BODY }}>{desc}</td>
+                            <td style={{ padding: "6px 0", fontSize: "12px", textAlign: "right", color: INK }}>{isRec ? amt : "–"}</td>
+                            <td style={{ padding: "6px 0", fontSize: "12px", textAlign: "right", color: INK }}>{!isRec ? amt : "–"}</td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+                <Foot id="ledgerSheet" />
+              </div>
+            </div>
+          );
+        })()}
+
+        {(() => {
+          const sectionLabel = { color: "var(--text-3)", fontSize: "11px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 8px" };
+          const chip = (active) => ({ padding: "7px 12px", borderRadius: "999px", border: `1px solid ${active ? "var(--accent-solid)" : "var(--border)"}`, background: active ? "rgba(59,130,246,0.14)" : "var(--surface-3)", color: "var(--text-1)", fontSize: "12.5px", cursor: "pointer", fontWeight: active ? 700 : 500 });
+          const typeCard = (active) => ({ textAlign: "left", padding: "12px 14px", borderRadius: "10px", border: `1px solid ${active ? "var(--accent-solid)" : "var(--border)"}`, background: active ? "rgba(59,130,246,0.10)" : "var(--surface-3)", color: "var(--text-1)", cursor: "pointer", width: "100%" });
+          const PERIODS = [
+            ["current", dt("periodCurrent")], ["month", dt("periodThisMonth")],
+            ["last-month", dt("periodLastMonth")], ["quarter", dt("periodQuarter")],
+            ["ytd", dt("periodYtd")], ["custom", dt("periodCustom")],
+          ];
+          const TYPES = [
+            ["statements", dt("typeStatements"), dt("typeStatementsDesc")],
+            ["overview", dt("typeOverview"), dt("typeOverviewDesc")],
+            ["complete", dt("typeComplete"), dt("typeCompleteDesc")],
+          ];
+          return (
+            <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+              <div>
+                <p style={sectionLabel}>{dt("reportPeriod")}</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "7px" }}>
+                  {PERIODS.map(([k, label]) => (
+                    <button key={k} type="button" style={chip(period === k)} onClick={() => setPeriod(k)}>{label}</button>
+                  ))}
+                </div>
+                {period === "custom" && (
+                  <div style={{ display: "flex", gap: "10px", marginTop: "10px", flexWrap: "wrap" }}>
+                    <label style={{ fontSize: "12px", color: "var(--text-2)", display: "flex", flexDirection: "column", gap: "4px", flex: 1, minWidth: "130px" }}>
+                      {dt("from")}
+                      <input type="date" value={fromDate} max={toDate || undefined} onChange={(e) => setFromDate(e.target.value)}
+                        style={{ background: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "6px", padding: "7px 9px" }} />
+                    </label>
+                    <label style={{ fontSize: "12px", color: "var(--text-2)", display: "flex", flexDirection: "column", gap: "4px", flex: 1, minWidth: "130px" }}>
+                      {dt("to")}
+                      <input type="date" value={toDate} min={fromDate || undefined} onChange={(e) => setToDate(e.target.value)}
+                        style={{ background: "var(--surface-3)", color: "var(--text-1)", border: "1px solid var(--border)", borderRadius: "6px", padding: "7px 9px" }} />
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <p style={sectionLabel}>{dt("reportTypeLabel")}</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {TYPES.map(([k, title, desc]) => (
+                    <button key={k} type="button" style={typeCard(reportType === k)} onClick={() => setReportType(k)}>
+                      <div style={{ fontWeight: 700, fontSize: "13.5px" }}>{title}</div>
+                      <div style={{ fontSize: "12px", color: "var(--text-2)", marginTop: "2px" }}>{desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p style={sectionLabel}>{dt("includeLabel")}</p>
+                <label style={{ display: "flex", gap: "9px", alignItems: "center", color: "var(--text-1)", fontSize: "13px", cursor: "pointer", marginBottom: "6px" }}>
+                  <input type="checkbox" checked={includeCharts} onChange={(e) => setIncludeCharts(e.target.checked)} />
+                  {dt("includeCharts")}
+                </label>
+                <label style={{ display: "flex", gap: "9px", alignItems: "center", color: "var(--text-1)", fontSize: "13px", cursor: "pointer" }}>
+                  <input type="checkbox" checked={includeLedger} onChange={(e) => setIncludeLedger(e.target.checked)} />
+                  {dt("includeLedger")}
+                </label>
+              </div>
+
+              <Button onClick={() => generatePDF()} disabled={isGenerating || (period === "custom" && (!fromDate || !toDate))}
+                style={{ backgroundColor: "var(--accent-solid)", borderColor: "var(--accent-solid)", color: "var(--accent-ink, #fff)", padding: "13px 20px", fontSize: "14px", fontWeight: 700, borderRadius: "var(--r-md)" }}>
+                {isGenerating ? <Spinner size="sm" /> : dt("generateReport")}
+              </Button>
+              <p style={{ color: "var(--text-3)", fontSize: "12px", textAlign: "center", margin: 0 }}>
+                {dt("pdfNote")}
+              </p>
+            </div>
+          );
+        })()}
       </ModalBody>
     </Modal>
   );

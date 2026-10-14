@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import {
   Route,
   Routes,
@@ -92,6 +92,7 @@ function Admin(props) {
         style={{ height: "100vh", overflow: "auto" }}
       >
         <DemoNavbar {...props} />
+        <Suspense fallback={<div style={{ display: "flex", justifyContent: "center", padding: "60px" }}><div className="spinner-border text-primary" role="status" /></div>}>
         <Routes>
           {routes.map((prop, key) => {
             if (prop.path === "/MesobFinancial2") {
@@ -128,6 +129,7 @@ function Admin(props) {
             element={<Navigate to="/admin/dashboard" replace />}
           />
         </Routes>
+        </Suspense>
         <Footer fluid />
         {showGoToTop && (
           <button
