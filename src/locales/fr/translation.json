@@ -1058,7 +1058,12 @@
     "hrsAgo": "il y a {{n}} h",
     "daysAgo": "il y a {{n}} j",
     "toReview": "{{n}} à vérifier",
-    "openAccount": "Ouvrir les transactions {{name}}"
+    "openAccount": "Ouvrir les transactions {{name}}",
+    "autoSync": "Synchro auto",
+    "autoSyncHint": "Ajoute les nouvelles transactions automatiquement, sans révision",
+    "reviewAllN": "Vérifier les {{n}}",
+    "viewAll": "Tout voir",
+    "recentActivity": "Récents"
   },
   "transactionReview": {
     "title": "Examiner les transactions",

@@ -12,6 +12,7 @@ import {
   exchangePublicToken,
   exchangeSquareCode,
   syncSquareTransactions,
+  confirmTransactions,
 } from "utils/connectionsStorage";
 import "../assets/css/team.css";
 import "../assets/css/connections.css";
@@ -104,8 +105,25 @@ function Connections() {
   const [syncMsg, setSyncMsg] = useState(null);
 
   useEffect(() => {
+    const hasCode = new URLSearchParams(window.location.search).get("code");
     fetchConnections()
-      .then(setStatus)
+      .then((data) => {
+        setStatus(data || {});
+        // Sync-on-open: silently pull new Square payments whenever the page
+        // opens (the OAuth-return effect handles the ?code case separately).
+        if (!hasCode && data && data.square && data.square.connected) {
+          syncSquareTransactions()
+            .then((result) => {
+              const n = squareImportCount(result);
+              if (n) {
+                setSyncMsg(t("connections.squareSynced", "Synced — imported {{count}} new payment(s).", { count: n }));
+                window.dispatchEvent(new Event("mesob:transactionAdded"));
+                fetchConnections().then(setStatus).catch(() => {});
+              }
+            })
+            .catch(() => {});
+        }
+      })
       .catch(() => setStatus({}))
       .finally(() => setLoading(false));
   }, []);
@@ -199,6 +217,19 @@ function Connections() {
     navigate(p.id === "square" ? "/customer/financial-report" : "/customer/review-transactions");
   };
 
+  // Auto-sync toggle (bank): when on, new transactions import automatically
+  // without the manual review step. Persisted via the same autoImportAll flag
+  // the review screen uses.
+  const handleToggleAutoSync = async (p, checked) => {
+    setStatus((s) => ({ ...s, [p.id]: { ...(s[p.id] || {}), autoImportAll: checked } }));
+    try {
+      await confirmTransactions([], [], checked);
+    } catch (err) {
+      console.error("Auto-sync toggle failed:", err);
+      setStatus((s) => ({ ...s, [p.id]: { ...(s[p.id] || {}), autoImportAll: !checked } }));
+    }
+  };
+
   const handleDisconnect = async (p) => {
     setBusyId(p.id);
     try {
@@ -238,6 +269,7 @@ function Connections() {
           const syncAgo = connected ? timeAgo(st.lastSync, t) : null;
           const toReview = p.id === "plaid" && connected ? (Number(st.pendingCount) || 0) : 0;
           const name = t("connections." + p.id + "Name");
+          const recent = Array.isArray(st.recent) ? st.recent.slice(0, 3) : [];
           const clickProps = connected
             ? {
                 role: "button",
@@ -250,73 +282,121 @@ function Connections() {
               }
             : {};
           return (
-            <div className={"conn-card" + (connected ? " conn-card--on conn-card--click" : "")} key={p.id} {...clickProps}>
-              <div className={"conn-ico conn-ico--" + p.kind}>
-                <ProviderIcon kind={p.kind} />
-              </div>
-              <div className="conn-body">
-                <div className="conn-name-row">
-                  <span className="conn-name">{name}</span>
-                  {!live ? (
-                    <span className="conn-chip conn-chip--soon">{t("nav.badgeSoon")}</span>
-                  ) : connected ? (
-                    <span className="conn-chip conn-chip--on"><CheckGlyph />{t("connections.connected")}</span>
-                  ) : (
-                    <span className="conn-chip">{t("connections.notConnected")}</span>
-                  )}
-                  {toReview > 0 && (
-                    <span className="conn-badge">{t("connections.toReview", "{{n}} to review", { n: toReview })}</span>
+            <div className={"conn-card" + (connected ? " conn-card--on" : "")} key={p.id}>
+              <div className={"conn-card-main" + (connected ? " conn-card-main--click" : "")} {...(connected ? clickProps : {})}>
+                <div className={"conn-ico conn-ico--" + p.kind}>
+                  <ProviderIcon kind={p.kind} />
+                </div>
+                <div className="conn-body">
+                  <div className="conn-name-row">
+                    <span className="conn-name">{name}</span>
+                    {!live ? (
+                      <span className="conn-chip conn-chip--soon">{t("nav.badgeSoon")}</span>
+                    ) : connected ? (
+                      <span className="conn-chip conn-chip--on"><CheckGlyph />{t("connections.connected")}</span>
+                    ) : (
+                      <span className="conn-chip">{t("connections.notConnected")}</span>
+                    )}
+                    {toReview > 0 && (
+                      <span className="conn-badge">{t("connections.toReview", "{{n}} to review", { n: toReview })}</span>
+                    )}
+                  </div>
+                  <span className="conn-via">{t("connections.via", "via")} {p.via}</span>
+                  <p className="conn-desc">{t(p.descKey)}</p>
+                  {connected && (st.institution || syncAgo) && (
+                    <div className="conn-meta-row">
+                      {st.institution && <span className="conn-meta">{st.institution}</span>}
+                      {syncAgo && <span className="conn-meta conn-meta--sync">{t("connections.lastSynced", "Last synced {{ago}}", { ago: syncAgo })}</span>}
+                    </div>
                   )}
                 </div>
-                <span className="conn-via">{t("connections.via", "via")} {p.via}</span>
-                <p className="conn-desc">{t(p.descKey)}</p>
-                {connected && (st.institution || syncAgo) && (
-                  <div className="conn-meta-row">
-                    {st.institution && <span className="conn-meta">{st.institution}</span>}
-                    {syncAgo && <span className="conn-meta conn-meta--sync">{t("connections.lastSynced", "Last synced {{ago}}", { ago: syncAgo })}</span>}
+
+                {!live ? (
+                  <div className="conn-action">
+                    <button className="conn-btn conn-btn--ghost" disabled title={t("connections.comingSoonHint")}>
+                      {t("nav.badgeSoon")}
+                    </button>
+                  </div>
+                ) : loading ? (
+                  <div className="conn-action">
+                    <div className="conn-skel" aria-hidden="true" />
+                  </div>
+                ) : connected ? (
+                  <div className="conn-trail">
+                    {p.id === "square" && (
+                      <button
+                        className="conn-icon-btn"
+                        title={t("connections.syncNow", "Sync now")}
+                        aria-label={t("connections.syncNow", "Sync now")}
+                        onClick={(e) => { e.stopPropagation(); handleSquareSync(); }}
+                        disabled={busyId === p.id}
+                      >
+                        {busyId === p.id ? <Spinner size="sm" /> : <RefreshGlyph />}
+                      </button>
+                    )}
+                    <button
+                      className="conn-icon-btn conn-icon-btn--danger"
+                      title={t("connections.disconnect")}
+                      aria-label={t("connections.disconnect")}
+                      onClick={(e) => { e.stopPropagation(); handleDisconnect(p); }}
+                      disabled={busyId === p.id}
+                    >
+                      {busyId === p.id ? <Spinner size="sm" /> : <UnlinkGlyph />}
+                    </button>
+                    <span className="conn-chevron" aria-hidden="true"><ChevronGlyph /></span>
+                  </div>
+                ) : (
+                  <div className="conn-action">
+                    <button className="conn-btn" onClick={() => handleConnect(p)} disabled={busyId === p.id}>
+                      {busyId === p.id ? <Spinner size="sm" /> : t("connections.connect")}
+                    </button>
                   </div>
                 )}
               </div>
 
-              {!live ? (
-                <div className="conn-action">
-                  <button className="conn-btn conn-btn--ghost" disabled title={t("connections.comingSoonHint")}>
-                    {t("nav.badgeSoon")}
-                  </button>
-                </div>
-              ) : loading ? (
-                <div className="conn-action">
-                  <div className="conn-skel" aria-hidden="true" />
-                </div>
-              ) : connected ? (
-                <div className="conn-trail">
-                  {p.id === "square" && (
-                    <button
-                      className="conn-icon-btn"
-                      title={t("connections.syncNow", "Sync now")}
-                      aria-label={t("connections.syncNow", "Sync now")}
-                      onClick={(e) => { e.stopPropagation(); handleSquareSync(); }}
-                      disabled={busyId === p.id}
-                    >
-                      {busyId === p.id ? <Spinner size="sm" /> : <RefreshGlyph />}
-                    </button>
+              {connected && (p.id === "plaid" || recent.length > 0) && (
+                <div className="conn-extra">
+                  {p.id === "plaid" && (
+                    <div className="conn-autosync">
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={!!st.autoImportAll}
+                        aria-label={t("connections.autoSync", "Auto-sync")}
+                        className={"conn-switch" + (st.autoImportAll ? " conn-switch--on" : "")}
+                        onClick={() => handleToggleAutoSync(p, !st.autoImportAll)}
+                      >
+                        <span className="conn-switch-knob" />
+                      </button>
+                      <div className="conn-autosync-text">
+                        <span className="conn-autosync-label">{t("connections.autoSync", "Auto-sync")}</span>
+                        <span className="conn-autosync-hint">{t("connections.autoSyncHint", "Add new transactions automatically, no review needed")}</span>
+                      </div>
+                    </div>
                   )}
-                  <button
-                    className="conn-icon-btn conn-icon-btn--danger"
-                    title={t("connections.disconnect")}
-                    aria-label={t("connections.disconnect")}
-                    onClick={(e) => { e.stopPropagation(); handleDisconnect(p); }}
-                    disabled={busyId === p.id}
-                  >
-                    {busyId === p.id ? <Spinner size="sm" /> : <UnlinkGlyph />}
-                  </button>
-                  <span className="conn-chevron" aria-hidden="true"><ChevronGlyph /></span>
-                </div>
-              ) : (
-                <div className="conn-action">
-                  <button className="conn-btn" onClick={() => handleConnect(p)} disabled={busyId === p.id}>
-                    {busyId === p.id ? <Spinner size="sm" /> : t("connections.connect")}
-                  </button>
+                  {recent.length > 0 && (
+                    <div className="conn-preview">
+                      <div className="conn-preview-head">{t("connections.recentActivity", "Recent")}</div>
+                      {recent.map((tx, i) => {
+                        const inc = p.id === "square" ? true : Number(tx.amount) < 0;
+                        return (
+                          <div className="conn-preview-row" key={i}>
+                            <span className="conn-preview-name">{tx.name}</span>
+                            <span className="conn-preview-date">{tx.date}</span>
+                            <span className={"conn-preview-amt" + (inc ? " conn-preview-amt--pos" : "")}>
+                              {(inc ? "+$" : "-$") + Math.abs(Number(tx.amount) || 0).toFixed(2)}
+                            </span>
+                          </div>
+                        );
+                      })}
+                      <button type="button" className="conn-preview-all" onClick={() => openAccount(p)}>
+                        {p.id === "plaid"
+                          ? t("connections.reviewAllN", "Review all {{n}}", { n: st.pendingCount || recent.length })
+                          : t("connections.viewAll", "View all")}
+                        <ChevronGlyph />
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

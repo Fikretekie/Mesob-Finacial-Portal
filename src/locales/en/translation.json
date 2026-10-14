@@ -1050,7 +1050,12 @@
     "hrsAgo": "{{n}}h ago",
     "daysAgo": "{{n}}d ago",
     "toReview": "{{n}} to review",
-    "openAccount": "Open {{name}} transactions"
+    "openAccount": "Open {{name}} transactions",
+    "autoSync": "Auto-sync",
+    "autoSyncHint": "Add new transactions automatically, no review needed",
+    "reviewAllN": "Review all {{n}}",
+    "viewAll": "View all",
+    "recentActivity": "Recent"
   },
   "transactionReview": {
     "title": "Review transactions",

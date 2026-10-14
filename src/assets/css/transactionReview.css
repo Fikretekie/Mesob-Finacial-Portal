@@ -11,7 +11,9 @@
   margin-bottom: 14px;
 }
 
-.tr-review-list { display: flex; flex-direction: column; gap: 10px; }
+.tr-review-list { display: flex; flex-direction: column; gap: 10px; max-width: 900px; margin: 0 auto; }
+/* Keep the title aligned with the capped list so the page reads as one column. */
+.tr-review-page .team-head { max-width: 900px; margin-left: auto; margin-right: auto; }
 
 .tr-review-caught-up {
   display: flex;
@@ -39,16 +41,20 @@
   display: grid;
   grid-template-columns: 40px 1fr 36px auto;
   align-items: center;
-  gap: 12px;
-  padding: 14px;
-  background: var(--surface-1);
+  gap: 12px 14px;
+  padding: 13px 16px;
+  background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
+  transition: border-color .15s ease, box-shadow .15s ease;
 }
+.tr-review-row:hover { border-color: var(--border-strong); box-shadow: var(--shadow-1); }
+/* Toggle | merchant (flex) | category | receipt | amount(right, aligned). The
+   width cap on the list keeps the merchant from stranding the amount far away. */
 @media (min-width: 760px) {
-  .tr-review-row { grid-template-columns: 40px 1.6fr 220px 36px auto; }
+  .tr-review-row { grid-template-columns: 38px minmax(0, 1fr) 196px 38px 110px; }
 }
-.tr-review-row--on { border-color: rgba(59, 130, 246, 0.3); }
+.tr-review-row--on { border-color: color-mix(in srgb, var(--accent) 34%, var(--border)); }
 
 .tr-review-toggle {
   width: 36px;

@@ -1058,7 +1058,12 @@
     "hrsAgo": "قبل {{n}} س",
     "daysAgo": "قبل {{n}} ي",
     "toReview": "{{n}} للمراجعة",
-    "openAccount": "فتح معاملات {{name}}"
+    "openAccount": "فتح معاملات {{name}}",
+    "autoSync": "مزامنة تلقائية",
+    "autoSyncHint": "إضافة المعاملات الجديدة تلقائيًا دون مراجعة",
+    "reviewAllN": "مراجعة الكل ({{n}})",
+    "viewAll": "عرض الكل",
+    "recentActivity": "الأخيرة"
   },
   "transactionReview": {
     "title": "مراجعة المعاملات",

@@ -1058,7 +1058,12 @@
     "hrsAgo": "ቅድሚ {{n}} ሰዓት",
     "daysAgo": "ቅድሚ {{n}} መዓልቲ",
     "toReview": "{{n}} ንግምገማ",
-    "openAccount": "ናይ {{name}} ግብይታት ክፈት"
+    "openAccount": "ናይ {{name}} ግብይታት ክፈት",
+    "autoSync": "ባዕሉ ምምስሳል",
+    "autoSyncHint": "ሓደስቲ ግብይታት ብዘይ ግምገማ ባዕሎም ይወሰኹ",
+    "reviewAllN": "ኩሎም {{n}} ይገምግሙ",
+    "viewAll": "ኩሉ ርአ",
+    "recentActivity": "ቀረባ"
   },
   "transactionReview": {
     "title": "ትራንሳክሺናት ገምግም",

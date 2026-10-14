@@ -1058,7 +1058,12 @@
     "hrsAgo": "ከ{{n}} ሰዓት በፊት",
     "daysAgo": "ከ{{n}} ቀን በፊት",
     "toReview": "{{n}} ለግምገማ",
-    "openAccount": "የ{{name}} ግብይቶችን ክፈት"
+    "openAccount": "የ{{name}} ግብይቶችን ክፈት",
+    "autoSync": "ራስ-አመሳስል",
+    "autoSyncHint": "አዳዲስ ግብይቶችን ያለግምገማ በራስ-ሰር ያክሉ",
+    "reviewAllN": "ሁሉንም {{n}} ይገምግሙ",
+    "viewAll": "ሁሉንም ይመልከቱ",
+    "recentActivity": "የቅርብ ጊዜ"
   },
   "transactionReview": {
     "title": "ግብይቶችን ይገምግሙ",

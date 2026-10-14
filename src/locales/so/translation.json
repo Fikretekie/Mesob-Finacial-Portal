@@ -1058,7 +1058,12 @@
     "hrsAgo": "{{n}}saac kahor",
     "daysAgo": "{{n}}maalin kahor",
     "toReview": "{{n}} dib loo eego",
-    "openAccount": "Fur dhaqdhaqaaqa {{name}}"
+    "openAccount": "Fur dhaqdhaqaaqa {{name}}",
+    "autoSync": "Is-sync",
+    "autoSyncHint": "Si toos ah u dar dhaqdhaqaaqa cusub, dib u eegis la'aan",
+    "reviewAllN": "Dib u eeg dhammaan {{n}}",
+    "viewAll": "Eeg dhammaan",
+    "recentActivity": "Kuwa dhow"
   },
   "transactionReview": {
     "title": "Dib u eeg macaamilada",
