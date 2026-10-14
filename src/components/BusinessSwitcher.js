@@ -330,6 +330,11 @@ function BusinessSwitcher() {
               >
                 {preview.previewText}
               </div>
+              {preview.provider === "PAYPAL" && (
+                <p style={{ color: "var(--text-3)", fontSize: "12px", marginTop: "8px", marginBottom: 0 }}>
+                  You'll approve this on PayPal — you can use your PayPal balance or a debit/credit card there.
+                </p>
+              )}
             </>
           )}
         </ModalBody>

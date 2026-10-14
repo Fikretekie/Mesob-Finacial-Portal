@@ -1028,7 +1028,8 @@
     "permsHint": "Viewing is always allowed. Tick what this teammate can change.",
     "viewOnly": "view only",
     "paypalSeatSuccess": "Seat approved — it's now on your PayPal subscription.",
-    "paypalSeatCancel": "Seat approval was cancelled."
+    "paypalSeatCancel": "Seat approval was cancelled.",
+    "paypalSeatCardNote": "You'll approve this on PayPal — you can use your PayPal balance or a debit/credit card there."
   },
   "connections": {
     "title": "Connections",

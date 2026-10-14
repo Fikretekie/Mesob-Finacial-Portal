@@ -429,7 +429,14 @@ function Team() {
             <div className="team-seat-note">{t("team.firstFree")}</div>
           ) : billing ? (
             canCharge ? (
-              <div className="team-seat-note">{t("team.seatNote")}</div>
+              <>
+                <div className="team-seat-note">{t("team.seatNote")}</div>
+                {billing.paymentType === "PAYPAL" && (
+                  <div className="team-seat-note">
+                    {t("team.paypalSeatCardNote", "You'll approve this on PayPal — you can use your PayPal balance or a debit/credit card there.")}
+                  </div>
+                )}
+              </>
             ) : (
               <div className="team-seat-note team-seat-note--warn">{t("team.needSubscription")}</div>
             )

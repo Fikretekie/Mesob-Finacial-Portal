@@ -1036,7 +1036,8 @@
     "permsHint": "ማየት ሁልጊዜ ይፈቀዳል። ይህ አባል ምን መለወጥ እንደሚችል ምልክት ያድርጉ።",
     "viewOnly": "ማየት ብቻ",
     "paypalSeatSuccess": "መቀመጫ ጸድቋል — አሁን በPayPal ደንበኝነትዎ ላይ ነው።",
-    "paypalSeatCancel": "የመቀመጫ ፈቃድ ተሰርዟል።"
+    "paypalSeatCancel": "የመቀመጫ ፈቃድ ተሰርዟል።",
+    "paypalSeatCardNote": "ይህን በPayPal ያጸድቃሉ — እዚያ የPayPal ቀሪ ሂሳብዎን ወይም የዴቢት/ክሬዲት ካርድ መጠቀም ይችላሉ።"
   },
   "connections": {
     "title": "ግንኙነቶች",
