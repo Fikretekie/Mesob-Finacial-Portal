@@ -1022,70 +1022,162 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
         {/* ── Hidden professional statement sheets (captured to the PDF) ───────── */}
         {(() => {
           const s = statements;
-          const m = (v) => formatCurrency(Math.abs(v));
-          const neg = (v) => `(${formatCurrency(Math.abs(v))})`;
+          const n2 = (v) => (Math.abs(Number(v) || 0)).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          const money = (v) => formatCurrency(Math.abs(v));
+          const neg = (v) => `(${n2(v)})`;
           const pr = periodRange();
-          const dLong = (d) => new Date(d).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
+          const dLong = (d) => new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
           const endDate = pr && pr.to ? dLong(pr.to) : dLong(new Date());
           const startDate = pr && pr.from ? dLong(pr.from) : null;
           const preparedOn = dLong(new Date());
           const entity = (companyName && String(companyName).trim()) || "Your Business";
           const periodText = startDate ? `${startDate} – ${endDate}` : `Up to ${endDate}`;
 
-          const SERIF = "Georgia, 'Times New Roman', serif";
-          const SANS = "'Helvetica Neue', Arial, sans-serif";
-          const MONO = "'Courier New', ui-monospace, monospace";
-          const INK = "#1b1d21", MUTE = "#5f6670", FAINT = "#8b929b", RULE = "#d8dbe0", ACCENT = "#1f3a5f";
-          const sheet = { width: "720px", background: "#ffffff", color: INK, padding: "46px 48px", fontFamily: SANS, boxSizing: "border-box", marginBottom: "40px" };
-          const numTd = { textAlign: "right", fontFamily: MONO, fontSize: "12.5px", whiteSpace: "nowrap", padding: "5px 0", width: "26%" };
-          const lblTd = { padding: "5px 0", fontSize: "13px" };
-          const Head = ({ title, sub }) => (
+          // ── Clean-corporate (Stripe / Mercury) palette ──────────────────────
+          const SANS = "'Segoe UI','Helvetica Neue',Helvetica,Arial,system-ui,sans-serif";
+          const INK = "#111418", BODY = "#3b424c", MUTE = "#6b7280", FAINT = "#9aa1ab";
+          const HAIR = "#ebedf0", HAIRS = "#d7dbe0", ACCENT = "#1f3a5f", SOFT = "#f4f7fb", POS = "#15803d";
+          const C = ["#1f3a5f", "#2f7d7b", "#c08a2d", "#a85d4a", "#7a8796"];
+
+          // ── Which sheet is last → carries the Notes & responsibility block ──
+          const wantStatements = reportType === "statements" || reportType === "complete";
+          const wantOverview = reportType === "overview" || reportType === "complete";
+          const lastSheet = includeLedger ? "ledgerSheet" : includeCharts ? "chartsSheet" : wantOverview ? "glanceSheet" : wantStatements ? "bsSheet" : "glanceSheet";
+
+          // ── Top-expenses donut slices (top 5, rest grouped as "Other") ──────
+          let expEntries = Object.entries(report.expenses || {}).map(([p, a]) => [translatePurpose(p) || p, Math.abs(a)]).filter(([, a]) => a > 0.005);
+          if (s.depreciation > 0.005) expEntries.push(["Depreciation", s.depreciation]);
+          expEntries.sort((a, b) => b[1] - a[1]);
+          let slices = expEntries;
+          if (expEntries.length > 5) {
+            const other = expEntries.slice(4).reduce((t, [, a]) => t + a, 0);
+            slices = [...expEntries.slice(0, 4), ["Other", other]];
+          }
+          const expTotal = slices.reduce((t, [, a]) => t + a, 0);
+          const hasDonut = slices.length >= 2;
+
+          // ── Cash trend endpoint value + growth for the hero chart ───────────
+          const cData = (cashOnHandOptions && cashOnHandOptions.series && cashOnHandOptions.series[0] && cashOnHandOptions.series[0].data) || [];
+          const cCats = (cashOnHandOptions && cashOnHandOptions.xaxis && cashOnHandOptions.xaxis.categories) || [];
+          const cFirst = cData.find((v) => Math.abs(v) > 0.005);
+          const cLast = cData.length ? cData[cData.length - 1] : 0;
+          const cDelta = cFirst && Math.abs(cFirst) > 0.005 ? ((cLast - cFirst) / Math.abs(cFirst)) * 100 : null;
+
+          // ── Style objects ───────────────────────────────────────────────────
+          const sheet = { width: "720px", background: "#ffffff", color: INK, padding: "44px 50px 38px", fontFamily: SANS, boxSizing: "border-box", marginBottom: "40px", fontVariantNumeric: "tabular-nums" };
+          const tdc = { padding: "7px 0", fontSize: "13px", verticalAlign: "baseline" };
+          const numTd = { ...tdc, textAlign: "right", width: "28%", whiteSpace: "nowrap" };
+          const grp = { ...tdc, fontWeight: 600, paddingTop: "14px", color: INK };
+          const item = { ...tdc, paddingLeft: "20px", color: BODY };
+          const itemNum = { ...numTd, color: BODY };
+          const sub = { ...tdc, fontWeight: 600, borderTop: `1px solid ${HAIR}`, paddingTop: "8px" };
+          const subNum = { ...numTd, fontWeight: 600, borderTop: `1px solid ${HAIR}`, paddingTop: "8px" };
+          const tot = { ...tdc, fontWeight: 700, fontSize: "14px", borderTop: `1.5px solid ${INK}`, paddingTop: "9px" };
+          const totNum = { ...numTd, fontWeight: 700, fontSize: "14px", borderTop: `1.5px solid ${INK}`, paddingTop: "9px" };
+          const totBand = { ...tot, background: SOFT, paddingLeft: "12px", borderTopLeftRadius: "4px" };
+          const totBandNum = { ...totNum, background: SOFT, paddingRight: "12px", borderTopRightRadius: "4px" };
+          const cardStyle = { border: `1px solid ${HAIR}`, borderRadius: "8px", padding: "14px 16px 10px", marginTop: "14px" };
+          const cardHead = { display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "12px", marginBottom: "8px" };
+          const cardTitle = { fontSize: "10px", letterSpacing: "0.08em", textTransform: "uppercase", color: MUTE, fontWeight: 700 };
+          const cardVal = { fontSize: "19px", fontWeight: 600, letterSpacing: "-0.01em", color: INK, whiteSpace: "nowrap" };
+
+          // ── Chart option builders (clean light restyle of the dashboard data) ─
+          const heroOpts = (opt) => ({
+            ...opt, title: { text: "" }, colors: [ACCENT], fill: { type: "solid", opacity: 0.1 },
+            stroke: { curve: "smooth", width: 2 }, dataLabels: { enabled: false },
+            chart: { ...(opt.chart || {}), type: "area", toolbar: { show: false }, zoom: { enabled: false }, animations: { enabled: false }, background: "transparent" },
+            grid: { show: true, borderColor: HAIR, xaxis: { lines: { show: false } } },
+            xaxis: { ...(opt.xaxis || {}), labels: { show: true, style: { colors: MUTE, fontSize: "9px" } }, axisBorder: { show: false }, axisTicks: { show: false }, tooltip: { enabled: false } },
+            yaxis: { labels: { show: true, style: { colors: FAINT, fontSize: "9px" }, formatter: (v) => formatCurrency(v) } },
+            markers: { size: 0 }, legend: { show: false }, tooltip: { enabled: false },
+            annotations: cData.length && cCats.length ? { points: [{ x: cCats[cCats.length - 1], y: cLast, marker: { size: 4, fillColor: ACCENT, strokeColor: "#ffffff", strokeWidth: 2 }, label: { borderColor: ACCENT, offsetY: 0, style: { background: ACCENT, color: "#ffffff", fontSize: "10px", fontWeight: 700, padding: { left: 7, right: 7, top: 3, bottom: 3 } }, text: formatCurrency(cLast) } }] } : {},
+          });
+          const tileOpts = (opt, color) => ({
+            ...opt, title: { text: "" }, colors: [color], fill: { type: "solid", opacity: 0.1 },
+            stroke: { curve: "smooth", width: 2 }, dataLabels: { enabled: false },
+            chart: { ...(opt.chart || {}), type: "area", toolbar: { show: false }, zoom: { enabled: false }, animations: { enabled: false }, sparkline: { enabled: true } },
+            grid: { show: false }, markers: { size: 0 }, legend: { show: false }, tooltip: { enabled: false },
+            xaxis: { ...(opt.xaxis || {}), labels: { show: false }, axisBorder: { show: false }, axisTicks: { show: false } },
+            yaxis: { labels: { show: false } },
+          });
+          const donutOpts = {
+            chart: { type: "donut", animations: { enabled: false }, toolbar: { show: false }, background: "transparent" },
+            labels: slices.map((x) => x[0]), colors: C, legend: { show: false }, dataLabels: { enabled: false },
+            stroke: { width: 1, colors: ["#ffffff"] }, tooltip: { enabled: false },
+            plotOptions: { pie: { donut: { size: "70%", labels: { show: true, name: { show: false }, value: { show: true, fontSize: "17px", fontWeight: 700, color: INK, offsetY: 6, formatter: (v) => formatCurrency(v) }, total: { show: true, showAlways: true, label: "TOTAL", fontSize: "10px", color: MUTE, formatter: () => formatCurrency(expTotal) } } } } },
+          };
+
+          // ── Shared components ────────────────────────────────────────────────
+          const Head = ({ statement, metaLabel, metaValue }) => (
             <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: `2px solid ${INK}`, paddingBottom: "14px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingBottom: "17px", borderBottom: `1px solid ${HAIRS}` }}>
                 <div>
-                  <div style={{ fontFamily: SERIF, fontWeight: "bold", fontSize: "25px", lineHeight: 1.1 }}>{entity}</div>
-                  <div style={{ fontSize: "11px", letterSpacing: "0.14em", textTransform: "uppercase", color: MUTE, marginTop: "6px", fontWeight: 600 }}>Financial Statements</div>
+                  <div style={{ fontSize: "22px", fontWeight: 600, letterSpacing: "-0.01em", lineHeight: 1.15 }}>{entity}</div>
+                  <div style={{ fontSize: "10px", letterSpacing: "0.16em", textTransform: "uppercase", color: MUTE, marginTop: "7px", fontWeight: 600 }}>Financial Statements</div>
                 </div>
-                <div style={{ fontSize: "10px", letterSpacing: "0.16em", textTransform: "uppercase", color: FAINT, fontWeight: 600 }}>Prepared with <span style={{ color: ACCENT }}>Meksova</span></div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: "13px", letterSpacing: "0.26em", textTransform: "uppercase", fontWeight: 700, color: ACCENT }}>Meksova</div>
+                  <div style={{ fontSize: "9.5px", letterSpacing: "0.1em", textTransform: "uppercase", color: FAINT, marginTop: "5px", fontWeight: 600 }}>Prepared {preparedOn}</div>
+                </div>
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 26px", margin: "14px 0 2px" }}>
-                {[["Statement", title], ["Period", sub], ["Currency", getCurrencyCode()], ["Basis", "Accrual"], ["Prepared", preparedOn]].map(([k, v]) => (
-                  <div key={k} style={{ fontSize: "11px" }}>
-                    <div style={{ color: FAINT, textTransform: "uppercase", letterSpacing: "0.07em", fontSize: "9.5px", fontWeight: 600 }}>{k}</div>
-                    <div style={{ color: INK, fontWeight: 500, fontFamily: MONO }}>{v}</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 32px", margin: "17px 0 2px" }}>
+                {[["Statement", statement], [metaLabel, metaValue], ["Currency", getCurrencyCode()], ["Basis", "Accrual"]].map(([k, v]) => (
+                  <div key={k}>
+                    <div style={{ fontSize: "9px", letterSpacing: "0.09em", textTransform: "uppercase", color: FAINT, fontWeight: 700 }}>{k}</div>
+                    <div style={{ fontSize: "12px", color: INK, fontWeight: 500, marginTop: "2px" }}>{v}</div>
                   </div>
                 ))}
               </div>
             </div>
           );
-          const SecTitle = ({ children }) => (
-            <div style={{ fontFamily: SERIF, fontWeight: "bold", fontSize: "17px", margin: "30px 0 10px", paddingLeft: "10px", borderLeft: `3px solid ${ACCENT}` }}>{children}</div>
+          const Kpis = ({ items }) => (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1px", background: HAIRS, border: `1px solid ${HAIRS}`, borderRadius: "6px", overflow: "hidden", margin: "24px 0 6px" }}>
+              {items.map(([l, v]) => (
+                <div key={l} style={{ background: SOFT, padding: "14px 18px" }}>
+                  <div style={{ fontSize: "9.5px", letterSpacing: "0.09em", textTransform: "uppercase", color: ACCENT, fontWeight: 700 }}>{l}</div>
+                  <div style={{ fontSize: "21px", fontWeight: 600, letterSpacing: "-0.01em", marginTop: "6px", color: INK }}>{v}</div>
+                </div>
+              ))}
+            </div>
           );
-          const grp = { ...lblTd, fontWeight: 700, paddingTop: "12px", fontSize: "13px" };
-          const item = { ...lblTd, paddingLeft: "18px", color: MUTE };
-          const itemNum = { ...numTd, color: MUTE };
-          const sub = { ...lblTd, fontWeight: 700, borderTop: `1px solid ${RULE}` };
-          const subNum = { ...numTd, fontWeight: 700, borderTop: `1px solid ${RULE}` };
-          const tot = { ...lblTd, fontWeight: 800, fontSize: "14px", borderTop: `2px solid ${INK}`, paddingTop: "8px" };
-          const totNum = { ...numTd, fontWeight: 800, fontSize: "14px", borderTop: `2px solid ${INK}`, paddingTop: "8px" };
-          const foot = { marginTop: "24px", paddingTop: "12px", borderTop: `1px solid ${RULE}`, fontSize: "10.5px", color: MUTE, lineHeight: 1.5 };
-          const discl = `Unaudited. Management accounts prepared from ${entity} records in Meksova. Figures in ${getCurrencyCode()}, rounded to the cent. Not a substitute for a tax return or an independent audit.`;
+          const Sec = ({ children }) => (
+            <div style={{ fontSize: "15px", fontWeight: 600, margin: "28px 0 6px", paddingLeft: "11px", borderLeft: `3px solid ${ACCENT}`, letterSpacing: "-0.005em" }}>{children}</div>
+          );
+          const Foot = ({ id }) => (
+            <>
+              {id === lastSheet && (
+                <div style={{ marginTop: "24px", padding: "14px 16px", border: `1px solid ${HAIRS}`, borderLeft: `3px solid ${ACCENT}`, borderRadius: "6px", background: SOFT }}>
+                  <div style={{ fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: ACCENT, fontWeight: 700, marginBottom: "7px" }}>Notes &amp; responsibility</div>
+                  <div style={{ fontSize: "11px", lineHeight: 1.65, color: BODY }}>These statements are prepared on an accrual basis from records entered by the business in Meksova, and are unaudited. The user is solely responsible for the accuracy and completeness of the information entered. Meksova is not responsible for inaccuracies in user-provided data. These statements are not a substitute for a tax return or an independent audit.</div>
+                </div>
+              )}
+              <div style={{ marginTop: "24px", paddingTop: "12px", borderTop: `1px solid ${HAIR}`, fontSize: "10px", color: MUTE, display: "flex", justifyContent: "space-between", gap: "20px" }}>
+                <span>Unaudited · {entity} · Confidential</span>
+                <span style={{ color: FAINT }}>Prepared with Meksova</span>
+              </div>
+            </>
+          );
 
           return (
             <div style={{ position: "absolute", left: "-10000px", top: 0 }} aria-hidden="true">
               {/* ===== Profit & Loss ===== */}
               <div id="pnlSheet" style={sheet}>
-                <Head title="Profit & Loss" sub={periodText} />
-                <SecTitle>Statement of Profit &amp; Loss</SecTitle>
+                <Head statement="Profit & Loss" metaLabel="Period" metaValue={periodText} />
+                <Kpis items={[
+                  ["Total revenue", money(s.totalRevenue)],
+                  ["Net income", s.netIncome < 0 ? `(${money(s.netIncome)})` : money(s.netIncome)],
+                  ["Net margin", s.totalRevenue > 0.005 ? `${((100 * s.netIncome) / s.totalRevenue).toFixed(1)}%` : "—"],
+                ]} />
+                <Sec>Statement of Profit &amp; Loss</Sec>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <tbody>
                     <tr><td style={grp}>Revenue</td><td style={numTd}></td></tr>
                     {s.revLines.length ? s.revLines.map(([p, a]) => (
-                      <tr key={"r" + p}><td style={item}>{translatePurpose(p) || "Income"}</td><td style={itemNum}>{m(a)}</td></tr>
-                    )) : <tr><td style={item}>Sales &amp; services</td><td style={itemNum}>{m(s.totalRevenue)}</td></tr>}
-                    <tr><td style={sub}>Total revenue</td><td style={subNum}>{m(s.totalRevenue)}</td></tr>
+                      <tr key={"r" + p}><td style={item}>{translatePurpose(p) || "Income"}</td><td style={itemNum}>{n2(a)}</td></tr>
+                    )) : <tr><td style={item}>Sales &amp; services</td><td style={itemNum}>{n2(s.totalRevenue)}</td></tr>}
+                    <tr><td style={sub}>Total revenue</td><td style={subNum}>{n2(s.totalRevenue)}</td></tr>
                     {s.cogs > 0.005 && <tr><td style={item}>Cost of goods sold</td><td style={itemNum}>{neg(s.cogs)}</td></tr>}
-                    <tr><td style={sub}>Gross profit</td><td style={subNum}>{m(s.grossProfit)}</td></tr>
+                    <tr><td style={sub}>Gross profit</td><td style={subNum}>{n2(s.grossProfit)}</td></tr>
                     <tr><td style={grp}>Operating expenses</td><td style={numTd}></td></tr>
                     {s.expLines.map(([p, a]) => (
                       <tr key={"e" + p}><td style={item}>{translatePurpose(p) || "Expense"}</td><td style={itemNum}>{neg(a)}</td></tr>
@@ -1093,95 +1185,135 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
                     {s.depreciation > 0.005 && <tr><td style={item}>Depreciation</td><td style={itemNum}>{neg(s.depreciation)}</td></tr>}
                     {s.otherExpense > 0.005 && <tr><td style={item}>Other expense</td><td style={itemNum}>{neg(s.otherExpense)}</td></tr>}
                     <tr><td style={sub}>Total operating expenses</td><td style={subNum}>{neg(s.operatingExpenses + s.depreciation + s.otherExpense)}</td></tr>
-                    <tr><td style={tot}>Net income</td><td style={totNum}>{s.netIncome < 0 ? neg(s.netIncome) : m(s.netIncome)}</td></tr>
+                    <tr><td style={totBand}>Net income</td><td style={{ ...totBandNum, color: s.netIncome < 0 ? BODY : POS }}>{s.netIncome < 0 ? `(${money(s.netIncome)})` : money(s.netIncome)}</td></tr>
                   </tbody>
                 </table>
-                <div style={foot}>{discl}<div style={{ marginTop: "10px", color: FAINT }}>Page 1</div></div>
+                <Foot id="pnlSheet" />
               </div>
 
               {/* ===== Balance Sheet ===== */}
               <div id="bsSheet" style={sheet}>
-                <Head title="Balance Sheet" sub={`As at ${endDate}`} />
-                <SecTitle>Balance Sheet</SecTitle>
+                <Head statement="Balance Sheet" metaLabel="As at" metaValue={endDate} />
+                <Kpis items={[
+                  ["Total assets", money(s.totalAssets)],
+                  ["Liabilities", money(s.payable)],
+                  ["Owner's equity", money(s.totalEquity)],
+                ]} />
+                <Sec>Balance Sheet</Sec>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <tbody>
                     <tr><td style={grp}>Assets</td><td style={numTd}></td></tr>
-                    <tr><td style={item}>Cash on hand</td><td style={itemNum}>{m(s.cash)}</td></tr>
-                    <tr><td style={item}>Inventory</td><td style={itemNum}>{m(s.inventory)}</td></tr>
-                    <tr><td style={sub}>Total current assets</td><td style={subNum}>{m(s.totalCurrentAssets)}</td></tr>
+                    <tr><td style={item}>Cash on hand</td><td style={itemNum}>{n2(s.cash)}</td></tr>
+                    <tr><td style={item}>Inventory</td><td style={itemNum}>{n2(s.inventory)}</td></tr>
+                    <tr><td style={sub}>Total current assets</td><td style={subNum}>{n2(s.totalCurrentAssets)}</td></tr>
                     {s.fixedAtCost > 0.005 && <>
-                      <tr><td style={item}>Equipment &amp; vehicles, at cost</td><td style={itemNum}>{m(s.fixedAtCost)}</td></tr>
+                      <tr><td style={item}>Equipment &amp; vehicles, at cost</td><td style={itemNum}>{n2(s.fixedAtCost)}</td></tr>
                       <tr><td style={item}>Less: accumulated depreciation</td><td style={itemNum}>{neg(s.accumDep)}</td></tr>
-                      <tr><td style={sub}>Net fixed assets</td><td style={subNum}>{m(s.netFixed)}</td></tr>
+                      <tr><td style={sub}>Net fixed assets</td><td style={subNum}>{n2(s.netFixed)}</td></tr>
                     </>}
-                    <tr><td style={tot}>Total assets</td><td style={totNum}>{m(s.totalAssets)}</td></tr>
+                    <tr><td style={tot}>Total assets</td><td style={totNum}>{money(s.totalAssets)}</td></tr>
                     <tr><td style={{ height: "10px" }}></td><td></td></tr>
                     <tr><td style={grp}>Liabilities</td><td style={numTd}></td></tr>
-                    <tr><td style={item}>Accounts payable</td><td style={itemNum}>{m(s.payable)}</td></tr>
-                    <tr><td style={sub}>Total liabilities</td><td style={subNum}>{m(s.payable)}</td></tr>
+                    <tr><td style={item}>Accounts payable</td><td style={itemNum}>{n2(s.payable)}</td></tr>
+                    <tr><td style={sub}>Total liabilities</td><td style={subNum}>{n2(s.payable)}</td></tr>
                     <tr><td style={grp}>Equity</td><td style={numTd}></td></tr>
-                    <tr><td style={item}>Owner's capital — opening</td><td style={itemNum}>{m(s.openingEquity)}</td></tr>
-                    <tr><td style={item}>Retained earnings (net income)</td><td style={itemNum}>{s.retained < 0 ? neg(s.retained) : m(s.retained)}</td></tr>
-                    <tr><td style={sub}>Total equity</td><td style={subNum}>{m(s.totalEquity)}</td></tr>
-                    <tr><td style={tot}>Total liabilities &amp; equity</td><td style={totNum}>{m(s.totalLE)}</td></tr>
+                    <tr><td style={item}>Owner's capital — opening</td><td style={itemNum}>{n2(s.openingEquity)}</td></tr>
+                    <tr><td style={item}>Retained earnings (net income)</td><td style={itemNum}>{s.retained < 0 ? neg(s.retained) : n2(s.retained)}</td></tr>
+                    <tr><td style={sub}>Total equity</td><td style={subNum}>{n2(s.totalEquity)}</td></tr>
+                    <tr><td style={totBand}>Total liabilities &amp; equity</td><td style={totBandNum}>{money(s.totalLE)}</td></tr>
                   </tbody>
                 </table>
-                <div style={{ fontSize: "10.5px", color: s.balanced ? ACCENT : "#8f3a3a", marginTop: "10px", fontWeight: 600 }}>
-                  {s.balanced ? `Balanced — assets equal liabilities plus equity: ${m(s.totalAssets)} = ${m(s.totalLE)}` : `Note: assets ${m(s.totalAssets)} vs liabilities + equity ${m(s.totalLE)} (period-scoped balance sheet).`}
+                <div style={{ display: "inline-flex", alignItems: "center", gap: "7px", marginTop: "14px", fontSize: "11px", fontWeight: 600, color: s.balanced ? ACCENT : "#8f3a3a", background: s.balanced ? SOFT : "#fbeeee", border: `1px solid ${s.balanced ? "#dbe4f0" : "#f0d4d4"}`, padding: "7px 12px", borderRadius: "6px" }}>
+                  <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: s.balanced ? POS : "#8f3a3a", display: "inline-block" }}></span>
+                  {s.balanced ? `Balanced — assets equal liabilities plus equity: ${money(s.totalAssets)} = ${money(s.totalLE)}` : `Assets ${money(s.totalAssets)} vs liabilities + equity ${money(s.totalLE)} (period-scoped balance sheet).`}
                 </div>
-                <div style={foot}>{discl}<div style={{ marginTop: "10px", color: FAINT }}>Page 2</div></div>
+                <Foot id="bsSheet" />
               </div>
 
               {/* ===== Performance Overview (at a glance) ===== */}
               <div id="glanceSheet" style={sheet}>
-                <Head title="Performance Overview" sub={periodText} />
-                <SecTitle>At a glance</SecTitle>
+                <Head statement="Performance Overview" metaLabel="Period" metaValue={periodText} />
+                <Sec>At a glance</Sec>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <tbody>
                     {[
-                      ["Total revenue", m(s.totalRevenue)],
-                      ["Cost of goods sold", s.cogs > 0.005 ? neg(s.cogs) : m(0)],
-                      ["Gross profit", m(s.grossProfit)],
-                      ["Operating expenses", neg(s.operatingExpenses + s.depreciation + s.otherExpense)],
-                      ["Net income", s.netIncome < 0 ? neg(s.netIncome) : m(s.netIncome)],
-                      ["Net margin", s.totalRevenue > 0.005 ? `${((100 * s.netIncome) / s.totalRevenue).toFixed(1)}%` : "—"],
-                      ["Cash on hand", m(s.cash)],
-                      ["Total payable (unpaid)", m(s.payable)],
-                    ].map(([k, v], i) => (
-                      <tr key={k} style={{ borderBottom: "1px solid #edeef0" }}>
-                        <td style={{ padding: "9px 0", fontSize: "13px", color: MUTE }}>{k}</td>
-                        <td style={{ padding: "9px 0", fontFamily: MONO, fontSize: "13px", textAlign: "right", fontWeight: (k === "Net income" ? 700 : 400), color: INK }}>{v}</td>
+                      ["Total revenue", money(s.totalRevenue), false],
+                      ["Cost of goods sold", s.cogs > 0.005 ? neg(s.cogs) : n2(0), false],
+                      ["Gross profit", n2(s.grossProfit), false],
+                      ["Operating expenses", neg(s.operatingExpenses + s.depreciation + s.otherExpense), false],
+                      ["Net income", s.netIncome < 0 ? `(${money(s.netIncome)})` : money(s.netIncome), true],
+                      ["Net margin", s.totalRevenue > 0.005 ? `${((100 * s.netIncome) / s.totalRevenue).toFixed(1)}%` : "—", false],
+                      ["Cash on hand", money(s.cash), false],
+                      ["Total payable (unpaid)", money(s.payable), false],
+                    ].map(([k, v, key]) => (
+                      <tr key={k} style={{ borderBottom: `1px solid ${HAIR}` }}>
+                        <td style={{ padding: "9px 0", fontSize: "13px", color: BODY, fontWeight: key ? 700 : 400 }}>{k}</td>
+                        <td style={{ padding: "9px 0", fontSize: "13px", textAlign: "right", fontWeight: key ? 700 : 500, color: key && s.netIncome >= 0 ? POS : INK }}>{v}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                <div style={foot}>{discl}</div>
+                <Foot id="glanceSheet" />
               </div>
 
-              {/* ===== Trends (charts) ===== */}
+              {/* ===== Trends (dashboard-style charts) ===== */}
               <div id="chartsSheet" style={sheet}>
-                <Head title="Trends" sub={periodText} />
-                <SecTitle>Trends</SecTitle>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "8px" }}>
-                  {[["Cash on hand", cashOnHandOptions], ["Revenue", revenueOptions], ["Total payable", payableOptions], ["Expenses", expensesOptions]].map(([label, opt], i) => (
-                    <div key={i} style={{ border: `1px solid ${RULE}`, borderRadius: "6px", padding: "10px 12px" }}>
-                      <div style={{ fontSize: "10.5px", textTransform: "uppercase", letterSpacing: "0.06em", color: MUTE, fontWeight: 600, marginBottom: "4px" }}>{label}</div>
-                      {opt ? <ReactApexChart options={{ ...opt, title: { text: "" }, colors: [ACCENT], fill: { type: "solid", opacity: 0.12 } }} series={opt.series} type="area" height={150} width={305} /> : <div style={{ height: 150 }} />}
+                <Head statement="Trends" metaLabel="Period" metaValue={periodText} />
+                <Sec>Trends</Sec>
+
+                <div style={cardStyle}>
+                  <div style={cardHead}>
+                    <div style={cardTitle}>Cash on hand</div>
+                    <div style={cardVal}>
+                      {money(report.totalCash)}
+                      {cDelta != null && <span style={{ fontSize: "11px", fontWeight: 600, marginLeft: "7px", color: cDelta >= 0 ? POS : "#a85d4a" }}>{cDelta >= 0 ? "▲" : "▼"} {Math.abs(cDelta).toFixed(0)}%</span>}
                     </div>
-                  ))}
+                  </div>
+                  {cashOnHandOptions ? <ReactApexChart options={heroOpts(cashOnHandOptions)} series={cashOnHandOptions.series} type="area" height={180} width={618} /> : <div style={{ height: 180 }} />}
                 </div>
-                <div style={foot}>{discl}</div>
+
+                {hasDonut && (
+                  <div style={cardStyle}>
+                    <div style={cardTitle}>Top expenses</div>
+                    <div style={{ display: "flex", gap: "18px", alignItems: "center", flexWrap: "wrap", marginTop: "6px" }}>
+                      <ReactApexChart options={donutOpts} series={slices.map((x) => x[1])} type="donut" width={210} height={210} />
+                      <div style={{ flex: 1, minWidth: "230px" }}>
+                        {slices.map(([name, amt], i) => (
+                          <div key={name} style={{ display: "flex", alignItems: "center", gap: "9px", padding: "5px 0", fontSize: "12px", borderBottom: `1px solid ${HAIR}` }}>
+                            <span style={{ width: "10px", height: "10px", borderRadius: "2px", flex: "none", background: C[i % C.length] }}></span>
+                            <span style={{ flex: 1, color: BODY }}>{name}</span>
+                            <span style={{ fontWeight: 600, color: INK }}>{money(amt)}</span>
+                            <span style={{ color: FAINT, width: "46px", textAlign: "right" }}>{expTotal > 0 ? Math.round((100 * amt) / expTotal) : 0}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginTop: "14px" }}>
+                  <div style={{ ...cardStyle, marginTop: 0 }}>
+                    <div style={cardHead}><div style={cardTitle}>Revenue</div><div style={{ ...cardVal, fontSize: "15px" }}>{money(report.totalRevenue)}</div></div>
+                    {revenueOptions ? <ReactApexChart options={tileOpts(revenueOptions, "#2f7d7b")} series={revenueOptions.series} type="area" height={120} width={300} /> : <div style={{ height: 120 }} />}
+                  </div>
+                  <div style={{ ...cardStyle, marginTop: 0 }}>
+                    <div style={cardHead}><div style={cardTitle}>Total payable</div><div style={{ ...cardVal, fontSize: "15px" }}>{money(report.totalPayable)}</div></div>
+                    {payableOptions ? <ReactApexChart options={tileOpts(payableOptions, "#a85d4a")} series={payableOptions.series} type="area" height={120} width={300} /> : <div style={{ height: 120 }} />}
+                  </div>
+                </div>
+
+                <Foot id="chartsSheet" />
               </div>
 
               {/* ===== Transaction Ledger ===== */}
               <div id="ledgerSheet" style={sheet}>
-                <Head title="Transaction Ledger" sub={periodText} />
-                <SecTitle>Transaction Ledger</SecTitle>
+                <Head statement="Transaction Ledger" metaLabel="Period" metaValue={periodText} />
+                <Sec>Transaction Ledger</Sec>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr>
                       {["Date", "Description", "Debit", "Credit"].map((h, i) => (
-                        <th key={h} style={{ fontSize: "9.5px", letterSpacing: "0.07em", textTransform: "uppercase", color: FAINT, fontWeight: 600, textAlign: i >= 2 ? "right" : "left", padding: "0 0 7px", borderBottom: `1px solid ${RULE}` }}>{h}</th>
+                        <th key={h} style={{ fontSize: "9px", letterSpacing: "0.07em", textTransform: "uppercase", color: FAINT, fontWeight: 700, textAlign: i >= 2 ? "right" : "left", padding: "0 0 8px", borderBottom: `1px solid ${HAIRS}` }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -1190,21 +1322,21 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
                       .filter((t) => (t.transactionPurpose || t.purpose || "") !== "Initial Cash Balance")
                       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                       .map((t, i) => {
-                        const amt = formatCurrency(Math.abs(parseFloat(t.transactionAmount) || 0));
+                        const amt = n2(parseFloat(t.transactionAmount) || 0);
                         const isRec = t.transactionType === "Receive";
                         const desc = translatePurpose(t.transactionPurpose || t.purpose || "") || (isRec ? "Income" : "Expense");
                         return (
-                          <tr key={i} style={{ borderBottom: "1px solid #edeef0" }}>
-                            <td style={{ padding: "5px 0", fontFamily: MONO, fontSize: "10.5px", color: MUTE, whiteSpace: "nowrap", verticalAlign: "top" }}>{formatDate(t.createdAt)}</td>
-                            <td style={{ padding: "5px 10px", fontSize: "11.5px", color: INK }}>{desc}</td>
-                            <td style={{ padding: "5px 0", fontFamily: MONO, fontSize: "11px", textAlign: "right", color: INK }}>{isRec ? amt : "–"}</td>
-                            <td style={{ padding: "5px 0", fontFamily: MONO, fontSize: "11px", textAlign: "right", color: INK }}>{!isRec ? amt : "–"}</td>
+                          <tr key={i} style={{ borderBottom: `1px solid ${HAIR}` }}>
+                            <td style={{ padding: "6px 0", fontSize: "11px", color: MUTE, whiteSpace: "nowrap", verticalAlign: "top" }}>{formatDate(t.createdAt)}</td>
+                            <td style={{ padding: "6px 10px 6px 0", fontSize: "12px", color: BODY }}>{desc}</td>
+                            <td style={{ padding: "6px 0", fontSize: "12px", textAlign: "right", color: INK }}>{isRec ? amt : "–"}</td>
+                            <td style={{ padding: "6px 0", fontSize: "12px", textAlign: "right", color: INK }}>{!isRec ? amt : "–"}</td>
                           </tr>
                         );
                       })}
                   </tbody>
                 </table>
-                <div style={foot}>{discl}</div>
+                <Foot id="ledgerSheet" />
               </div>
             </div>
           );
