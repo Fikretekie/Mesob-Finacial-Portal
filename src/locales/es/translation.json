@@ -1034,7 +1034,9 @@
     "perm_edit": "Editar",
     "perm_delete": "Eliminar",
     "permsHint": "Ver siempre está permitido. Marca lo que este compañero puede cambiar.",
-    "viewOnly": "solo ver"
+    "viewOnly": "solo ver",
+    "paypalSeatSuccess": "Asiento aprobado — ya está en tu suscripción de PayPal.",
+    "paypalSeatCancel": "Se canceló la aprobación del asiento."
   },
   "connections": {
     "title": "Conexiones",

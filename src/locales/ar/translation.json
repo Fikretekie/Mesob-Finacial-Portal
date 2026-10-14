@@ -1034,7 +1034,9 @@
     "perm_edit": "تعديل",
     "perm_delete": "حذف",
     "permsHint": "العرض مسموح دائمًا. حدد ما يمكن لعضو الفريق تغييره.",
-    "viewOnly": "عرض فقط"
+    "viewOnly": "عرض فقط",
+    "paypalSeatSuccess": "تمت الموافقة على المقعد — أصبح الآن ضمن اشتراك PayPal الخاص بك.",
+    "paypalSeatCancel": "تم إلغاء الموافقة على المقعد."
   },
   "connections": {
     "title": "التكاملات",

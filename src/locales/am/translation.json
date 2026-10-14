@@ -1034,7 +1034,9 @@
     "perm_edit": "አርትዕ",
     "perm_delete": "ሰርዝ",
     "permsHint": "ማየት ሁልጊዜ ይፈቀዳል። ይህ አባል ምን መለወጥ እንደሚችል ምልክት ያድርጉ።",
-    "viewOnly": "ማየት ብቻ"
+    "viewOnly": "ማየት ብቻ",
+    "paypalSeatSuccess": "መቀመጫ ጸድቋል — አሁን በPayPal ደንበኝነትዎ ላይ ነው።",
+    "paypalSeatCancel": "የመቀመጫ ፈቃድ ተሰርዟል።"
   },
   "connections": {
     "title": "ግንኙነቶች",

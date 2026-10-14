@@ -1026,7 +1026,9 @@
     "perm_edit": "Edit",
     "perm_delete": "Delete",
     "permsHint": "Viewing is always allowed. Tick what this teammate can change.",
-    "viewOnly": "view only"
+    "viewOnly": "view only",
+    "paypalSeatSuccess": "Seat approved — it's now on your PayPal subscription.",
+    "paypalSeatCancel": "Seat approval was cancelled."
   },
   "connections": {
     "title": "Connections",

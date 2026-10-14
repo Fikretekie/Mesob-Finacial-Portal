@@ -86,20 +86,23 @@ export async function previewTeamSeat() {
   return res.data;
 }
 
-/** Add one paid teammate seat to the subscription. Call after a paid invite. */
-export async function addTeamSeat() {
+/** Add one paid teammate seat. For Stripe it charges the card silently; for
+ * PayPal the response carries an `approvalUrl` the caller must redirect to.
+ * `redirectUrl` (the app origin) lets the backend pick live vs sandbox PayPal
+ * and build the return URL. */
+export async function addTeamSeat(redirectUrl) {
   const res = await axios.post(
     apiUrl(ROUTES.TEAM_SEAT),
-    { userId: ownerId() },
+    { userId: ownerId(), redirectUrl: redirectUrl || "" },
     { headers: await authHeader() }
   );
   return res.data;
 }
 
 /** Remove one paid teammate seat (call when a paid teammate is removed). */
-export async function removeTeamSeat() {
+export async function removeTeamSeat(redirectUrl) {
   const res = await axios.delete(apiUrl(ROUTES.TEAM_SEAT), {
-    params: { userId: ownerId() },
+    params: { userId: ownerId(), redirectUrl: redirectUrl || "" },
     headers: await authHeader(),
   });
   return res.data;

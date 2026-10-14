@@ -65,14 +65,16 @@ function Team() {
   };
   const [log, setLog] = useState([]); // recent teammate activity (owner only)
   const [billing, setBilling] = useState(null); // owner's subscription status
+  const [seatNotice, setSeatNotice] = useState(""); // PayPal seat approval return
 
   // Billing model: the first teammate is free; each additional one ($9.99/mo)
-  // needs an active card subscription.
+  // needs an active paid subscription (card OR PayPal). Stripe charges silently;
+  // PayPal sends the owner to approve the seat.
   const canCharge = !!(
     billing &&
     billing.subscription &&
     billing.isPaid &&
-    billing.paymentType === "STRIPE" &&
+    ["STRIPE", "PAYPAL"].includes(billing.paymentType) &&
     billing.subscriptionId
   );
   const paidSeat = members.length >= 1; // this new user is the 2nd+ → paid
@@ -182,6 +184,20 @@ function Team() {
     }
   }, []);
 
+  // Returning from a PayPal seat approval (?paypalSeat=success|cancel): confirm.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get("paypalSeat");
+    if (!p) return;
+    setSeatNotice(
+      p === "success"
+        ? t("team.paypalSeatSuccess", "Seat approved — it's now on your PayPal subscription.")
+        : t("team.paypalSeatCancel", "Seat approval was cancelled.")
+    );
+    const u = new URL(window.location.href);
+    u.searchParams.delete("paypalSeat");
+    window.history.replaceState({}, "", u.toString());
+  }, [t]);
+
   const resetInvite = () => {
     setShowInvite(false);
     setEmail("");
@@ -234,7 +250,15 @@ function Team() {
       // seat. Charge after the invite succeeds; don't block the teammate if the
       // seat call fails (backend remains the source of truth).
       if (paidSeat && canCharge) {
-        try { await addTeamSeat(); } catch (seatErr) { console.error("Add team seat failed:", seatErr); }
+        try {
+          const seatRes = await addTeamSeat(window.location.origin);
+          // PayPal returns an approval URL — the teammate is already created,
+          // now send the owner to PayPal to approve the seat charge.
+          if (seatRes && seatRes.approvalUrl) {
+            window.location.href = seatRes.approvalUrl;
+            return;
+          }
+        } catch (seatErr) { console.error("Add team seat failed:", seatErr); }
       }
       resetInvite();
       load();
@@ -257,7 +281,7 @@ function Team() {
       await removeTeamMember(m.id || m.memberId);
       setMembers((prev) => prev.filter((x) => x !== m));
       if (wasPaidSeat && canCharge) {
-        try { await removeTeamSeat(); } catch (seatErr) { console.error("Remove team seat failed:", seatErr); }
+        try { await removeTeamSeat(window.location.origin); } catch (seatErr) { console.error("Remove team seat failed:", seatErr); }
       }
     } catch (err) {
       console.error("Remove member failed:", err);
@@ -294,6 +318,12 @@ function Team() {
           </button>
         )}
       </div>
+
+      {seatNotice && (
+        <div className="team-seat-note" role="status" style={{ cursor: "pointer" }} onClick={() => setSeatNotice("")}>
+          {seatNotice}
+        </div>
+      )}
 
       <div className="team-card">
         {/* Owner row (always present) */}

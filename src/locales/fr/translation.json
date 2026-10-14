@@ -1034,7 +1034,9 @@
     "perm_edit": "Modifier",
     "perm_delete": "Supprimer",
     "permsHint": "La consultation est toujours autorisée. Cochez ce que ce collègue peut modifier.",
-    "viewOnly": "lecture seule"
+    "viewOnly": "lecture seule",
+    "paypalSeatSuccess": "Siège approuvé — il est maintenant sur votre abonnement PayPal.",
+    "paypalSeatCancel": "L'approbation du siège a été annulée."
   },
   "connections": {
     "title": "Connexions",
