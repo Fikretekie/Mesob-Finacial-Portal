@@ -1314,11 +1314,11 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginTop: "14px" }}>
                   <div style={{ ...cardStyle, marginTop: 0 }}>
                     <div style={cardHead}><div style={cardTitle}>Revenue</div><div style={{ ...cardVal, fontSize: "15px" }}>{money(report.totalRevenue)}</div></div>
-                    {revenueOptions ? <ReactApexChart options={tileOpts(revenueOptions, "#2f7d7b")} series={revenueOptions.series} type="area" height={120} width={300} /> : <div style={{ height: 120 }} />}
+                    {revenueOptions ? <ReactApexChart options={tileOpts(revenueOptions, "#2f7d7b")} series={revenueOptions.series} type="area" height={120} width={267} /> : <div style={{ height: 120 }} />}
                   </div>
                   <div style={{ ...cardStyle, marginTop: 0 }}>
                     <div style={cardHead}><div style={cardTitle}>Total payable</div><div style={{ ...cardVal, fontSize: "15px" }}>{money(report.totalPayable)}</div></div>
-                    {payableOptions ? <ReactApexChart options={tileOpts(payableOptions, "#a85d4a")} series={payableOptions.series} type="area" height={120} width={300} /> : <div style={{ height: 120 }} />}
+                    {payableOptions ? <ReactApexChart options={tileOpts(payableOptions, "#a85d4a")} series={payableOptions.series} type="area" height={120} width={267} /> : <div style={{ height: 120 }} />}
                   </div>
                 </div>
 
