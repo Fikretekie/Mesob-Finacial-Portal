@@ -943,11 +943,31 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
   // Capture a hidden HTML sheet into the PDF, slicing a tall sheet across as
   // many pages as needed (so a long ledger paginates). `first` tells it whether
   // the current doc page is still blank (reuse it) or a new page is needed.
-  const addHtmlSheet = async (doc, elementId, pageWidth, pageHeight, first) => {
+  const addHtmlSheet = async (doc, elementId, pageWidth, pageHeight, first, paginate = false) => {
     const el = document.getElementById(elementId);
     if (!el) return first;
     const canvas = await html2canvas(el, { scale: 2, backgroundColor: "#ffffff", logging: false, useCORS: true });
     const pxPerMm = canvas.width / pageWidth;
+    const imgHeightMm = canvas.height / pxPerMm;
+
+    // Statement/overview/chart sheets are one-page designs. If one overflows a
+    // page, scale it DOWN to fit rather than slicing it -- slicing cuts a chart
+    // in half ("out of frame") and spills a sliver onto a near-blank page. Only
+    // the ledger (a genuinely long table) paginates by slicing.
+    if (!paginate || imgHeightMm <= pageHeight) {
+      if (!first) doc.addPage();
+      let drawW = pageWidth;
+      let drawH = imgHeightMm;
+      if (drawH > pageHeight) {
+        drawW = pageWidth * (pageHeight / drawH);
+        drawH = pageHeight;
+      }
+      const offsetX = (pageWidth - drawW) / 2; // center when scaled narrower
+      doc.addImage(canvas.toDataURL("image/png"), "PNG", offsetX, 0, drawW, drawH);
+      return false;
+    }
+
+    // Ledger: slice the tall table across as many pages as needed.
     const pageHpx = Math.floor(pageHeight * pxPerMm);
     let rendered = 0;
     let isFirst = first;
@@ -974,7 +994,7 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
     const wantStatements = reportType === "statements" || reportType === "complete";
     const wantOverview = reportType === "overview" || reportType === "complete";
     let first = true;
-    const sheet = async (id) => { first = await addHtmlSheet(doc, id, pageWidth, pageHeight, first); };
+    const sheet = async (id) => { first = await addHtmlSheet(doc, id, pageWidth, pageHeight, first, id === "ledgerSheet"); };
 
     if (wantStatements) { await sheet("pnlSheet"); await sheet("bsSheet"); }
     if (wantOverview) await sheet("glanceSheet");
@@ -1294,11 +1314,11 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginTop: "14px" }}>
                   <div style={{ ...cardStyle, marginTop: 0 }}>
                     <div style={cardHead}><div style={cardTitle}>Revenue</div><div style={{ ...cardVal, fontSize: "15px" }}>{money(report.totalRevenue)}</div></div>
-                    {revenueOptions ? <ReactApexChart options={tileOpts(revenueOptions, "#2f7d7b")} series={revenueOptions.series} type="area" height={120} width={300} /> : <div style={{ height: 120 }} />}
+                    {revenueOptions ? <ReactApexChart options={tileOpts(revenueOptions, "#2f7d7b")} series={revenueOptions.series} type="area" height={120} width={267} /> : <div style={{ height: 120 }} />}
                   </div>
                   <div style={{ ...cardStyle, marginTop: 0 }}>
                     <div style={cardHead}><div style={cardTitle}>Total payable</div><div style={{ ...cardVal, fontSize: "15px" }}>{money(report.totalPayable)}</div></div>
-                    {payableOptions ? <ReactApexChart options={tileOpts(payableOptions, "#a85d4a")} series={payableOptions.series} type="area" height={120} width={300} /> : <div style={{ height: 120 }} />}
+                    {payableOptions ? <ReactApexChart options={tileOpts(payableOptions, "#a85d4a")} series={payableOptions.series} type="area" height={120} width={267} /> : <div style={{ height: 120 }} />}
                   </div>
                 </div>
 
