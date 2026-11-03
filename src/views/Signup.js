@@ -20,6 +20,8 @@ import { faApple } from "@fortawesome/free-brands-svg-icons";
 import { Spinner } from "reactstrap";
 import "../assets/css/Login.css";
 import LanguageSelector from "components/Languageselector/LanguageSelector";
+import { useSiteConfig } from "utils/siteConfig";
+import "../assets/css/site-gate.css";
 
 const logo = "/transparent.png";
 
@@ -64,6 +66,7 @@ const COUNTRY_CURRENCY = {
 
 const SignupPage = () => {
   const { t } = useTranslation();
+  const site = useSiteConfig();
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -275,7 +278,7 @@ const SignupPage = () => {
     setLoading(true);
     const creationDate = new Date().toISOString();
     const trialEndDate = new Date(
-      Date.now() + 30 * 24 * 60 * 60 * 1000
+      Date.now() + (Number(site.trialDays) || 30) * 24 * 60 * 60 * 1000
     ).toISOString();
     const businessTypeValue =
       selectedBusinessType === "Other"
@@ -977,6 +980,19 @@ const SignupPage = () => {
         return null;
     }
   };
+
+
+  if (site.features.signups === false) {
+    return (
+      <div className="sg-wall">
+        <div className="sg-wall__card">
+          <h1 className="sg-wall__title">Sign-ups are paused</h1>
+          <p className="sg-wall__msg">We're not accepting new accounts right now. Please check back soon.</p>
+          <Link className="sg-wall__link" to="/login">Already have an account? Sign in</Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

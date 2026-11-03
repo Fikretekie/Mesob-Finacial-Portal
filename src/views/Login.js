@@ -333,6 +333,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { homePathForRole, storePerms } from "utils/staffAccess";
 import "../assets/css/Login.css";
 import { Helmet } from "react-helmet";
 import { Spinner } from "reactstrap";
@@ -518,6 +519,7 @@ const Login = () => {
         localStorage.setItem("user_email", acct?.email || "");
         localStorage.setItem("user_name", acct?.name || "");
         localStorage.setItem("role", acct?.role?.toString() || "2");
+        storePerms(acct?.staffPermissions);
         localStorage.setItem("businessType", acct?.businessType || "");
         localStorage.setItem("outstandingDebt", acct?.outstandingDebt || "0");
         localStorage.setItem("valueableItems", acct?.valueableItems || "0");
@@ -534,12 +536,7 @@ const Login = () => {
           localStorage.setItem("teamPerms", JSON.stringify(memberPerms || {}));
         }
 
-        const path =
-          acct?.role === 2
-            ? "/customer/dashboard"
-            : acct?.role === 0
-              ? "/admin/dashboard"
-              : "/customer/dashboard";
+        const path = homePathForRole(acct?.role);
         navigate(path, { replace: true });
       } else {
         console.error("Invalid credentials");

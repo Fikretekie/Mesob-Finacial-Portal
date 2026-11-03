@@ -912,6 +912,7 @@
     }
   },
   "nav": {
+    "ownerConsole": "Owner Console",
     "dashboard": "Dashboard",
     "users": "Users",
     "financialReport": "Financial Report",
@@ -1204,6 +1205,125 @@
         "term": "Income Statement",
         "def": "A summary of your revenue, costs and expenses over a period, ending in your profit or loss."
       }
+    }
+  },
+  "console": {
+    "groups": {
+      "Home": "Home",
+      "Customers": "Customers",
+      "Insights": "Insights",
+      "Engage": "Engage",
+      "Platform": "Platform",
+      "Admin": "Admin"
+    },
+    "sections": {
+      "overview": {
+        "label": "Overview",
+        "purpose": "What needs you today: failed payments, wiped accounts, trials about to lapse."
+      },
+      "approvals": {
+        "label": "Approvals",
+        "purpose": "Risky actions your staff asked to take. Nothing happens until you approve."
+      },
+      "users": {
+        "label": "Customers",
+        "purpose": "Find any customer, see their whole history, fix their account or billing."
+      },
+      "support": {
+        "label": "Support inbox",
+        "purpose": "Answer customer messages before their deadline runs out."
+      },
+      "requests": {
+        "label": "Data requests",
+        "purpose": "Delete or export an account when a customer asks. Legally due in 30 days."
+      },
+      "recovery": {
+        "label": "Data recovery",
+        "purpose": "Put back anything a customer deleted by mistake."
+      },
+      "revenue": {
+        "label": "Revenue",
+        "purpose": "Is the business growing? Monthly revenue, cancellations and why."
+      },
+      "usage": {
+        "label": "Usage",
+        "purpose": "Which features people actually use, and how often they come back."
+      },
+      "messages": {
+        "label": "Messages",
+        "purpose": "Email, push or an in-app banner to any group of customers, now or later."
+      },
+      "automations": {
+        "label": "Automations",
+        "purpose": "Emails that send themselves: welcome, trial reminders, failed payments."
+      },
+      "promos": {
+        "label": "Promotions",
+        "purpose": "Discount codes and the referral reward."
+      },
+      "articles": {
+        "label": "Help articles",
+        "purpose": "Write an answer once; it shows in the app's Help Center and in your replies."
+      },
+      "editor": {
+        "label": "Site editor",
+        "purpose": "Edit the website and app screens like a page builder: text, buttons, sections, brand — then publish."
+      },
+      "issues": {
+        "label": "Issues",
+        "purpose": "Every bug in the website, phone app and backend, grouped by how many people it hits — and the quick fixes."
+      },
+      "site": {
+        "label": "Site control",
+        "purpose": "Change the live app and website without a release: banner, maintenance, features."
+      },
+      "health": {
+        "label": "System health",
+        "purpose": "Spot outages and errors before customers email you, and tell them when you do."
+      },
+      "policies": {
+        "label": "Policies",
+        "purpose": "Terms of Use and Privacy Policy, and who has accepted them."
+      },
+      "changelog": {
+        "label": "What's new",
+        "purpose": "Release notes customers see after an update."
+      },
+      "staff": {
+        "label": "Staff",
+        "purpose": "Employee logins and exactly what each one can do."
+      },
+      "rules": {
+        "label": "Rules",
+        "purpose": "If this happens, do that — routing, tagging and follow-ups without you."
+      },
+      "alerts": {
+        "label": "Alerts",
+        "purpose": "What you get told about, and where: email or phone."
+      },
+      "activity": {
+        "label": "Activity",
+        "purpose": "Every admin action: who did what, when."
+      }
+    },
+    "common": {
+      "search": "Search anything…  Ctrl K",
+      "demo": "Demo data",
+      "refresh": "Refresh",
+      "refreshing": "Refreshing…",
+      "demoNotice": "Demo data: everything here is made up and nothing you do reaches real customers. Turn it off to work on live data.",
+      "waiting": "Waiting on you",
+      "alerts": "Alerts",
+      "markAllRead": "Mark all read",
+      "caughtUp": "You're all caught up.",
+      "alertSettings": "Alert settings",
+      "exitPreview": "Exit preview",
+      "ownerConsole": "Owner console",
+      "staffConsole": "Staff console",
+      "backToConsole": "Back to console",
+      "viewingAs": "Viewing the app as",
+      "updated": "updated",
+      "noMatches": "No matches for"
     }
   }
 }

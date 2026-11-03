@@ -887,6 +887,7 @@
     }
   },
   "nav": {
+    "ownerConsole": "Guddiga Milkiilaha",
     "dashboard": "Dashboard-ka",
     "users": "Isticmaalayaasha",
     "financialReport": "Warbixinta Maaliyadeed",
@@ -1210,6 +1211,125 @@
         "term": "Bayaanka Dakhliga",
         "def": "Kooban ah dakhligaaga, qiimaha iyo kharashyada muddo, oo ku dhammaada faa’iidadaada ama khasaaraha."
       }
+    }
+  },
+  "console": {
+    "groups": {
+      "Home": "Hoyga",
+      "Customers": "Macaamiisha",
+      "Insights": "Falanqayn",
+      "Engage": "Xiriir",
+      "Platform": "Madal",
+      "Admin": "Maamul"
+    },
+    "sections": {
+      "overview": {
+        "label": "Guudmar",
+        "purpose": "Waxa maanta ku sugaya: lacag-bixin fashilantay, akoon la tirtiray, tijaabo dhammaanaysa."
+      },
+      "approvals": {
+        "label": "Oggolaansho",
+        "purpose": "Tallaabooyin khatar ah oo kooxdaadu codsatay. Waxba ma dhacaan ilaa aad oggolaato."
+      },
+      "users": {
+        "label": "Macaamiisha",
+        "purpose": "Hel macmiil kasta, arag taariikhdiisa oo dhan, hagaaji akoonkiisa ama biilkiisa."
+      },
+      "support": {
+        "label": "Sanduuqa caawimada",
+        "purpose": "Uga jawaab macaamiisha intaan wakhtigu dhammaan."
+      },
+      "requests": {
+        "label": "Codsiyada xogta",
+        "purpose": "Tirtir ama soo saar akoon marka macmiilku codsado. Muddada sharciga: 30 maalmood."
+      },
+      "recovery": {
+        "label": "Soo celinta xogta",
+        "purpose": "Soo celi wixii macmiil si qalad ah u tirtiray."
+      },
+      "revenue": {
+        "label": "Dakhli",
+        "purpose": "Ganacsigu ma korayaa? Dakhliga bishii, joojinta iyo sababaha."
+      },
+      "usage": {
+        "label": "Isticmaal",
+        "purpose": "Astaamaha dadku dhab ahaan isticmaalaan iyo inta ay dib u soo laabtaan."
+      },
+      "messages": {
+        "label": "Fariimo",
+        "purpose": "Iimayl, ogeysiis ama fariin gudaha app-ka koox kasta, hadda ama goor dambe."
+      },
+      "automations": {
+        "label": "Iswadid",
+        "purpose": "Iimaylo iskood u baxa: soo dhaweyn, xusuusin tijaabo, lacag fashilantay."
+      },
+      "promos": {
+        "label": "Dalacsiin",
+        "purpose": "Koodhadh qiimo-dhimis iyo abaalmarinta tixraaca."
+      },
+      "articles": {
+        "label": "Maqaallo caawimo",
+        "purpose": "Jawaab hal mar qor; waxay ka muuqataa Xarunta Caawimada iyo jawaabahaaga."
+      },
+      "editor": {
+        "label": "Tifaftiraha bogga",
+        "purpose": "U tafatir bogga iyo shaashadaha app-ka sida dhise bog, kadibna daabac."
+      },
+      "issues": {
+        "label": "Cilado",
+        "purpose": "Cillad kasta oo bogga, app-ka iyo backend-ka ah, loo kala soocay inta qof ee ay saameysay, oo leh hagaajin degdeg ah."
+      },
+      "site": {
+        "label": "Maamulka bogga",
+        "purpose": "Si toos ah u beddel app-ka iyo bogga adigoon nooc cusub soo saarin: fariin, dayactir, astaamo."
+      },
+      "health": {
+        "label": "Caafimaadka nidaamka",
+        "purpose": "Ogow hakad iyo cilado ka hor macaamiisha, una sheeg."
+      },
+      "policies": {
+        "label": "Siyaasado",
+        "purpose": "Shuruudaha adeegga iyo siyaasadda asturnaanta, iyo cidda aqbashay."
+      },
+      "changelog": {
+        "label": "Waxa cusub",
+        "purpose": "Qoraallada nooca ee macaamiishu arkaan cusbooneysiin kadib."
+      },
+      "staff": {
+        "label": "Shaqaale",
+        "purpose": "Gelitaanka shaqaalaha iyo waxa mid walba sameyn karo."
+      },
+      "rules": {
+        "label": "Xeerar",
+        "purpose": "Haddii tani dhacdo, samee taas: qaybin, calaamadeyn iyo dabagal adiga la'aantaa."
+      },
+      "alerts": {
+        "label": "Digniino",
+        "purpose": "Waxa laguu sheegayo iyo meesha: iimayl ama taleefan."
+      },
+      "activity": {
+        "label": "Dhaqdhaqaaq",
+        "purpose": "Tallaabo kasta oo maamul: cidda, waxa iyo goorta."
+      }
+    },
+    "common": {
+      "search": "Raadi wax kasta…  Ctrl K",
+      "demo": "Xog tijaabo",
+      "refresh": "Cusbooneysii",
+      "refreshing": "Waa la cusbooneysiinayaa…",
+      "demoNotice": "Xog tijaabo: wax walba halkan waa been-abuur, waxna ma gaaraan macaamiil dhab ah. Dami si aad xogta dhabta ah ugu shaqeyso.",
+      "waiting": "Adiga ayay ku sugayaan",
+      "alerts": "Digniino",
+      "markAllRead": "Dhammaan calaamadee la akhriyay",
+      "caughtUp": "Wax cusub ma jiraan.",
+      "alertSettings": "Dejinta digniinaha",
+      "exitPreview": "Ka bax horudhaca",
+      "ownerConsole": "Guddiga milkiilaha",
+      "staffConsole": "Guddiga shaqaalaha",
+      "backToConsole": "Ku laabo guddiga",
+      "viewingAs": "Waxaad app-ka u arkaysaa sida",
+      "updated": "la cusbooneysiiyay",
+      "noMatches": "Natiijo lama helin:"
     }
   }
 }

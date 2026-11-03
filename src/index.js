@@ -30,6 +30,7 @@ import OAuthListener from "components/OAuthListener";
 import NativeOAuthListener from "components/NativeOAuthListener";
 import { getNativeIdToken } from "./utils/nativeOAuth";
 import "./i18n";
+import { installErrorReporter } from "./utils/issues";
 
 const AdminLayout = lazy(() => import("layouts/Admin.js"));
 const FinancialLayout = lazy(() => import("layouts/financial.js"));
@@ -39,10 +40,13 @@ const SignupPage = lazy(() => import("./views/Signup"));
 const ForgotPassword = lazy(() => import("views/ForgotPassword"));
 const SubscriptionPlans = lazy(() => import("views/Payment/SubscriptionPlans"));
 const Confirm = lazy(() => import("views/Confirm"));
-const TermsOfUse = lazy(() => import("views/Terms"));
+const PolicyPage = lazy(() => import("views/PolicyPage"));
 const CompleteProfile = lazy(() => import("views/CompleteProfile"));
 
 import { getEnv } from "./config/api";
+
+// Uncaught errors in the website report themselves to the owner console.
+installErrorReporter();
 
 // Create Redux store
 const store = configureStore({
@@ -259,7 +263,8 @@ root.render(
         <Route path="/customer/*" element={<CustomerLayout />} />
         {/* Subscription Routes */}
         <Route path="/subscription" element={<SubscriptionPlans />} />
-        <Route path="/terms-of-use" element={<TermsOfUse />} />
+        <Route path="/terms-of-use" element={<PolicyPage kind="terms" />} />
+        <Route path="/privacy-policy" element={<PolicyPage kind="privacy" />} />
         {/* Redirect any unknown routes to /login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>

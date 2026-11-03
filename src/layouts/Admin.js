@@ -14,9 +14,13 @@ import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
 // core components
 import DemoNavbar from "components/Navbars/DemoNavbar.js";
 import Footer from "components/Footer/Footer.js";
-import Sidebar from "components/Sidebar/Sidebar.js";
+import ConsoleSidebar from "components/ConsoleSidebar";
+import SiteGate from "components/SiteGate";
+import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { currentRole, STAFF_ROLE, STAFF_PATHS } from "utils/staffAccess";
 import MesobFinancial2 from "views/mesobfinancial2";
-import routes from "routes.js";
+import allRoutes from "routes.js";
 import Receipts from "views/Receipts";
 
 var ps;
@@ -28,6 +32,10 @@ function Admin(props) {
   const [showGoToTop, setShowGoToTop] = useState(false);
   const mainPanel = useRef();
   const selectedUser = useSelector((state) => state.selectedUser);
+  const { t } = useTranslation();
+  // Staff only get the console (and help); every other admin page is owner-only.
+  const isStaff = currentRole() === STAFF_ROLE;
+  const routes = isStaff ? allRoutes.filter((r) => STAFF_PATHS.includes(r.path)) : allRoutes;
 
   useEffect(() => {
     const userEmail = localStorage.getItem("user_email");
@@ -85,13 +93,23 @@ function Admin(props) {
 
   return (
     <div className="wrapper">
-      <Sidebar {...props} routes={routes} backgroundColor={backgroundColor} />
+      <ConsoleSidebar backgroundColor={backgroundColor} />
       <div
         className="main-panel"
         ref={mainPanel}
         style={{ height: "100vh", overflow: "auto" }}
       >
         <DemoNavbar {...props} />
+        {/* Customer-app pages under /admin only exist for "View as customer". */}
+        {!location.pathname.startsWith("/admin/console") && (
+          <div className="console-viewas" role="status">
+            <span>
+              {t("console.common.viewingAs", "Viewing the app as")} <b>{selectedUser?.email || localStorage.getItem("selectedUserEmail") || "a customer"}</b>
+            </span>
+            <Link to="/admin/console?tab=users" className="console-viewas__back">{t("console.common.backToConsole", "Back to console")}</Link>
+          </div>
+        )}
+        <SiteGate>
         <Suspense fallback={<div style={{ display: "flex", justifyContent: "center", padding: "60px" }}><div className="spinner-border text-primary" role="status" /></div>}>
         <Routes>
           {routes.map((prop, key) => {
@@ -126,10 +144,12 @@ function Admin(props) {
           })}
           <Route
             path="/admin"
-            element={<Navigate to="/admin/dashboard" replace />}
+            element={<Navigate to="/admin/console" replace />}
           />
+          {isStaff && <Route path="*" element={<Navigate to="/admin/console" replace />} />}
         </Routes>
         </Suspense>
+        </SiteGate>
         <Footer fluid />
         {showGoToTop && (
           <button

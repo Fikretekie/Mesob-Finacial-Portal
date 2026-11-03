@@ -887,6 +887,7 @@
     }
   },
   "nav": {
+    "ownerConsole": "Consola del propietario",
     "dashboard": "Panel",
     "users": "Usuarios",
     "financialReport": "Informe financiero",
@@ -1210,6 +1211,125 @@
         "term": "Estado de resultados",
         "def": "Un resumen de tus ingresos, costos y gastos durante un periodo, que termina en tu ganancia o pérdida."
       }
+    }
+  },
+  "console": {
+    "groups": {
+      "Home": "Inicio",
+      "Customers": "Clientes",
+      "Insights": "Análisis",
+      "Engage": "Interacción",
+      "Platform": "Plataforma",
+      "Admin": "Administración"
+    },
+    "sections": {
+      "overview": {
+        "label": "Resumen",
+        "purpose": "Lo que necesita tu atención hoy: pagos fallidos, cuentas borradas, pruebas por vencer."
+      },
+      "approvals": {
+        "label": "Aprobaciones",
+        "purpose": "Acciones de riesgo que tu equipo pidió hacer. Nada ocurre hasta que apruebes."
+      },
+      "users": {
+        "label": "Clientes",
+        "purpose": "Encuentra cualquier cliente, ve todo su historial y arregla su cuenta o facturación."
+      },
+      "support": {
+        "label": "Bandeja de soporte",
+        "purpose": "Responde a los clientes antes de que venza su plazo."
+      },
+      "requests": {
+        "label": "Solicitudes de datos",
+        "purpose": "Borra o exporta una cuenta cuando el cliente lo pida. Plazo legal: 30 días."
+      },
+      "recovery": {
+        "label": "Recuperación de datos",
+        "purpose": "Restaura lo que un cliente borró por error."
+      },
+      "revenue": {
+        "label": "Ingresos",
+        "purpose": "¿Crece el negocio? Ingresos mensuales, cancelaciones y motivos."
+      },
+      "usage": {
+        "label": "Uso",
+        "purpose": "Qué funciones se usan de verdad y con qué frecuencia vuelve la gente."
+      },
+      "messages": {
+        "label": "Mensajes",
+        "purpose": "Correo, notificación o aviso en la app para cualquier grupo, ahora o más tarde."
+      },
+      "automations": {
+        "label": "Automatizaciones",
+        "purpose": "Correos que se envían solos: bienvenida, avisos de prueba, pagos fallidos."
+      },
+      "promos": {
+        "label": "Promociones",
+        "purpose": "Códigos de descuento y la recompensa por referidos."
+      },
+      "articles": {
+        "label": "Artículos de ayuda",
+        "purpose": "Escribe una respuesta una vez; aparece en el Centro de ayuda y en tus respuestas."
+      },
+      "editor": {
+        "label": "Editor del sitio",
+        "purpose": "Edita la web y las pantallas de la app como un constructor de páginas, y publica."
+      },
+      "issues": {
+        "label": "Incidencias",
+        "purpose": "Cada error de la web, la app y el backend, por número de personas afectadas, con arreglos rápidos."
+      },
+      "site": {
+        "label": "Control del sitio",
+        "purpose": "Cambia la app y la web en vivo sin publicar una versión: aviso, mantenimiento, funciones."
+      },
+      "health": {
+        "label": "Estado del sistema",
+        "purpose": "Detecta caídas y errores antes que los clientes, y avísales."
+      },
+      "policies": {
+        "label": "Políticas",
+        "purpose": "Términos de uso y política de privacidad, y quién los aceptó."
+      },
+      "changelog": {
+        "label": "Novedades",
+        "purpose": "Notas de versión que ven los clientes tras una actualización."
+      },
+      "staff": {
+        "label": "Personal",
+        "purpose": "Accesos de empleados y exactamente qué puede hacer cada uno."
+      },
+      "rules": {
+        "label": "Reglas",
+        "purpose": "Si pasa esto, haz aquello: asignación, etiquetas y seguimientos sin ti."
+      },
+      "alerts": {
+        "label": "Alertas",
+        "purpose": "De qué te avisamos y dónde: correo o teléfono."
+      },
+      "activity": {
+        "label": "Actividad",
+        "purpose": "Cada acción de administración: quién hizo qué y cuándo."
+      }
+    },
+    "common": {
+      "search": "Buscar cualquier cosa…  Ctrl K",
+      "demo": "Datos de demostración",
+      "refresh": "Actualizar",
+      "refreshing": "Actualizando…",
+      "demoNotice": "Datos de demostración: todo es ficticio y nada llega a clientes reales. Desactívalo para trabajar con datos reales.",
+      "waiting": "Pendiente para ti",
+      "alerts": "Alertas",
+      "markAllRead": "Marcar todo como leído",
+      "caughtUp": "Estás al día.",
+      "alertSettings": "Ajustes de alertas",
+      "exitPreview": "Salir de la vista previa",
+      "ownerConsole": "Consola del propietario",
+      "staffConsole": "Consola del personal",
+      "backToConsole": "Volver a la consola",
+      "viewingAs": "Viendo la app como",
+      "updated": "actualizado",
+      "noMatches": "Sin resultados para"
     }
   }
 }

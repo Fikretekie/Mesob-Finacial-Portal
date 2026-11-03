@@ -887,6 +887,7 @@
     }
   },
   "nav": {
+    "ownerConsole": "Console propriétaire",
     "dashboard": "Tableau de bord",
     "users": "Utilisateurs",
     "financialReport": "Rapport financier",
@@ -1210,6 +1211,125 @@
         "term": "Compte de résultat",
         "def": "Un résumé de vos revenus, coûts et dépenses sur une période, aboutissant à votre bénéfice ou perte."
       }
+    }
+  },
+  "console": {
+    "groups": {
+      "Home": "Accueil",
+      "Customers": "Clients",
+      "Insights": "Analyses",
+      "Engage": "Engagement",
+      "Platform": "Plateforme",
+      "Admin": "Administration"
+    },
+    "sections": {
+      "overview": {
+        "label": "Vue d'ensemble",
+        "purpose": "Ce qui vous attend aujourd'hui : paiements échoués, comptes effacés, essais qui expirent."
+      },
+      "approvals": {
+        "label": "Approbations",
+        "purpose": "Actions sensibles demandées par votre équipe. Rien ne se passe sans votre accord."
+      },
+      "users": {
+        "label": "Clients",
+        "purpose": "Trouvez n'importe quel client, voyez tout son historique, corrigez son compte ou sa facturation."
+      },
+      "support": {
+        "label": "Boîte de support",
+        "purpose": "Répondez aux clients avant l'échéance."
+      },
+      "requests": {
+        "label": "Demandes de données",
+        "purpose": "Supprimez ou exportez un compte à la demande du client. Délai légal : 30 jours."
+      },
+      "recovery": {
+        "label": "Récupération",
+        "purpose": "Restaurez ce qu'un client a supprimé par erreur."
+      },
+      "revenue": {
+        "label": "Revenus",
+        "purpose": "L'entreprise grandit-elle ? Revenus mensuels, résiliations et raisons."
+      },
+      "usage": {
+        "label": "Utilisation",
+        "purpose": "Les fonctions réellement utilisées et la fréquence de retour."
+      },
+      "messages": {
+        "label": "Messages",
+        "purpose": "E-mail, notification ou bannière pour n'importe quel groupe, maintenant ou plus tard."
+      },
+      "automations": {
+        "label": "Automatisations",
+        "purpose": "E-mails envoyés tout seuls : bienvenue, rappels d'essai, paiements échoués."
+      },
+      "promos": {
+        "label": "Promotions",
+        "purpose": "Codes de réduction et récompense de parrainage."
+      },
+      "articles": {
+        "label": "Articles d'aide",
+        "purpose": "Écrivez une réponse une fois ; elle apparaît dans le Centre d'aide et vos réponses."
+      },
+      "editor": {
+        "label": "Éditeur du site",
+        "purpose": "Modifiez le site et les écrans de l'app comme un constructeur de pages, puis publiez."
+      },
+      "issues": {
+        "label": "Incidents",
+        "purpose": "Chaque bug du site, de l'app et du backend, classé par nombre de personnes touchées, avec correctifs rapides."
+      },
+      "site": {
+        "label": "Contrôle du site",
+        "purpose": "Modifiez l'app et le site en direct sans nouvelle version : bannière, maintenance, fonctions."
+      },
+      "health": {
+        "label": "État du système",
+        "purpose": "Repérez pannes et erreurs avant vos clients, et prévenez-les."
+      },
+      "policies": {
+        "label": "Politiques",
+        "purpose": "Conditions d'utilisation et confidentialité, et qui les a acceptées."
+      },
+      "changelog": {
+        "label": "Nouveautés",
+        "purpose": "Notes de version vues par les clients après une mise à jour."
+      },
+      "staff": {
+        "label": "Équipe",
+        "purpose": "Accès des employés et ce que chacun peut faire."
+      },
+      "rules": {
+        "label": "Règles",
+        "purpose": "Si ceci arrive, faire cela : affectation, étiquettes et relances sans vous."
+      },
+      "alerts": {
+        "label": "Alertes",
+        "purpose": "Ce qu'on vous signale et où : e-mail ou téléphone."
+      },
+      "activity": {
+        "label": "Activité",
+        "purpose": "Chaque action d'administration : qui, quoi, quand."
+      }
+    },
+    "common": {
+      "search": "Rechercher…  Ctrl K",
+      "demo": "Données de démo",
+      "refresh": "Actualiser",
+      "refreshing": "Actualisation…",
+      "demoNotice": "Données de démo : tout est fictif et rien n'atteint de vrais clients. Désactivez-les pour travailler sur les données réelles.",
+      "waiting": "En attente de vous",
+      "alerts": "Alertes",
+      "markAllRead": "Tout marquer comme lu",
+      "caughtUp": "Vous êtes à jour.",
+      "alertSettings": "Réglages des alertes",
+      "exitPreview": "Quitter l'aperçu",
+      "ownerConsole": "Console du propriétaire",
+      "staffConsole": "Console de l'équipe",
+      "backToConsole": "Retour à la console",
+      "viewingAs": "Vous voyez l'app en tant que",
+      "updated": "mis à jour",
+      "noMatches": "Aucun résultat pour"
     }
   }
 }

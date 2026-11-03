@@ -1,5 +1,6 @@
 import { apiUrl, ROUTES, CURRENT_ENV } from "../config/api";
 import { clearAppStorageKeepingSession } from "./authStorage";
+import { homePathForRole, storePerms } from "./staffAccess";
 
 export const completeOAuthSignIn = async ({ email, name, provider, userId, navigate }) => {
   if (!email) {
@@ -35,12 +36,13 @@ export const completeOAuthSignIn = async ({ email, name, provider, userId, navig
     localStorage.setItem("user_email", userData.email || email);
     localStorage.setItem("user_name", userData.name || "");
     localStorage.setItem("role", userData.role?.toString() || "2");
+    storePerms(userData.staffPermissions);
     localStorage.setItem("outstandingDebt", userData.outstandingDebt || "0");
     localStorage.setItem("valueableItems", userData.valueableItems || "0");
     localStorage.setItem("cashBalance", userData.cashBalance || "0");
     localStorage.setItem("authToken", "authenticated");
 
-    const dashboardPath = userData.role === 2 ? "/customer/dashboard" : "/admin/dashboard";
+    const dashboardPath = homePathForRole(userData.role ?? 2);
     navigate(dashboardPath, { replace: true });
   } catch (apiError) {
     console.error("OAuth completion API error:", apiError);

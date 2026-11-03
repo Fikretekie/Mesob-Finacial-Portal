@@ -8,10 +8,16 @@ import Footer from "components/Footer/Footer.js";
 import Sidebar from "components/Sidebar/Sidebar";
 
 import { getCustomerRoutes } from "routes.js";
+import SiteGate from "components/SiteGate";
+import PolicyGate from "components/PolicyGate";
+import { useSiteConfig } from "utils/siteConfig";
+import { currentRole, STAFF_ROLE } from "utils/staffAccess";
 
 function CustomerLayout(props) {
   const location = useLocation();
   const mainPanelRef = React.useRef(null);
+  // Subscribing re-renders the layout when the owner flips a feature switch.
+  useSiteConfig();
   // Recompute per render so businessType/role set at login apply without a reload.
   const customerRoutes = getCustomerRoutes();
 
@@ -33,12 +39,16 @@ function CustomerLayout(props) {
     });
   };
 
+  if (currentRole() === STAFF_ROLE) {
+    return <Navigate to="/admin/console" replace />;
+  }
+
   return (
     <div className="wrapper">
       <Sidebar {...props} routes={customerRoutes} backgroundColor="blue" />
       <div className="main-panel" ref={mainPanelRef}>
         <DemoNavbar {...props} />
-        <div >
+        <SiteGate>
           <Suspense
             fallback={
               <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
@@ -54,7 +64,8 @@ function CustomerLayout(props) {
               />
             </Routes>
           </Suspense>
-        </div>
+          <PolicyGate />
+        </SiteGate>
         <Footer fluid />
       </div>
     </div>

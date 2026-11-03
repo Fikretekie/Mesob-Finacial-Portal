@@ -1,4 +1,5 @@
 import { lazy } from "react";
+import { getSiteConfig, isFeatureOn } from "utils/siteConfig";
 
 // Each view is code-split into its own chunk (React.lazy) so visiting a page
 // only downloads that page's JS, instead of shipping the whole app up front.
@@ -20,8 +21,17 @@ const Team = lazy(() => import("views/Team"));
 const Connections = lazy(() => import("views/Connections"));
 const TransactionReview = lazy(() => import("views/TransactionReview"));
 const HelpCenter = lazy(() => import("views/HelpCenter"));
+const OwnerConsole = lazy(() => import("views/OwnerConsole"));
 
 const adminRoutes = [
+  {
+    path: "/console",
+    name: "Owner Console",
+    nameKey: "nav.ownerConsole",
+    icon: "business_chart-bar-32",
+    component: <OwnerConsole />,
+    layout: "/admin",
+  },
   {
     path: "/dashboard",
     name: "Dashboard",
@@ -92,6 +102,7 @@ const adminRoutes = [
 // Read businessType/role at CALL time (not module load) so newly-set values
 // after login are reflected without a full page reload.
 const getCustomerRoutes = () => {
+  const site = getSiteConfig();
   const userRole = parseInt(localStorage.getItem("role"), 10);
   const userBusinessType = localStorage.getItem("businessType");
   return [
@@ -114,6 +125,7 @@ const getCustomerRoutes = () => {
   
   {
     path: "/receipts",
+    feature: "receipts",
     name: "Receipts",
     nameKey: "nav.receipts",
     icon: "files_paper",
@@ -122,6 +134,7 @@ const getCustomerRoutes = () => {
   },
   {
     path: "/documents",
+    feature: "documents",
     name: "Documents",
     nameKey: "nav.documents",
     icon: "files_box",
@@ -130,6 +143,7 @@ const getCustomerRoutes = () => {
   },
   {
     path: "/mileage-tracker",
+    feature: "mileage",
     name: "Mileage Tracker",
     nameKey: "nav.mileageTracker",
     icon: "location_pin",
@@ -138,6 +152,7 @@ const getCustomerRoutes = () => {
   },
   {
     path: "/trip-history",
+    feature: "mileage",
     name: "Trip History",
     nameKey: "nav.tripHistory",
     icon: "location_map-big",
@@ -148,6 +163,7 @@ const getCustomerRoutes = () => {
     ? [
         {
           path: "/fuel-purchase",
+          feature: "ifta",
           name: "Fuel Purchase",
           nameKey: "nav.fuelPurchase",
           icon: "shopping_cart-simple",
@@ -156,6 +172,7 @@ const getCustomerRoutes = () => {
         },
         {
           path: "/ifta-report",
+          feature: "ifta",
           name: "IFTA Report",
           nameKey: "nav.iftaReport",
           icon: "business_chart-bar-32",
@@ -166,6 +183,7 @@ const getCustomerRoutes = () => {
     : []),
   {
     path: "/connections",
+    feature: "connections",
     name: "Connections",
     nameKey: "nav.connections",
     icon: "ui-1_settings-gear-63",
@@ -185,6 +203,7 @@ const getCustomerRoutes = () => {
     ? [
         {
           path: "/team",
+          feature: "team",
           name: "Team",
           nameKey: "nav.team",
           icon: "users_single-02",
@@ -203,6 +222,7 @@ const getCustomerRoutes = () => {
   },
   {
     path: "/csv",
+    feature: "backups",
     name: "Backup CSV",
     nameKey: "nav.backupCsv",
     icon: "files_single-copy-04",
@@ -229,7 +249,7 @@ const getCustomerRoutes = () => {
     component: <HelpCenter />,
     layout: "/customer",
   },
-  ];
+  ].filter((r) => !r.feature || isFeatureOn(r.feature, site));
 };
 
 // Backward-compatible static snapshot (evaluated once at import). Prefer
