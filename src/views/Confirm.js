@@ -10,7 +10,7 @@ import axios from "axios";
 import { apiUrl, ROUTES, STAGING_API_URL, CURRENT_ENV } from "../config/api";
 import { authHeader } from "../utils/apiFetch";
 import "../assets/css/Login.css";
-import AuthLanguage from "components/AuthLanguage";
+import LanguageSelector from "components/Languageselector/LanguageSelector";
 
 const logo = "/transparent.png";
 const CODE_LENGTH = 6;
@@ -170,7 +170,6 @@ const Confirm = () => {
         localStorage.setItem("user_name", result.user?.name || "");
         localStorage.setItem("role", result.user?.role?.toString() || "2");
         localStorage.setItem("businessType", result.user?.businessType || "");
-        localStorage.setItem("companyName", result.user?.companyName || "");
         localStorage.setItem("outstandingDebt", result.user?.outstandingDebt || "0");
         localStorage.setItem("valueableItems", result.user?.valueableItems || "0");
         localStorage.setItem("cashBalance", result.user?.cashBalance || "0");
@@ -254,6 +253,9 @@ const Confirm = () => {
       </Helmet>
       <NotificationAlert ref={notificationAlertRef} />
       <div className="auth">
+        <div className="auth__lang">
+          <LanguageSelector />
+        </div>
         <aside className="auth__brand">
           <div className="auth__logo">
             <img src={logo} alt="Meksova Finance" />
@@ -280,9 +282,9 @@ const Confirm = () => {
         </aside>
 
         <main className="auth__panel">
-          <div className="login-box signup-box login-box--v2">
+          <div className="login-box signup-box">
             <img src={logo} alt="Meksova" className="logo_img" />
-            <h2 className="signup-title">
+            <h2 className="signup-title" style={{ textAlign: "center" }}>
               {t("auth.confirm.title")}
             </h2>
             <p className="signup-sub" style={{ textAlign: "center" }}>
@@ -341,9 +343,6 @@ const Confirm = () => {
               {t("auth.confirm.wrongEmail")}{" "}
               <Link to="/signup">{t("auth.confirm.backToSignup")}</Link>
             </p>
-            <div className="auth-foot">
-              <AuthLanguage />
-            </div>
           </div>
         </main>
       </div>
