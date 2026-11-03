@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The bg token from src/assets/css/tokens.css (dark theme, the app default). -->
+    <color name="app_background">#0A0A0B</color>
+</resources>

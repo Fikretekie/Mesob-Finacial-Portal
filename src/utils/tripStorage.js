@@ -15,6 +15,19 @@ export async function fetchTrips() {
   return Array.isArray(res.data) ? res.data : [];
 }
 
+let cache = null;
+
+/** fetchTrips, shared for a few seconds so screens opening together make one request. */
+export function fetchTripsShared(maxAgeMs = 15000) {
+  if (!cache || Date.now() - cache.at > maxAgeMs) {
+    cache = { at: Date.now(), promise: fetchTrips() };
+    cache.promise.catch(() => {
+      cache = null;
+    });
+  }
+  return cache.promise;
+}
+
 /** Saves one trip to the backend, tagged with the active business.
  * Returns the saved trip (with its tripId). */
 export async function saveTrip(trip) {
@@ -22,6 +35,7 @@ export async function saveTrip(trip) {
   const businessId = getCurrentBusinessId();
   const taggedTrip = businessId ? { ...trip, businessId } : trip;
   const res = await axios.post(apiUrl(ROUTES.MILEAGE_TRIP), { userId, trip: taggedTrip });
+  cache = null;
   return res.data;
 }
 

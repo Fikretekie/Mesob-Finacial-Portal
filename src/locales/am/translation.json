@@ -680,7 +680,8 @@
     "locationError": "የአካባቢ ስህተት: {{message}}",
     "signalUnavailable": "ምልክቱ ለጊዜው አይገኝም፣ በድጋሚ በመሞከር ላይ…",
     "noGpsSupport": "ይህ አሳሽ የጂፒኤስ አካባቢን አይደግፍም።",
-    "saveError": "ጉዞውን ማስቀመጥ አልተቻለም። ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ።"
+    "saveError": "ጉዞውን ማስቀመጥ አልተቻለም። ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ።",
+    "saveForIfta": "ለIFTA ማይሎች አስቀምጥ"
   },
   "tripHistory": {
     "loading": "ጉዞዎች በመጫን ላይ…",
@@ -717,7 +718,7 @@
       "processingApple": "የApple መግቢያ በማስኬድ ላይ…",
       "noAccount": "እስካሁን መለያ የለዎትም?",
       "signUp": "ተመዝገብ",
-      "accountNotFound": "መለያ አልተገኘም። እባክዎ ይመዝገቡ ወይም ድጋፍን ያግኙ።",
+      "accountNotFound": "ለዚህ ኢሜይል መለያ አላገኘንም።",
       "loginFailed": "መግባት አልተሳካም። እባክዎ እንደገና ይሞክሩ።",
       "eyebrow": "Meksova Finance",
       "headline1": "መዝገቦችዎ፣",
@@ -730,7 +731,18 @@
       "loginBtn": "ግባ",
       "google": "በGoogle ይቀጥሉ",
       "apple": "በApple ይቀጥሉ",
-      "signup": "ይመዝገቡ"
+      "signup": "ይመዝገቡ",
+      "welcomeBack": "እንኳን ደህና መጡ",
+      "subtitle": "ሂሳብዎን ወቅታዊ ለማድረግ ይግቡ።",
+      "orEmail": "ወይም በኢሜይል",
+      "changeEmail": "ቀይር",
+      "continue": "ቀጥል",
+      "signIn": "ግባ",
+      "newHere": "ለመክሶቫ አዲስ ነዎት?",
+      "createAccount": "መለያ ይፍጠሩ",
+      "trust": "የባንክ ደረጃ ምስጠራ · መረጃዎን በፍጹም አንሸጥም",
+      "wrongPassword": "ይህ የይለፍ ቃል ትክክል አይደለም። እንደገና ይሞክሩ ወይም ዳግም ያስጀምሩት።",
+      "useDifferent": "ሌላ መለያ ይጠቀሙ"
     },
     "marketing": {
       "trustedBy": "በመቶዎች የንግድ ባለቤቶች የታመነ",
@@ -887,6 +899,7 @@
     }
   },
   "nav": {
+    "ownerConsole": "የባለቤት መቆጣጠሪያ",
     "dashboard": "ዳሽቦርድ",
     "users": "ተጠቃሚዎች",
     "financialReport": "የፋይናንስ ሪፖርት",
@@ -945,13 +958,28 @@
     "jurisdiction": "ስልጣን ክልል",
     "miles": "ማይሎች",
     "noData": "ለዚህ ሩብ ዓመት የተመዘገበ ጉዞ ወይም የነዳጅ ግዢ የለም።",
-    "note": "ይህ ሪፖርት ጠቅላላዎችን ብቻ ያሳያል — የሚከፈለውን ግብር አያሰላም። ከIFTA ማስታወቂያዎ ጋር ይጠቀሙበት ወይም ለአዘጋጅዎ ይስጡት።",
+    "note": "አሃዞቹ እንደ IFTA ማመልከቻ ተደርድረዋል። የታክስ መጠኖች በየሩብ ዓመቱ ስለሚቀየሩ መጠንና የሚከፈል ታክስ አይታዩም፤ የመነሻ ግዛትዎ ፖርታል ከእነዚህ አሃዞች ያሰላቸዋል። አሉታዊ የተጣራ አሃዝ ክሬዲት ነው።",
     "quarter": "ሩብ ዓመት",
     "subtitle": "በስልጣን ክልል የተጓዙ ማይሎች እና የተገዛ ነዳጅ፣ በሩብ ዓመት።",
     "title": "የIFTA የሩብ ዓመት ሪፖርት",
     "totalGallons": "ጠቅላላ ጋሎኖች",
     "totalMiles": "ጠቅላላ ማይሎች",
-    "year": "ዓመት"
+    "year": "ዓመት",
+    "loadError": "ጉዞዎችዎን እና የነዳጅ ግዢዎችዎን መጫን አልተቻለም። እንደገና ይሞክሩ።",
+    "exportError": "PDF መፍጠር አልተቻለም። እንደገና ይሞክሩ።",
+    "exporting": "PDF እየተፈጠረ ነው…",
+    "exportPdf": "PDF አውርድ",
+    "carrierTitle": "የአጓጓዥ መረጃ (በሪፖርቱ ላይ ይታተማል)",
+    "carrierName": "የአጓጓዥ ስም",
+    "carrierAccount": "የIFTA መለያ ቁጥር",
+    "carrierBase": "መነሻ ግዛት",
+    "fleetMpg": "የመርከብ MPG",
+    "taxableGallons": "ታክስ የሚከፈልባቸው ጋሎኖች",
+    "netGallons": "የተጣራ ታክስ ጋሎኖች",
+    "total": "ድምር",
+    "noFuel": "በዚህ ሩብ ዓመት የነዳጅ ግዢ አልተመዘገበም፤ ስለዚህ MPG እና ታክስ የሚከፈልባቸው ጋሎኖች ገና ሊሰሉ አይችሉም።",
+    "unassigned_one": "1 ጉዞ ({{miles}} ማይል) የግዛት ክፍፍል የለውም፣ በሰንጠረዡ ውስጥ የለም። ከማስገባትዎ በፊት ማይሎቹን ወደ ትክክለኛው ግዛት ይጨምሩ።",
+    "unassigned_other": "{{count}} ጉዞዎች ({{miles}} ማይል) የግዛት ክፍፍል የላቸውም፣ በሰንጠረዡ ውስጥ የሉም። ከማስገባትዎ በፊት ማይሎቹን ወደ ትክክለኛዎቹ ግዛቶች ይጨምሩ።"
   },
   "quickScan": {
     "scanReceipt": "ደረሰኝ ይቃኙ",
@@ -1081,7 +1109,19 @@
     "addButton": "{{count}} ወደ Meksova ያክሉ",
     "autoImportLabel": "ይህ ካርድ ለንግድ ብቻ ነው — በሚቀጥለው ጊዜ ሁሉንም በራስ-ሰር ያክሉ",
     "bannerText": "{{count}} ከባንክዎ የመጡ ግብይቶች ግምገማዎን ይፈልጋሉ",
-    "bannerButton": "አሁን ይገምግሙ"
+    "bannerButton": "አሁን ይገምግሙ",
+    "matchNote_one": "1 ክፍያ አስቀድመው ከመዘገቡት ወጪ ጋር ይዛመዳል፤ ሁለት ጊዜ እንዳይቆጠር ምልክቱ ተነስቷል። ቢሆንም ለመጨመር ምልክት ያድርጉበት።",
+    "matchNote_other": "{{count}} ክፍያዎች አስቀድመው ከመዘገቧቸው ወጪዎች ጋር ይዛመዳሉ፤ ሁለት ጊዜ እንዳይቆጠሩ ምልክታቸው ተነስቷል። ቢሆንም ለመጨመር ምልክት ያድርጉ።",
+    "bannerMatches_one": "1 አስቀድሞ ተመዝግቧል",
+    "bannerMatches_other": "{{count}} አስቀድመው ተመዝግበዋል",
+    "match": {
+      "receipt": "ከቃኙት ደረሰኝ ጋር ይዛመዳል · {{purpose}}፣ {{date}}",
+      "expense": "ካስገቡት ወጪ ጋር ይዛመዳል · {{purpose}}፣ {{date}}",
+      "fuel": "ከነዳጅ ግዢ ጋር ይዛመዳል · {{date}}"
+    },
+    "noBankTitle": "ምንም ባንክ አልተገናኘም",
+    "noBankText": "የባንክ ካርድዎን ያገናኙ፤ አዳዲስ ክፍያዎች እንዲገመግሟቸው እዚህ ይታያሉ።",
+    "connectBank": "ባንክዎን ያገናኙ"
   },
   "help": {
     "title": "እገዛ እና ድጋፍ",
@@ -1210,6 +1250,314 @@
         "term": "የገቢ መግለጫ",
         "def": "በአንድ ጊዜ ውስጥ የገቢዎን፣ ወጪዎችዎን እና ወጪዎችዎን ማጠቃለያ፣ በትርፍ ወይም ኪሳራ የሚያበቃ።"
       }
+    }
+  },
+  "app": {
+    "tabBarLabel": "ዋና ማሰሻ",
+    "tabHome": "መነሻ",
+    "tabReport": "ሪፖርት",
+    "tabScan": "ቃኝ",
+    "tabMileage": "ማይል",
+    "tabMore": "ተጨማሪ",
+    "lockTitle": "Meksova ተቆልፏል",
+    "lockBody": "ገንዘብዎን ለማየት በጣት አሻራ ወይም በፊት ይክፈቱ።",
+    "unlock": "ክፈት",
+    "usePassword": "በይለፍ ቃል ይግቡ",
+    "biometricReason": "Meksovaን ይክፈቱ",
+    "cancel": "ይቅር",
+    "offerTitle": "በጣት አሻራ ወይም በፊት ይከፈት?",
+    "offerBody": "Meksovaን በጣት አሻራዎ ወይም በፊትዎ ይክፈቱ፤ ሌላ ሰው ስልክዎን ቢይዝ ገንዘብዎ ሚስጥራዊ ሆኖ ይቆያል።",
+    "turnOn": "አብራ",
+    "notNow": "አሁን አይደለም",
+    "settingLabel": "በጣት አሻራ / በፊት መክፈት",
+    "settingHint": "መተግበሪያውን ሲከፍቱ የጣት አሻራ ወይም ፊት ይጠይቅ።",
+    "planTitle": "እቅድዎ ንቁ አይደለም",
+    "planBody": "መዝገቦችዎ ደህና ናቸው እና አሁንም ማየት ይችላሉ። የMeksova እቅድዎ እንደገና ንቁ እስኪሆን ድረስ መዝገቦችን ማከልና መቀየር ቆሟል።",
+    "planBack": "ወደ መነሻ ተመለስ",
+    "seatUnavailable": "በመተግበሪያው ውስጥ ተጨማሪ የቡድን አባላትን ማከል አይቻልም።",
+    "noAccount": "ለ{{email}} እስካሁን የMeksova መለያ የለም። መለያ እንዲፈጥሩ meksova.comን ከፍተናል — ከዚያ ተመልሰው ይግቡ።",
+    "signInFailed": "መግባቱ አልተጠናቀቀም። እባክዎ እንደገና ይሞክሩ።",
+    "prefsTitle": "የመተግበሪያ ቅንብሮች",
+    "prefsLanguage": "ቋንቋ",
+    "prefsAppearance": "ገጽታ",
+    "prefsDark": "ጨለማ",
+    "prefsLight": "ብሩህ",
+    "presetAll": "ሁሉም",
+    "receiptsEmptyHint": "ደረሰኝ ለማንሳት ከታች ስካን ይጫኑ — ከግብይቱ ጋር በራስ-ሰር ይቀመጣል።",
+    "businessesTitle": "የእርስዎ ንግዶች",
+    "businessCurrent": "የአሁኑ",
+    "businessSwitch": "ንግድ ቀይር (የአሁኑ፦ {{name}})",
+    "businessDelete": "{{name}}ን ሰርዝ",
+    "businessAddUnavailable": "በመተግበሪያው ውስጥ ሌላ ንግድ ማከል አይቻልም።",
+    "signOutTitle": "ከMeksova ይውጡ?",
+    "signOutBody": "በዚህ ስልክ ላይ ሂሳቦችዎን ለማየት እንደገና መግባት ያስፈልግዎታል።",
+    "offlineSaved": "ከመስመር ውጭ · የተቀመጠ መረጃ እየታየ ነው",
+    "offlineWaiting": "ከመስመር ውጭ · {{count}} ለውጦች እስኪላኩ እየጠበቁ ነው",
+    "offlineSyncing": "{{count}} ለውጦች እየተላኩ ነው…",
+    "offlineWaiting_one": "ከመስመር ውጭ · 1 ለውጥ እስኪላክ እየጠበቀ ነው",
+    "offlineSyncing_one": "1 ለውጥ እየተላከ ነው…",
+    "scanTitle": "ደረሰኝ ቃኝ",
+    "scanBody": "የደረሰኙን ፎቶ ያንሱ፣ Meksova መጠኑን ይሞላል።",
+    "scanFuelTitle": "የ{{station}} ደረሰኝዎን ይቃኙ",
+    "scanFuelTitleGeneric": "የነዳጅ ደረሰኝዎን ይቃኙ",
+    "scanFuelBody": "ለIFTA በዚህ ማቆሚያ ግዛት እና ቀን እንደ ነዳጅ ይመዘገባል።",
+    "scanFuelBodyExpense": "በዚህ ማቆሚያ ቀን እንደ የነዳጅ ወጪ ይመዘገባል።",
+    "scanOpenCamera": "ካሜራ ክፈት",
+    "scanRepairBody": "እንደ ጥገና ይመዘገባል።",
+    "teammateFree": "የመጀመሪያው የቡድን አባልዎ ነፃ ነው።",
+    "helpPlan": "የአሁኑ እቅድዎ እና የሙከራ ጊዜዎ የቀሩት ቀናት በፋይናንስ ሪፖርቱ አናት ላይ ይታያሉ። የእቅድ ለውጦች በመተግበሪያው ውስጥ አይገኙም።",
+    "prefsSystem": "ሲስተም",
+    "scanTakePhoto": "ፎቶ ያንሱ",
+    "scanUpload": "ፎቶ፣ ስክሪንሾት ወይም PDF ይስቀሉ"
+  },
+  "drives": {
+    "native": {
+      "channelDrives": "ጉዞዎች እና የነዳጅ ማቆሚያዎች",
+      "channelRecording": "የጉዞ መቅረጫ",
+      "askTitle": "ለንግድ እየነዱ ነው?",
+      "askBody": "እነዚህ የንግድ ማይሎች እንዲመዘገቡ ጉዞ ይጀምሩ።",
+      "askStart": "ጉዞ ጀምር",
+      "askDismiss": "አሁን አይደለም",
+      "recordingTitle": "ጉዞዎን እየቀረጸ ነው",
+      "recordingBody": "እስካሁን {miles} ማይል",
+      "recordingPersonal": "የግል ነው፣ አትመዝግብ",
+      "classifyTitle": "የ{miles} ማይል ጉዞ",
+      "classifyBody": "{time} · ንግድ ወይስ የግል?",
+      "business": "ንግድ",
+      "personal": "የግል",
+      "forgotTitle": "ጉዞው አሁንም እየተቀረጸ ነው",
+      "forgotBody": "መንዳት ያቆሙ ይመስላል። ጉዞውን ለመጨረስ ይንኩ።",
+      "fuelTitle": "በ{station} የነዳጅ ማቆሚያ",
+      "fuelTitleGeneric": "የነዳጅ ማቆሚያ",
+      "fuelBody": "ለIFTA መዝገብዎ ደረሰኙን አሁን ይቃኙ።",
+      "fuelScan": "ይቃኙ",
+      "personalTitle": "ጉዞው አልተቀመጠም",
+      "personalBody": "የግል ተብሎ ተመዝግቧል። ስህተት ከሆነ ቀልብስን ይንኩ።",
+      "undo": "ቀልብስ",
+      "autoTitle": "የ{miles} ማይል የንግድ ጉዞ ተመዝግቧል",
+      "autoBody": "{rule} · ንግድ አይደለም? የግልን ይንኩ።",
+      "ruleHours": "የሥራ ሰዓት",
+      "weeklyTitle": "ያለፈው ሳምንት፦ {miles} የንግድ ማይል",
+      "weeklyDeduction": "≈ {amount} ቅናሽ",
+      "weeklyWaiting": "{count} የሚገመገሙ ጉዞዎች",
+      "widgetToday": "ዛሬ የንግድ ማይል",
+      "widgetWeek": "በዚህ ሳምንት {miles} ማይል",
+      "widgetRecording": "እየቀረጸ…",
+      "alreadyTitle": "ይህ ጉዞ አስቀድሞ ተቀምጧል",
+      "alreadyBody": "ለመሰረዝ የጉዞ ታሪክን ይክፈቱ።",
+      "fuelBodyExpense": "የነዳጅ ወጪው እንዲመዘገብ ደረሰኙን አሁን ይቃኙ።",
+      "storeTitle": "{station} ላይ ነዎት?",
+      "storeTitleGeneric": "የሱቅ ማቆሚያ",
+      "storeBody": "ወጪው እንዲመዘገብ ደረሰኙን ይቃኙ።",
+      "repairTitleGeneric": "የጥገና ቦታ ማቆሚያ",
+      "repairBody": "የጥገና ወጪው እንዲመዘገብ ደረሰኙን ይቃኙ።",
+      "loaded": "ጭነት ያለው",
+      "empty": "ባዶ",
+      "classifyBodyTrucking": "{time} · ጭነት ያለው፣ ባዶ ወይስ የግል?",
+      "personalTitleTrucking": "የግል ማይሎች",
+      "personalBodyTrucking": "ለIFTA ማይሎች ብቻ ይቀመጣል፣ እንደ ንግድ አይቆጠርም። ስህተት ከሆነ ቀልብስን ይንኩ።",
+      "fuelUpload": "ይስቀሉ"
+    },
+    "settings": {
+      "title": "ጉዞዎች እና ማሳሰቢያዎች",
+      "detect": "ጉዞዎቼን ለይ",
+      "detectHint": "መንዳት ሲጀምሩ Meksova ያውቃል።",
+      "autoRecord": "ጉዞዎችን በራስ-ሰር መዝግብ",
+      "autoRecordHint": "እያንዳንዱ ጉዞ ይመዘገባል፤ በኋላ ንግድ ወይም የግል ብለው ይለያሉ። ሲጠፋ፦ ጉዞ እንዲጀምሩ እንጠይቃለን።",
+      "fuel": "የነዳጅ ማቆሚያ ማሳሰቢያ",
+      "fuelHint": "ነዳጅ ማደያ ሲቆሙ ደረሰኙን እንዲቃኙ ያሳስባል።",
+      "workdays": "የሥራ ቀናት ብቻ",
+      "workdaysHint": "ቅዳሜ እና እሁድ ዝም ይላል።",
+      "tax": "የግብር ቀነ-ገደብ ማሳሰቢያዎች",
+      "taxHint": "የሩብ ዓመት ግምታዊ ግብር (እና ለጭነት IFTA) ከመድረሱ አንድ ሳምንት በፊት።",
+      "needsBackground": "መተግበሪያው ዝግ ሆኖ ጉዞዎችን ለመመዝገብ እና የነዳጅ ማቆሚያዎችን ለማወቅ፣ አካባቢን \"ሁልጊዜ ፍቀድ\" ያድርጉት። እስከዚያ ድረስ Meksova ጉዞ እንዲጀምሩ ይጠይቃል።",
+      "needsNotifications": "የMeksova ማሳወቂያዎች ጠፍተዋል፤ የጉዞ ማሳሰቢያዎችን አያዩም።",
+      "allow": "ቅንብሮችን ክፈት",
+      "weekly": "ሳምንታዊ ማጠቃለያ",
+      "weeklyHint": "ሰኞ ጠዋት፦ ያለፈው ሳምንት የንግድ ማይሎች።",
+      "stores": "የሱቅ እና የጥገና ቦታ ማሳሰቢያዎች",
+      "storesHint": "በአቅርቦት ሱቆች፣ በመኪና መለዋወጫ እና በጥገና ቦታዎች ደረሰኙን እንዲቃኙ ማሳሰቢያ።"
+    },
+    "disclosure": {
+      "title": "የንግድ ማይሎችን በራስ-ሰር ይመዝግቡ",
+      "body": "Meksova መተግበሪያው ዝግ ሆኖ ወይም ጥቅም ላይ ሳይውል እንኳን ጉዞዎችዎን ለመለየት፣ የንግድ ማይሎችን ለመመዝገብ እና ለIFTA የነዳጅ ማቆሚያዎችን ለማወቅ የአካባቢ መረጃ ይሰበስባል።",
+      "point1": "የእንቅስቃሴ መረጃ መንዳት መቼ እንደሚጀምሩ እና እንደሚያቆሙ ይነግረናል።",
+      "point2": "አካባቢ የሚመዘገበው ሲነዱ ብቻ ነው፣ ጉዞውን እስኪያስቀምጡ ድረስ በስልክዎ ላይ ይቆያል።",
+      "point3": "በማንኛውም ጊዜ በመለያ ውስጥ ማጥፋት ይችላሉ።",
+      "continue": "ቀጥል",
+      "notNow": "አሁን አይደለም"
+    },
+    "review": {
+      "title": "የሚገመገሙ ጉዞዎች",
+      "intro": "የንግድ ጉዞዎች በማይል መዝገብዎ ውስጥ ይቀመጣሉ። የግል ጉዞዎች አይቀመጡም።",
+      "purpose": "ዓላማ",
+      "mi": "ማይል",
+      "saveError": "ጉዞውን ማስቀመጥ አልተቻለም። ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ።",
+      "emptyTitle": "ሁሉም ተጠናቋል",
+      "emptyBody": "አዳዲስ ጉዞዎች ካቆሙ በኋላ እዚህ ይታያሉ።",
+      "viewTrips": "የጉዞ ታሪክ ይመልከቱ",
+      "personalToast": "የግል ተብሏል፣ አልተቀመጠም",
+      "recentTitle": "የግል የተባሉ",
+      "recentHint": "አልተቀመጡም። የግልን በስህተት ከነኩ በ24 ሰዓት ውስጥ ይመልሱ።",
+      "restore": "መልስ",
+      "introTrucking": "ጭነት ያላቸው እና ባዶ ጉዞዎች የንግድ ማይሎች ናቸው። የግል ጉዞዎች ለIFTA ማይሎች ብቻ ይቆጠራሉ።",
+      "recentHintTrucking": "ከ24 ሰዓት በኋላ ለIFTA ማይሎች ይቀመጣሉ። የግልን በስህተት ከነኩ ከዚያ በፊት ይመልሱት።"
+    },
+    "banner": {
+      "title": "የሚገመገሙ ጉዞዎች፦ {{count}}",
+      "sub": "ንግድ ወይስ የግል?"
+    },
+    "reminders": {
+      "estTaxTitle": "ግምታዊ ግብር በአንድ ሳምንት ውስጥ ይደርሳል",
+      "estTaxBody": "የሩብ ዓመት ግምታዊ ግብር ክፍያዎ {{date}} ይደርሳል። ግምትዎን በMeksova ይመልከቱ።",
+      "iftaTitle": "የIFTA ሪፖርት በአንድ ሳምንት ውስጥ ይደርሳል",
+      "iftaBody": "የሩብ ዓመት IFTA ሪፖርትዎ {{date}} ይደርሳል። ማይሎችዎን እና ነዳጅዎን በግዛት ይገምግሙ።"
+    },
+    "rules": {
+      "title": "ሁልጊዜ ንግድ",
+      "hours": "የሥራ ሰዓት",
+      "hoursHint": "በእነዚህ ሰዓቶች የሚጀምሩ የሥራ ቀን ጉዞዎች እንደ ንግድ ይመዘገባሉ።",
+      "from": "ከ",
+      "to": "እስከ",
+      "placeHint": "ወደዚህ ወይም ከዚህ የሚደረጉ ጉዞዎች ንግድ ናቸው።",
+      "remove": "{{name}}ን አስወግድ",
+      "addPlace": "የንግድ ቦታ ጨምር",
+      "addTitle": "የንግድ ቦታ ጨምር",
+      "addBody": "አሁን ያሉበትን ቦታ ያስቀምጣል፣ ለምሳሌ መጋዘንዎን፣ ሱቅዎን ወይም ዋና ደንበኛ። እዚህ የሚጀምሩ ወይም የሚያልቁ ጉዞዎች እንደ ንግድ ይመዘገባሉ።",
+      "placeName": "ስም",
+      "placePlaceholder": "ለምሳሌ መጋዘን",
+      "locationError": "አካባቢዎን ማግኘት አልተቻለም። አካባቢ መብራቱን ያረጋግጡ እና እንደገና ይሞክሩ።",
+      "locating": "አካባቢ በማግኘት ላይ…",
+      "save": "ይህን ቦታ አስቀምጥ"
+    },
+    "deduction": {
+      "label": "የማይል ቅናሽ፣ {{year}}",
+      "sub": "{{miles}} የንግድ ማይል · አሁን {{rate}}/ማይል"
+    },
+    "ifta": {
+      "label": "የIFTA ማይሎች፣ ሩብ {{quarter}} {{year}}",
+      "sub": "ግዛቶች፦ {{count}} · የIFTA ሪፖርት ክፈት",
+      "statesLabel": "የIFTA ግዛቶች",
+      "statesSub": "ሩብ {{quarter}} {{year}}"
+    }
+  },
+  "console": {
+    "groups": {
+      "Home": "መነሻ",
+      "Customers": "ደንበኞች",
+      "Insights": "ትንታኔ",
+      "Engage": "ግንኙነት",
+      "Platform": "መድረክ",
+      "Admin": "አስተዳደር"
+    },
+    "sections": {
+      "overview": {
+        "label": "አጠቃላይ እይታ",
+        "purpose": "ዛሬ የሚጠብቁህ ነገሮች፦ ያልተሳኩ ክፍያዎች፣ የተሰረዙ መለያዎች፣ የሚያልቁ ሙከራዎች።"
+      },
+      "approvals": {
+        "label": "ማጽደቂያዎች",
+        "purpose": "ሰራተኞችህ የጠየቁት አደገኛ እርምጃ። እስክታጸድቅ ምንም አይፈጸምም።"
+      },
+      "users": {
+        "label": "ደንበኞች",
+        "purpose": "ማንኛውንም ደንበኛ ፈልግ፣ ሙሉ ታሪኩን እይ፣ መለያውን ወይም ክፍያውን አስተካክል።"
+      },
+      "support": {
+        "label": "የድጋፍ ሳጥን",
+        "purpose": "የደንበኞችን መልእክት ጊዜው ሳያልፍ መልስ።"
+      },
+      "requests": {
+        "label": "የመረጃ ጥያቄዎች",
+        "purpose": "ደንበኛ ሲጠይቅ መለያን ሰርዝ ወይም ላክ። ሕጋዊ ገደቡ 30 ቀን ነው።"
+      },
+      "recovery": {
+        "label": "መረጃ መመለሻ",
+        "purpose": "ደንበኛ በስህተት የሰረዘውን መልስ።"
+      },
+      "revenue": {
+        "label": "ገቢ",
+        "purpose": "ንግዱ እያደገ ነው? ወርሃዊ ገቢ፣ ስረዛዎችና ምክንያቶቻቸው።"
+      },
+      "usage": {
+        "label": "አጠቃቀም",
+        "purpose": "ሰዎች በእርግጥ የሚጠቀሙባቸው ባህሪያትና ምን ያህል ደጋግመው እንደሚመለሱ።"
+      },
+      "messages": {
+        "label": "መልእክቶች",
+        "purpose": "ኢሜይል፣ ማሳወቂያ ወይም በመተግበሪያው ውስጥ ማስታወቂያ ለማንኛውም ቡድን፣ አሁን ወይም በኋላ።"
+      },
+      "automations": {
+        "label": "አውቶሜሽን",
+        "purpose": "በራሳቸው የሚላኩ ኢሜይሎች፦ እንኳን ደህና መጡ፣ የሙከራ ማስታወሻ፣ ያልተሳካ ክፍያ።"
+      },
+      "promos": {
+        "label": "ማስተዋወቂያዎች",
+        "purpose": "የቅናሽ ኮዶችና የሪፈራል ሽልማት።"
+      },
+      "articles": {
+        "label": "የእገዛ ጽሑፎች",
+        "purpose": "መልሱን አንዴ ጻፍ፤ በእገዛ ማዕከልና በመልሶችህ ይታያል።"
+      },
+      "editor": {
+        "label": "የድረ-ገጽ አርታዒ",
+        "purpose": "ድረ-ገጹንና የመተግበሪያ ገጾችን እንደ ገጽ ገንቢ አርትዕ፣ ከዚያ አትም።"
+      },
+      "issues": {
+        "label": "ችግሮች",
+        "purpose": "በድረ-ገጹ፣ በመተግበሪያውና በሰርቨሩ ያሉ ስህተቶች በተጎዱ ሰዎች ብዛት ተደርድረው፣ ከፈጣን መፍትሄዎች ጋር።"
+      },
+      "site": {
+        "label": "የድረ-ገጽ ቁጥጥር",
+        "purpose": "አዲስ ስሪት ሳይለቁ መተግበሪያውንና ድረ-ገጹን በቀጥታ ቀይር፦ ማስታወቂያ፣ ጥገና፣ ባህሪያት።"
+      },
+      "health": {
+        "label": "የስርዓት ጤና",
+        "purpose": "መቋረጦችንና ስህተቶችን ከደንበኞች በፊት ለይ፣ አሳውቃቸውም።"
+      },
+      "policies": {
+        "label": "ፖሊሲዎች",
+        "purpose": "የአጠቃቀም ውሎችና የግላዊነት ፖሊሲ፣ እና ማን እንደተቀበላቸው።"
+      },
+      "changelog": {
+        "label": "አዲስ ነገሮች",
+        "purpose": "ከዝማኔ በኋላ ደንበኞች የሚያዩት የስሪት ማስታወሻ።"
+      },
+      "staff": {
+        "label": "ሰራተኞች",
+        "purpose": "የሰራተኞች መግቢያና እያንዳንዱ ምን ማድረግ እንደሚችል።"
+      },
+      "rules": {
+        "label": "ደንቦች",
+        "purpose": "ይህ ከሆነ ያንን አድርግ፦ ምደባ፣ መለያና ክትትል ያለ አንተ።"
+      },
+      "alerts": {
+        "label": "ማንቂያዎች",
+        "purpose": "ስለምን እንደምናሳውቅህና የት፦ ኢሜይል ወይም ስልክ።"
+      },
+      "activity": {
+        "label": "እንቅስቃሴ",
+        "purpose": "እያንዳንዱ የአስተዳደር እርምጃ፦ ማን ምን መቼ አደረገ።"
+      }
+    },
+    "common": {
+      "search": "ማንኛውንም ፈልግ…  Ctrl K",
+      "demo": "የሙከራ መረጃ",
+      "refresh": "አድስ",
+      "refreshing": "በማደስ ላይ…",
+      "demoNotice": "የሙከራ መረጃ፦ እዚህ ያለው ሁሉ ምናባዊ ነው፤ ምንም ወደ እውነተኛ ደንበኞች አይደርስም። በእውነተኛ መረጃ ለመስራት አጥፋው።",
+      "waiting": "አንተን የሚጠብቁ",
+      "alerts": "ማንቂያዎች",
+      "markAllRead": "ሁሉንም እንደተነበበ ምልክት አድርግ",
+      "caughtUp": "ሁሉንም አይተሃል።",
+      "alertSettings": "የማንቂያ ቅንብሮች",
+      "exitPreview": "ቅድመ እይታውን ውጣ",
+      "ownerConsole": "የባለቤት መቆጣጠሪያ",
+      "staffConsole": "የሰራተኞች መቆጣጠሪያ",
+      "backToConsole": "ወደ መቆጣጠሪያው ተመለስ",
+      "viewingAs": "መተግበሪያውን እንደዚህ እያየህ ነው፦",
+      "updated": "ታድሷል",
+      "noMatches": "ምንም አልተገኘም፦"
     }
   }
 }

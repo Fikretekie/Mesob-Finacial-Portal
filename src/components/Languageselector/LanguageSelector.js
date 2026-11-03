@@ -8,6 +8,16 @@ import {
 import { useTranslation } from "react-i18next";
 import "../../components/Languageselector/Languageselector.css";
 
+export const LANGUAGES = [
+  { code: "en", name: "ENGLISH", short: "EN", flag: "🇺🇸" },
+  { code: "am", name: "አማርኛ", short: "አማ", flag: "🇪🇹" },
+  { code: "ti", name: "ትግርኛ", short: "ትግ", flag: "🇪🇷" },
+  { code: "ar", name: "العربية", short: "AR", flag: "🇸🇦" },
+  { code: "es", name: "ESPAÑOL", short: "ES", flag: "🇪🇸" },
+  { code: "fr", name: "FRANÇAIS", short: "FR", flag: "🇫🇷" },
+  { code: "so", name: "SOOMAALI", short: "SO", flag: "🇸🇴" },
+];
+
 const LanguageSelector = () => {
   const { i18n } = useTranslation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -23,15 +33,7 @@ const LanguageSelector = () => {
   //   { code: "so", name: "SOOMAALI", flag: "🇸🇴" },
   // ];
 
-  const languages = [
-  { code: "en", name: "ENGLISH", short: "EN", flag: "🇺🇸" },
-  { code: "am", name: "አማርኛ", short: "አማ", flag: "🇪🇹" },
-  { code: "ti", name: "ትግርኛ", short: "ትግ", flag: "🇪🇷" },
-  { code: "ar", name: "العربية", short: "AR", flag: "🇸🇦" },
-  { code: "es", name: "ESPAÑOL", short: "ES", flag: "🇪🇸" },
-  { code: "fr", name: "FRANÇAIS", short: "FR", flag: "🇫🇷" },
-  { code: "so", name: "SOOMAALI", short: "SO", flag: "🇸🇴" },
-];
+  const languages = LANGUAGES;
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -59,19 +61,13 @@ useEffect(() => {
 const toggle = () => setDropdownOpen(prev => !prev);
 
 
-  const handleLanguageChange = (langCode, e) => {
-    // Stop event propagation to prevent toggle from firing
-    if (e) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-    
+  // DropdownItem closes the menu itself (it calls the Dropdown's toggle);
+  // closing it here as well made the two toggles cancel out and the menu
+  // stayed open after picking a language.
+  const handleLanguageChange = (langCode) => {
     setSelectedLanguage(langCode);
     i18n.changeLanguage(langCode);
     localStorage.setItem("selectedLanguage", langCode);
-    
-    // Force close the dropdown
-    setDropdownOpen(false);
   };
 
   const currentLanguage =
@@ -85,11 +81,6 @@ return (
     caret
     className="language-toggle"
     tag="button"
-    onTouchStart={(e) => {
-      e.stopPropagation();
-      e.preventDefault();  // prevents the click from also firing on mobile
-      setDropdownOpen(prev => !prev);
-    }}
     style={{
       backgroundColor: "var(--accent-solid)",
       borderColor: "var(--accent-solid)",
@@ -116,7 +107,7 @@ return (
         container="body"
         strategy="fixed"
         style={{
-          backgroundColor: "#1a273a",
+          backgroundColor: "var(--surface-2)",
           border: "1px solid var(--border)",
           borderRadius: "6px",
           marginTop: "6px",
@@ -129,10 +120,10 @@ return (
         {languages.map((lang) => (
           <DropdownItem
             key={lang.code}
-            onClick={(e) => handleLanguageChange(lang.code, e)}
+            onClick={() => handleLanguageChange(lang.code)}
             active={selectedLanguage === lang.code}
             style={{
-              backgroundColor: selectedLanguage === lang.code ? "#2b427d" : "transparent",
+              backgroundColor: selectedLanguage === lang.code ? "var(--accent-soft)" : "transparent",
               color: "var(--text-1)",
               padding: "10px 16px",
               cursor: "pointer",
@@ -143,7 +134,7 @@ return (
             }}
             onMouseEnter={(e) => {
               if (selectedLanguage !== lang.code)
-                e.currentTarget.style.backgroundColor = "#2d3e50";
+                e.currentTarget.style.backgroundColor = "var(--surface-hover)";
             }}
             onMouseLeave={(e) => {
               if (selectedLanguage !== lang.code)

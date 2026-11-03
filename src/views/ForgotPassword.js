@@ -9,7 +9,7 @@ import { Helmet } from "react-helmet";
 import { resetPassword, confirmResetPassword } from "aws-amplify/auth";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
 import "../assets/css/Login.css";
-import LanguageSelector from "components/Languageselector/LanguageSelector";
+import AuthLanguage from "components/AuthLanguage";
 
 const logo = "/transparent.png";
 
@@ -178,9 +178,6 @@ const ForgotPassword = () => {
       </Helmet>
       <NotificationAlert ref={notificationAlertRef} />
       <div className="auth">
-        <div className="auth__lang">
-          <LanguageSelector />
-        </div>
         <aside className="auth__brand">
           <div className="auth__logo">
             <img src={logo} alt="Meksova Finance" />
@@ -207,10 +204,10 @@ const ForgotPassword = () => {
         </aside>
 
         <main className="auth__panel">
-          <div className="login-box">
+          <div className="login-box login-box--v2">
             <img src={logo} alt="Meksova" className="logo_img" />
-            <h2>{t("auth.forgot.title")}</h2>
-            <p className="login-welcome">
+            <h1 className="auth-title">{t("auth.forgot.title")}</h1>
+            <p className="auth-sub">
               {codeSent ? t("auth.forgot.subVerify") : t("auth.forgot.subRequest")}
             </p>
 
@@ -296,6 +293,9 @@ const ForgotPassword = () => {
             <p className="login-signup-prompt">
               {t("auth.forgot.remember")} <Link to="/login">{t("auth.common.login")}</Link>
             </p>
+            <div className="auth-foot">
+              <AuthLanguage />
+            </div>
           </div>
         </main>
       </div>

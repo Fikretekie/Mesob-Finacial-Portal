@@ -26,6 +26,7 @@ import {
 } from "utils/teamStorage";
 import { fetchBusinesses, getDefaultBusinessName } from "utils/businessStorage";
 import "../assets/css/team.css";
+import { isAppShell } from "utils/appShell";
 
 // Holds the invite across a PayPal seat approval redirect. The teammate is NOT
 // created until we return approved, so an abandoned approval provisions nobody.
@@ -269,6 +270,11 @@ function Team() {
       setError(t("team.selectBusiness"));
       return;
     }
+    // A 2nd+ teammate is a paid seat; the phone app can't sell one (store rules).
+    if (paidSeat && isAppShell()) {
+      setError(t("app.seatUnavailable"));
+      return;
+    }
     if (paidSeat && !canCharge) {
       setError(t("team.needSubscription"));
       return;
@@ -482,7 +488,9 @@ function Team() {
         <ModalBody>
           {error && <div className="alert alert-danger" role="alert">{error}</div>}
           {!paidSeat ? (
-            <div className="team-seat-note">{t("team.firstFree")}</div>
+            <div className="team-seat-note">{t(isAppShell() ? "app.teammateFree" : "team.firstFree")}</div>
+          ) : isAppShell() ? (
+            <div className="team-seat-note">{t("app.seatUnavailable")}</div>
           ) : billing ? (
             canCharge ? (
               <>

@@ -342,15 +342,26 @@ import { faApple } from "@fortawesome/free-brands-svg-icons";
 import { Link } from "react-router-dom";
 import { signIn, signInWithRedirect, signOut } from "aws-amplify/auth";
 import { isNativeApp, openNativeSocialSignIn, nativeOAuthState } from "utils/nativeOAuth";
-import { clearAppStorageKeepingSession } from "utils/authStorage";
+import {
+  clearAppStorageKeepingSession,
+  forgetLastEmail,
+  rememberSignIn,
+  LAST_EMAIL_KEY,
+  LAST_PROVIDER_KEY,
+} from "utils/authStorage";
+import { getRestorablePath, forgetStaleSignIn } from "utils/sessionRestore";
+import { openWebSignup } from "utils/webSignup";
+import { rememberNextPath, takeNextPath, hasNextPath } from "utils/afterLogin";
+import { homePathForRole, storePerms } from "utils/staffAccess";
 import { authHeader } from "utils/apiFetch";
 import { getMyOwner } from "utils/teamStorage";
 import getUserInfo from "utils/Getuser";
 import NotificationAlert from "react-notification-alert";
 import { apiUrl, ROUTES, CURRENT_ENV } from "../config/api";
-import LanguageSelector from "components/Languageselector/LanguageSelector";
+import AuthLanguage from "components/AuthLanguage";
 import { useTranslation } from "react-i18next";
 const logo = "/transparent.png";
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 const Login = () => {
   const { t } = useTranslation();
@@ -359,6 +370,26 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [socialAuth, setSocialAuth] = useState("");
+  // Email first, then the password on its own step (one field at a time).
+  const [authStep, setAuthStep] = useState("email");
+  const [formError, setFormError] = useState("");
+  // "Remember me": the last email signed in with on this phone (never the password).
+  const [remembered, setRemembered] = useState(() => {
+    try {
+      return localStorage.getItem(LAST_EMAIL_KEY) || "";
+    } catch (e) {
+      return "";
+    }
+  });
+  const [rememberedProvider] = useState(() => {
+    try {
+      return localStorage.getItem(LAST_PROVIDER_KEY) || "email";
+    } catch (e) {
+      return "email";
+    }
+  });
+  const passwordRef = useRef(null);
+  const emailLooksValid = EMAIL_RE.test(email.trim());
   const navigate = useNavigate();
   const location = useLocation();
   const notificationAlertRef = useRef(null);
@@ -369,6 +400,36 @@ const Login = () => {
     state?.error || new URLSearchParams(location.search).get("error");
   const errorMessage =
     state?.message || new URLSearchParams(location.search).get("message");
+
+  // ?next=/customer/... (e.g. the app's "Continue on meksova.com"): go there
+  // after signing in. Read once, before the restore check below uses it.
+  const [hasNext] = useState(() => {
+    rememberNextPath(new URLSearchParams(window.location.search).get("next"));
+    return hasNextPath();
+  });
+
+  // Phone app: every launch starts here, so a still-valid session goes
+  // straight to the dashboard instead of asking the user to sign in again.
+  // Same on the website when a ?next= target is waiting.
+  const [restoring, setRestoring] = useState(
+    () => (isNativeApp() || hasNext) && !error && !!localStorage.getItem("user_email")
+  );
+  useEffect(() => {
+    if (!restoring) return undefined;
+    let live = true;
+    getRestorablePath().then((path) => {
+      if (!live) return;
+      if (path) {
+        navigate(takeNextPath(path), { replace: true });
+      } else {
+        forgetStaleSignIn();
+        setRestoring(false);
+      }
+    });
+    return () => {
+      live = false;
+    };
+  }, [restoring, navigate]);
 
       useEffect(() => {
     if (error) {
@@ -439,8 +500,36 @@ const Login = () => {
     }
   };
 
+  const continueAsRemembered = () => {
+    setEmail(remembered);
+    setAuthStep("password");
+  };
+
+  const useDifferentAccount = () => {
+    forgetLastEmail();
+    setRemembered("");
+    setEmail("");
+    setPassword("");
+    setFormError("");
+    setAuthStep("email");
+  };
+
+  const changeEmail = () => {
+    setPassword("");
+    setFormError("");
+    setAuthStep("email");
+  };
+
+  useEffect(() => {
+    if (authStep === "password") passwordRef.current?.focus();
+  }, [authStep]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (authStep === "email") {
+      if (emailLooksValid) setAuthStep("password");
+      return;
+    }
     setLoading(true);
 
     if (!email.trim()) {
@@ -505,25 +594,28 @@ const Login = () => {
           }
           if (!acct) {
             await signOut();
-            notify("danger", "Account not found. Please sign up or contact support.");
+            setFormError(t("auth.login.accountNotFound"));
             setLoading(false);
             return;
           }
         }
 
         // Keep the Cognito session Amplify just stored (was localStorage.clear()).
-        clearAppStorageKeepingSession();
+        clearAppStorageKeepingSession(acctId);
         localStorage.setItem("provider", "Email");
         localStorage.setItem("userId", acctId);
         localStorage.setItem("user_email", acct?.email || "");
         localStorage.setItem("user_name", acct?.name || "");
         localStorage.setItem("role", acct?.role?.toString() || "2");
+        storePerms(acct?.staffPermissions);
         localStorage.setItem("businessType", acct?.businessType || "");
+        localStorage.setItem("companyName", acct?.companyName || "");
         localStorage.setItem("outstandingDebt", acct?.outstandingDebt || "0");
         localStorage.setItem("valueableItems", acct?.valueableItems || "0");
         localStorage.setItem("cashBalance", acct?.cashBalance || "0");
         localStorage.setItem("currency", acct?.currency || "USD");
         localStorage.setItem("authToken", "authenticated");
+        rememberSignIn(email, "email");
         if (teamRole) {
           // Signed in as a teammate on someone else's account.
           localStorage.setItem("isTeamMember", "true");
@@ -534,32 +626,26 @@ const Login = () => {
           localStorage.setItem("teamPerms", JSON.stringify(memberPerms || {}));
         }
 
-        const path =
-          acct?.role === 2
-            ? "/customer/dashboard"
-            : acct?.role === 0
-              ? "/admin/dashboard"
-              : "/customer/dashboard";
-        navigate(path, { replace: true });
+        const path = homePathForRole(acct?.role);
+        navigate(takeNextPath(path), { replace: true });
       } else {
         console.error("Invalid credentials");
       }
     } catch (error) {
       console.error("🔴 Email sign-in error:", error);
-      notify("danger", error?.message || "Login failed. Please try again.");
+      setFormError(
+        error?.name === "NotAuthorizedException"
+          ? t("auth.login.wrongPassword")
+          : error?.name === "UserNotFoundException"
+            ? t("auth.login.accountNotFound")
+            : t("auth.login.loginFailed")
+      );
     } finally {
       setLoading(false);
     }
   };
-  const notify = (type, message) => {
-    notificationAlertRef.current?.notificationAlert({
-      place: "tr",
-      message: <div>{message}</div>,
-      type, // "danger", "success", "warning", "info"
-      icon: "now-ui-icons ui-1_bell-53",
-      autoDismiss: 5,
-    });
-  };
+  if (restoring) return <div className="auth-restoring" aria-busy="true" />;
+
   return (
     <>
       <Helmet>
@@ -567,9 +653,6 @@ const Login = () => {
       </Helmet>
       <NotificationAlert ref={notificationAlertRef} />
       <div className="auth">
-        <div className="auth__lang">
-          <LanguageSelector />
-        </div>
         <aside className="auth__brand">
           <div className="auth__logo">
             <img src={logo} alt="Meksova Finance" />
@@ -598,135 +681,163 @@ const Login = () => {
           </div>
         </aside>
         <main className="auth__panel">
-        <div className="login-box">
-          <img src={logo} alt="Logo" className="logo_img" />
-          <h2>{t("auth.login.title")}</h2>
-          <p className="login-welcome">{t("auth.login.welcome")} <span className="login-brand">Meksova</span></p>
-          {loading && (
-            <div
-              className="loading-message"
-              style={{ color: "#666", marginBottom: "1rem" }}
-            >
-              {socialAuth === "google" && (
-                <>
-                  {t("auth.login.processingGoogle")}{" "}
-                  <Spinner color="secondary" size="sm" />
-                </>
-              )}
-              {socialAuth === "apple" && (
-                <>
-                  {t("auth.login.processingApple")}{" "}
-                  <Spinner color="secondary" size="sm" />
-                </>
-              )}
-              {!socialAuth && (
-                <>
-                  {t("auth.login.processing")} <Spinner color="secondary" size="sm" />
-                </>
-              )}
+        <div className="login-box login-box--v2">
+          <img src={logo} alt="Meksova" className="logo_img" />
+          <h1 className="auth-title">{t("auth.login.welcomeBack")}</h1>
+          <p className="auth-sub">{t("auth.login.subtitle")}</p>
+          {error && isNativeApp() && (
+            <div className="login-notice" role="alert">
+              {error === "no_account"
+                ? t("app.noAccount", { email: state?.email || "" })
+                : t("app.signInFailed")}
             </div>
           )}
-          {!loading && (
-            <>
-              <form onSubmit={handleSubmit}>
-                <div className="login-input-group">
-                  <label>{t("auth.login.email")}</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    autoComplete="email"
-                    placeholder={t("auth.login.emailPlaceholder")}
-                  />
-                </div>
-                <div className="login-input-group">
-                  <label>{t("auth.login.password")}</label>
-                  <div className="password-container">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      autoComplete="current-password"
-                      placeholder={t("auth.login.passwordPlaceholder")}
-                    />
-                    <button
-                      type="button"
-                      className="toggle-password"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                      aria-pressed={showPassword}
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      <FontAwesomeIcon
-                        icon={showPassword ? faEyeSlash : faEye}
-                        size="lg"
-                      />
-                    </button>
-                  </div>
-                </div>
-                <div className="forgot-password-link">
-                  <Link to="/forgot-password">{t("auth.login.forgot")}</Link>
-                </div>
-                <button type="submit" className="login-btn" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <Spinner color="secondary" size="sm" /> {t("auth.login.pleaseWait")}
-                    </>
-                  ) : (
-                    t("auth.login.loginBtn")
-                  )}
-                </button>
-              </form>
-              <div className="separator">
-                <span>{t("auth.login.or")}</span>
+          {loading ? (
+            <div className="loading-message" role="status">
+              {socialAuth === "google"
+                ? t("auth.login.processingGoogle")
+                : socialAuth === "apple"
+                  ? t("auth.login.processingApple")
+                  : t("auth.login.processing")}{" "}
+              <Spinner size="sm" />
+            </div>
+          ) : remembered && authStep === "email" ? (
+            <div className="auth-remembered">
+              <div className="auth-remembered__card">
+                <span className="auth-remembered__avatar" aria-hidden="true">
+                  {remembered.charAt(0).toUpperCase()}
+                </span>
+                <span className="auth-remembered__email">{remembered}</span>
               </div>
-              <button
-                onClick={handleGoogleSignIn}
-                className="social-login-btn google"
-                disabled={loading}
-              >
-                {socialAuth === "google" && loading ? (
-                  <>
-                    <Spinner color="light" size="sm" /> {t("auth.login.processing")}
-                  </>
-                ) : (
-                  <>
-                    <img
-                      src="/googlelogo.png"
-                      alt="Google"
-                      className="social-icon"
-                    />
-                    {t("auth.login.google")}
-                  </>
-                )}
+              {rememberedProvider === "google" ? (
+                <button type="button" onClick={handleGoogleSignIn} className="social-login-btn google">
+                  <img src="/googlelogo.png" alt="" className="social-icon" />
+                  {t("auth.login.google")}
+                </button>
+              ) : rememberedProvider === "apple" ? (
+                <button type="button" onClick={handleAppleSignIn} className="social-login-btn apple">
+                  <FontAwesomeIcon icon={faApple} className="social-icon" />
+                  {t("auth.login.apple")}
+                </button>
+              ) : (
+                <button type="button" className="login-btn" onClick={continueAsRemembered}>
+                  {t("auth.login.continue")}
+                </button>
+              )}
+              <button type="button" className="auth-remembered__other" onClick={useDifferentAccount}>
+                {t("auth.login.useDifferent")}
+              </button>
+            </div>
+          ) : (
+            <>
+              <button type="button" onClick={handleGoogleSignIn} className="social-login-btn google">
+                <img src="/googlelogo.png" alt="" className="social-icon" />
+                {t("auth.login.google")}
+              </button>
+              <button type="button" onClick={handleAppleSignIn} className="social-login-btn apple">
+                <FontAwesomeIcon icon={faApple} className="social-icon" />
+                {t("auth.login.apple")}
               </button>
 
-              <button
-                onClick={handleAppleSignIn}
-                className="social-login-btn apple"
-                disabled={loading}
-              >
-                {socialAuth === "apple" && loading ? (
-                  <>
-                    <Spinner color="light" size="sm" /> {t("auth.login.processing")}
-                  </>
+              <div className="separator">
+                <span>{t("auth.login.orEmail")}</span>
+              </div>
+
+              <form onSubmit={handleSubmit} noValidate>
+                {authStep === "email" ? (
+                  <div className="login-input-group">
+                    <label htmlFor="login-email">{t("auth.login.email")}</label>
+                    <input
+                      id="login-email"
+                      type="email"
+                      inputMode="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      autoComplete="username"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      placeholder={t("auth.login.emailPlaceholder")}
+                    />
+                  </div>
                 ) : (
                   <>
-                    <FontAwesomeIcon
-                      icon={faApple}
-                      className="social-icon"
-                      style={{ color: "#ffffff" }}
-                    />
-                    {t("auth.login.apple")}
+                    {/* Kept in the form so password managers pair the saved login. */}
+                    <input type="email" value={email} autoComplete="username" readOnly hidden />
+                    <div className="auth-email-chip">
+                      <span className="auth-email-chip__text">{email}</span>
+                      <button type="button" className="auth-email-chip__change" onClick={changeEmail}>
+                        {t("auth.login.changeEmail")}
+                      </button>
+                    </div>
+                    <div className="login-input-group">
+                      <label htmlFor="login-password">{t("auth.login.password")}</label>
+                      <div className="password-container">
+                        <input
+                          id="login-password"
+                          ref={passwordRef}
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => {
+                            setPassword(e.target.value);
+                            setFormError("");
+                          }}
+                          autoComplete="current-password"
+                          aria-invalid={!!formError || undefined}
+                          aria-describedby={formError ? "login-error" : undefined}
+                          placeholder={t("auth.login.passwordPlaceholder")}
+                        />
+                        <button
+                          type="button"
+                          className="toggle-password"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                          aria-pressed={showPassword}
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                        </button>
+                      </div>
+                    </div>
+                    {formError && (
+                      <p id="login-error" className="auth-error" role="alert">
+                        {formError}
+                      </p>
+                    )}
+                    <div className="forgot-password-link">
+                      <Link to="/forgot-password">{t("auth.login.forgot")}</Link>
+                    </div>
                   </>
                 )}
-              </button>
+                <button
+                  type="submit"
+                  className="login-btn"
+                  disabled={authStep === "email" ? !emailLooksValid : !password}
+                >
+                  {authStep === "email" ? t("auth.login.continue") : t("auth.login.signIn")}
+                </button>
+              </form>
+
               <p className="login-signup-prompt">
-                {t("auth.login.noAccount")} <Link to="/signup">{t("auth.login.signup")}</Link>
+                {t("auth.login.newHere")}{" "}
+                {isNativeApp() ? (
+                  <button type="button" className="login-signup-link" onClick={() => openWebSignup()}>
+                    {t("auth.login.createAccount")}
+                  </button>
+                ) : (
+                  <Link to="/signup">{t("auth.login.createAccount")}</Link>
+                )}
               </p>
             </>
           )}
+          <div className="auth-foot">
+            <p className="auth-trust">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="4" y="11" width="16" height="10" rx="2" />
+                <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+              </svg>
+              {t("auth.login.trust")}
+            </p>
+            <AuthLanguage />
+          </div>
         </div>
         </main>
       </div>

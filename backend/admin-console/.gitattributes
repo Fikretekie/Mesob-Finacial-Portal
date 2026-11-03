@@ -1,0 +1,2 @@
+# CloudShell runs these with bash; Windows line endings would break them.
+*.sh text eol=lf

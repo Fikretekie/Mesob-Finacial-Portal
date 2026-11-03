@@ -1,9 +1,9 @@
 {
   "dashboard": {
     "title": "Panel de Control",
-    "cashOnHand": "EFECTIVO TOTAL EN MANO",
-    "totalExpenses": "GASTOS TOTALES",
-    "totalPayable": "TOTAL POR PAGAR",
+    "cashOnHand": "Efectivo total en mano",
+    "totalExpenses": "Gastos totales",
+    "totalPayable": "Total por pagar",
     "revenue": "Ingresos",
     "vsLastMonth": "vs mes anterior",
     "noChange": "Sin cambios",
@@ -15,7 +15,7 @@
     "loadingFinancialData": "Cargando datos financieros...",
     "loadingChart": "Cargando gráfico...",
     "taxEstimation": "Impuesto estimado",
-    "totalCashOnHandChart": "Gráfico de EFECTIVO TOTAL EN MANO",
+    "totalCashOnHandChart": "Efectivo en mano en el tiempo",
     "revenueChart": "Gráfico de INGRESOS",
     "totalPayableChart": "Gráfico de TOTAL A PAGAR",
     "totalExpensesChart": "Gráfico de GASTOS TOTALES",
@@ -680,7 +680,8 @@
     "locationError": "Error de ubicación: {{message}}",
     "signalUnavailable": "señal no disponible temporalmente, reintentando…",
     "noGpsSupport": "Este navegador no admite la ubicación GPS.",
-    "saveError": "No se pudo guardar el viaje. Verifica tu conexión e inténtalo de nuevo."
+    "saveError": "No se pudo guardar el viaje. Verifica tu conexión e inténtalo de nuevo.",
+    "saveForIfta": "Guardar para millas IFTA"
   },
   "tripHistory": {
     "loading": "Cargando viajes…",
@@ -717,8 +718,8 @@
       "processingApple": "Procesando inicio con Apple…",
       "noAccount": "¿Aún no tienes cuenta?",
       "signUp": "Regístrate",
-      "accountNotFound": "Cuenta no encontrada. Regístrate o contacta con soporte.",
-      "loginFailed": "Error al iniciar sesión. Inténtalo de nuevo.",
+      "accountNotFound": "No encontramos una cuenta con este correo.",
+      "loginFailed": "No se pudo iniciar sesión. Inténtalo de nuevo.",
       "eyebrow": "Meksova Finance",
       "headline1": "Tus libros,",
       "headline2": "siempre al día.",
@@ -730,7 +731,18 @@
       "loginBtn": "Iniciar sesión",
       "google": "Continuar con Google",
       "apple": "Continuar con Apple",
-      "signup": "Regístrate"
+      "signup": "Regístrate",
+      "welcomeBack": "Bienvenido de nuevo",
+      "subtitle": "Inicia sesión para mantener tus cuentas al día.",
+      "orEmail": "o usa tu correo",
+      "changeEmail": "Cambiar",
+      "continue": "Continuar",
+      "signIn": "Iniciar sesión",
+      "newHere": "¿Nuevo en Meksova?",
+      "createAccount": "Crear cuenta",
+      "trust": "Cifrado de nivel bancario · Nunca vendemos tus datos",
+      "wrongPassword": "Esa contraseña no es correcta. Inténtalo de nuevo o restablécela.",
+      "useDifferent": "Usar otra cuenta"
     },
     "marketing": {
       "trustedBy": "Con la confianza de cientos de pequeños empresarios",
@@ -887,6 +899,7 @@
     }
   },
   "nav": {
+    "ownerConsole": "Consola del propietario",
     "dashboard": "Panel",
     "users": "Usuarios",
     "financialReport": "Informe financiero",
@@ -945,13 +958,28 @@
     "jurisdiction": "Jurisdicción",
     "miles": "Millas",
     "noData": "No hay viajes ni compras de combustible registrados para este trimestre.",
-    "note": "Este informe muestra solo los totales — no calcula el impuesto adeudado. Úsalo junto con tu declaración IFTA o entrégaselo a tu preparador.",
+    "note": "Las cifras siguen el formato de la declaración IFTA. Las tasas cambian cada trimestre, así que no se muestran tasas ni impuesto a pagar: el portal de tu estado base los calcula con estas cifras. Un valor neto negativo es un crédito.",
     "quarter": "Trimestre",
     "subtitle": "Millas recorridas y combustible comprado por jurisdicción, por trimestre.",
     "title": "Informe trimestral IFTA",
     "totalGallons": "Total de galones",
     "totalMiles": "Total de millas",
-    "year": "Año"
+    "year": "Año",
+    "loadError": "No se pudieron cargar tus viajes y compras de combustible. Inténtalo de nuevo.",
+    "exportError": "No se pudo crear el PDF. Inténtalo de nuevo.",
+    "exporting": "Creando PDF…",
+    "exportPdf": "Descargar PDF",
+    "carrierTitle": "Datos del transportista (aparecen en el informe)",
+    "carrierName": "Nombre del transportista",
+    "carrierAccount": "Número de cuenta IFTA",
+    "carrierBase": "Estado base",
+    "fleetMpg": "MPG de la flota",
+    "taxableGallons": "Gal. gravables",
+    "netGallons": "Gal. gravables netos",
+    "total": "Total",
+    "noFuel": "No hay compras de combustible este trimestre, así que aún no se pueden calcular el MPG de la flota ni los galones gravables.",
+    "unassigned_one": "1 viaje ({{miles}} mi) no tiene desglose por estado y no está en la tabla. Agrega sus millas al estado correcto antes de declarar.",
+    "unassigned_other": "{{count}} viajes ({{miles}} mi) no tienen desglose por estado y no están en la tabla. Agrega sus millas a los estados correctos antes de declarar."
   },
   "quickScan": {
     "scanReceipt": "Escanear recibo",
@@ -1081,7 +1109,19 @@
     "addButton": "Agregar {{count}} a Meksova",
     "autoImportLabel": "Esta tarjeta es solo para negocios — agregar todo automáticamente la próxima vez",
     "bannerText": "{{count}} transacciones de tu banco necesitan tu revisión",
-    "bannerButton": "Revisar ahora"
+    "bannerButton": "Revisar ahora",
+    "matchNote_one": "1 cargo coincide con un gasto que ya registraste, así que está desmarcado y no se contará dos veces. Márcalo para agregarlo de todos modos.",
+    "matchNote_other": "{{count}} cargos coinciden con gastos que ya registraste, así que están desmarcados y no se contarán dos veces. Marca uno para agregarlo de todos modos.",
+    "bannerMatches_one": "1 ya registrado",
+    "bannerMatches_other": "{{count}} ya registrados",
+    "match": {
+      "receipt": "Coincide con tu recibo escaneado · {{purpose}}, {{date}}",
+      "expense": "Coincide con un gasto que ingresaste · {{purpose}}, {{date}}",
+      "fuel": "Coincide con una compra de combustible · {{date}}"
+    },
+    "noBankTitle": "No hay banco conectado",
+    "noBankText": "Conecta tu tarjeta bancaria y los nuevos cargos aparecerán aquí para que los revises.",
+    "connectBank": "Conectar tu banco"
   },
   "help": {
     "title": "Ayuda y soporte",
@@ -1210,6 +1250,314 @@
         "term": "Estado de resultados",
         "def": "Un resumen de tus ingresos, costos y gastos durante un periodo, que termina en tu ganancia o pérdida."
       }
+    }
+  },
+  "app": {
+    "tabBarLabel": "Navegación principal",
+    "tabHome": "Inicio",
+    "tabReport": "Informe",
+    "tabScan": "Escanear",
+    "tabMileage": "Millaje",
+    "tabMore": "Más",
+    "lockTitle": "Meksova está bloqueado",
+    "lockBody": "Desbloquea con tu huella o tu rostro para ver tus finanzas.",
+    "unlock": "Desbloquear",
+    "usePassword": "Iniciar sesión con contraseña",
+    "biometricReason": "Desbloquear Meksova",
+    "cancel": "Cancelar",
+    "offerTitle": "¿Desbloquear con huella o rostro?",
+    "offerBody": "Abre Meksova con tu huella o tu rostro y mantén tus finanzas privadas si otra persona toma tu teléfono.",
+    "turnOn": "Activar",
+    "notNow": "Ahora no",
+    "settingLabel": "Desbloqueo con huella / rostro",
+    "settingHint": "Pedir tu huella o rostro al abrir la app.",
+    "planTitle": "Tu plan no está activo",
+    "planBody": "Tus registros están seguros y puedes seguir viéndolos. Agregar y cambiar registros está en pausa hasta que tu plan de Meksova vuelva a estar activo.",
+    "planBack": "Volver al inicio",
+    "seatUnavailable": "No es posible agregar más compañeros de equipo desde la app.",
+    "noAccount": "Aún no hay una cuenta de Meksova para {{email}}. Abrimos meksova.com para que puedas crear una; luego vuelve e inicia sesión.",
+    "signInFailed": "No se completó el inicio de sesión. Inténtalo de nuevo.",
+    "prefsTitle": "Ajustes de la app",
+    "prefsLanguage": "Idioma",
+    "prefsAppearance": "Apariencia",
+    "prefsDark": "Oscuro",
+    "prefsLight": "Claro",
+    "presetAll": "Todo",
+    "receiptsEmptyHint": "Toca Escanear abajo para capturar un recibo; se guarda con la transacción automáticamente.",
+    "businessesTitle": "Tus negocios",
+    "businessCurrent": "Actual",
+    "businessSwitch": "Cambiar de negocio (actual: {{name}})",
+    "businessDelete": "Eliminar {{name}}",
+    "businessAddUnavailable": "No es posible agregar otro negocio desde la app.",
+    "signOutTitle": "¿Cerrar sesión en Meksova?",
+    "signOutBody": "Tendrás que volver a iniciar sesión para ver tus cuentas en este teléfono.",
+    "offlineSaved": "Sin conexión · mostrando datos guardados",
+    "offlineWaiting": "Sin conexión · {{count}} cambios por sincronizar",
+    "offlineSyncing": "Sincronizando {{count}} cambios…",
+    "offlineWaiting_one": "Sin conexión · 1 cambio por sincronizar",
+    "offlineSyncing_one": "Sincronizando 1 cambio…",
+    "scanTitle": "Escanear un recibo",
+    "scanBody": "Toma una foto del recibo y Meksova completa el monto.",
+    "scanFuelTitle": "Escanea tu recibo de {{station}}",
+    "scanFuelTitleGeneric": "Escanea tu recibo de combustible",
+    "scanFuelBody": "Se registra como combustible, con el estado y la fecha de esta parada para IFTA.",
+    "scanFuelBodyExpense": "Se registra como gasto de combustible con la fecha de esta parada.",
+    "scanOpenCamera": "Abrir cámara",
+    "scanRepairBody": "Se registra como mantenimiento.",
+    "teammateFree": "Tu primer compañero de equipo es gratis.",
+    "helpPlan": "Tu plan actual y los días que quedan de tu prueba aparecen en la parte superior del Informe financiero. Los cambios de plan no están disponibles en la app.",
+    "prefsSystem": "Sistema",
+    "scanTakePhoto": "Tomar foto",
+    "scanUpload": "Subir una foto, captura o PDF"
+  },
+  "drives": {
+    "native": {
+      "channelDrives": "Viajes y paradas de combustible",
+      "channelRecording": "Grabación de viaje",
+      "askTitle": "¿Conduces por trabajo?",
+      "askBody": "Inicia un viaje para registrar estas millas de trabajo.",
+      "askStart": "Iniciar viaje",
+      "askDismiss": "Ahora no",
+      "recordingTitle": "Grabando tu viaje",
+      "recordingBody": "{miles} mi hasta ahora",
+      "recordingPersonal": "Personal, no registrar",
+      "classifyTitle": "Viaje de {miles} mi",
+      "classifyBody": "{time} · ¿Trabajo o personal?",
+      "business": "Trabajo",
+      "personal": "Personal",
+      "forgotTitle": "El viaje sigue grabando",
+      "forgotBody": "Parece que dejaste de conducir. Toca para terminar el viaje.",
+      "fuelTitle": "Parada de combustible en {station}",
+      "fuelTitleGeneric": "Parada de combustible",
+      "fuelBody": "Escanea tu recibo ahora para tus registros de IFTA.",
+      "fuelScan": "Escanear",
+      "personalTitle": "Viaje no guardado",
+      "personalBody": "Marcado como personal. Toca Deshacer si fue un error.",
+      "undo": "Deshacer",
+      "autoTitle": "Viaje de trabajo de {miles} mi registrado",
+      "autoBody": "{rule} · ¿No es de trabajo? Toca Personal.",
+      "ruleHours": "Horario laboral",
+      "weeklyTitle": "Semana pasada: {miles} mi de trabajo",
+      "weeklyDeduction": "≈ {amount} de deducción",
+      "weeklyWaiting": "{count} viajes por revisar",
+      "widgetToday": "mi de trabajo hoy",
+      "widgetWeek": "{miles} mi esta semana",
+      "widgetRecording": "Grabando…",
+      "alreadyTitle": "Este viaje ya está guardado",
+      "alreadyBody": "Abre el historial de viajes para eliminarlo.",
+      "fuelBodyExpense": "Escanea tu recibo ahora para registrar el gasto de combustible.",
+      "storeTitle": "¿En {station}?",
+      "storeTitleGeneric": "Parada en tienda",
+      "storeBody": "Escanea el recibo para registrar el gasto.",
+      "repairTitleGeneric": "Parada en taller",
+      "repairBody": "Escanea el recibo para registrar el costo de mantenimiento.",
+      "loaded": "Cargado",
+      "empty": "Vacío",
+      "classifyBodyTrucking": "{time} · ¿Cargado, vacío o personal?",
+      "personalTitleTrucking": "Millas personales",
+      "personalBodyTrucking": "Se guardan solo para las millas IFTA, no como negocio. Toca Deshacer si fue un error.",
+      "fuelUpload": "Subir"
+    },
+    "settings": {
+      "title": "Viajes y recordatorios",
+      "detect": "Detectar mis viajes",
+      "detectHint": "Meksova detecta cuando empiezas a conducir.",
+      "autoRecord": "Grabar viajes automáticamente",
+      "autoRecordHint": "Cada viaje se registra y luego lo marcas como trabajo o personal. Desactivado: te pedimos iniciar un viaje.",
+      "fuel": "Recordatorios de combustible",
+      "fuelHint": "Un recordatorio para escanear el recibo cuando paras en una gasolinera.",
+      "workdays": "Solo entre semana",
+      "workdaysHint": "Sin avisos los sábados y domingos.",
+      "tax": "Recordatorios de impuestos",
+      "taxHint": "Una semana antes del impuesto estimado trimestral (e IFTA, para transporte).",
+      "needsBackground": "Para grabar viajes y detectar paradas de combustible con la app cerrada, configura la ubicación en \"Permitir todo el tiempo\". Mientras tanto, Meksova te pedirá iniciar un viaje.",
+      "needsNotifications": "Las notificaciones de Meksova están desactivadas, así que no verás avisos de viajes.",
+      "allow": "Abrir ajustes",
+      "weekly": "Resumen semanal",
+      "weeklyHint": "Lunes por la mañana: millas de trabajo de la semana pasada.",
+      "stores": "Recordatorios en tiendas y talleres",
+      "storesHint": "Un recordatorio para escanear el recibo en tiendas de suministros, autopartes y talleres."
+    },
+    "disclosure": {
+      "title": "Registra millas de trabajo automáticamente",
+      "body": "Meksova recopila datos de ubicación para detectar tus viajes, registrar millas de trabajo y detectar paradas de combustible para IFTA, incluso cuando la app está cerrada o no se usa.",
+      "point1": "Los datos de movimiento nos indican cuándo empiezas y dejas de conducir.",
+      "point2": "La ubicación solo se registra mientras conduces y queda en tu teléfono hasta que guardas el viaje.",
+      "point3": "Puedes desactivarlo en cualquier momento en Cuenta.",
+      "continue": "Continuar",
+      "notNow": "Ahora no"
+    },
+    "review": {
+      "title": "Viajes por revisar",
+      "intro": "Los viajes de trabajo se guardan en tu registro de millas. Los personales no se guardan.",
+      "purpose": "Propósito",
+      "mi": "mi",
+      "saveError": "No se pudo guardar el viaje. Revisa tu conexión e inténtalo de nuevo.",
+      "emptyTitle": "Todo al día",
+      "emptyBody": "Los nuevos viajes aparecen aquí después de estacionar.",
+      "viewTrips": "Ver historial de viajes",
+      "personalToast": "Marcado como personal, no guardado",
+      "recentTitle": "Marcados como personales",
+      "recentHint": "No se guardan. Restáuralos dentro de 24 horas si tocaste Personal por error.",
+      "restore": "Restaurar",
+      "introTrucking": "Los viajes cargados y vacíos son millas de negocio. Los personales solo cuentan para las millas IFTA.",
+      "recentHintTrucking": "Se guardan para las millas IFTA después de 24 horas. Restaura uno antes si tocaste Personal por error."
+    },
+    "banner": {
+      "title": "Viajes por revisar: {{count}}",
+      "sub": "¿Trabajo o personal?"
+    },
+    "reminders": {
+      "estTaxTitle": "Impuesto estimado vence en una semana",
+      "estTaxBody": "Tu pago trimestral de impuesto estimado vence el {{date}}. Consulta tu estimación en Meksova.",
+      "iftaTitle": "Declaración IFTA vence en una semana",
+      "iftaBody": "Tu declaración trimestral de IFTA vence el {{date}}. Revisa tus millas y combustible por estado."
+    },
+    "rules": {
+      "title": "Siempre de trabajo",
+      "hours": "Horario laboral",
+      "hoursHint": "Los viajes entre semana que empiezan en este horario se registran como trabajo.",
+      "from": "Desde",
+      "to": "Hasta",
+      "placeHint": "Los viajes desde o hacia aquí son de trabajo.",
+      "remove": "Quitar {{name}}",
+      "addPlace": "Agregar un lugar de trabajo",
+      "addTitle": "Agregar un lugar de trabajo",
+      "addBody": "Guarda dónde estás ahora, como tu depósito, taller o un cliente principal. Los viajes que empiezan o terminan aquí se registran como trabajo.",
+      "placeName": "Nombre",
+      "placePlaceholder": "p. ej. Depósito",
+      "locationError": "No se pudo obtener tu ubicación. Revisa que esté activada e inténtalo de nuevo.",
+      "locating": "Obteniendo ubicación…",
+      "save": "Guardar este lugar"
+    },
+    "deduction": {
+      "label": "Deducción por millaje, {{year}}",
+      "sub": "{{miles}} mi de trabajo · {{rate}}/mi ahora"
+    },
+    "ifta": {
+      "label": "Millas IFTA, T{{quarter}} {{year}}",
+      "sub": "Estados: {{count}} · abrir informe IFTA",
+      "statesLabel": "Estados IFTA",
+      "statesSub": "T{{quarter}} {{year}}"
+    }
+  },
+  "console": {
+    "groups": {
+      "Home": "Inicio",
+      "Customers": "Clientes",
+      "Insights": "Análisis",
+      "Engage": "Interacción",
+      "Platform": "Plataforma",
+      "Admin": "Administración"
+    },
+    "sections": {
+      "overview": {
+        "label": "Resumen",
+        "purpose": "Lo que necesita tu atención hoy: pagos fallidos, cuentas borradas, pruebas por vencer."
+      },
+      "approvals": {
+        "label": "Aprobaciones",
+        "purpose": "Acciones de riesgo que tu equipo pidió hacer. Nada ocurre hasta que apruebes."
+      },
+      "users": {
+        "label": "Clientes",
+        "purpose": "Encuentra cualquier cliente, ve todo su historial y arregla su cuenta o facturación."
+      },
+      "support": {
+        "label": "Bandeja de soporte",
+        "purpose": "Responde a los clientes antes de que venza su plazo."
+      },
+      "requests": {
+        "label": "Solicitudes de datos",
+        "purpose": "Borra o exporta una cuenta cuando el cliente lo pida. Plazo legal: 30 días."
+      },
+      "recovery": {
+        "label": "Recuperación de datos",
+        "purpose": "Restaura lo que un cliente borró por error."
+      },
+      "revenue": {
+        "label": "Ingresos",
+        "purpose": "¿Crece el negocio? Ingresos mensuales, cancelaciones y motivos."
+      },
+      "usage": {
+        "label": "Uso",
+        "purpose": "Qué funciones se usan de verdad y con qué frecuencia vuelve la gente."
+      },
+      "messages": {
+        "label": "Mensajes",
+        "purpose": "Correo, notificación o aviso en la app para cualquier grupo, ahora o más tarde."
+      },
+      "automations": {
+        "label": "Automatizaciones",
+        "purpose": "Correos que se envían solos: bienvenida, avisos de prueba, pagos fallidos."
+      },
+      "promos": {
+        "label": "Promociones",
+        "purpose": "Códigos de descuento y la recompensa por referidos."
+      },
+      "articles": {
+        "label": "Artículos de ayuda",
+        "purpose": "Escribe una respuesta una vez; aparece en el Centro de ayuda y en tus respuestas."
+      },
+      "editor": {
+        "label": "Editor del sitio",
+        "purpose": "Edita la web y las pantallas de la app como un constructor de páginas, y publica."
+      },
+      "issues": {
+        "label": "Incidencias",
+        "purpose": "Cada error de la web, la app y el backend, por número de personas afectadas, con arreglos rápidos."
+      },
+      "site": {
+        "label": "Control del sitio",
+        "purpose": "Cambia la app y la web en vivo sin publicar una versión: aviso, mantenimiento, funciones."
+      },
+      "health": {
+        "label": "Estado del sistema",
+        "purpose": "Detecta caídas y errores antes que los clientes, y avísales."
+      },
+      "policies": {
+        "label": "Políticas",
+        "purpose": "Términos de uso y política de privacidad, y quién los aceptó."
+      },
+      "changelog": {
+        "label": "Novedades",
+        "purpose": "Notas de versión que ven los clientes tras una actualización."
+      },
+      "staff": {
+        "label": "Personal",
+        "purpose": "Accesos de empleados y exactamente qué puede hacer cada uno."
+      },
+      "rules": {
+        "label": "Reglas",
+        "purpose": "Si pasa esto, haz aquello: asignación, etiquetas y seguimientos sin ti."
+      },
+      "alerts": {
+        "label": "Alertas",
+        "purpose": "De qué te avisamos y dónde: correo o teléfono."
+      },
+      "activity": {
+        "label": "Actividad",
+        "purpose": "Cada acción de administración: quién hizo qué y cuándo."
+      }
+    },
+    "common": {
+      "search": "Buscar cualquier cosa…  Ctrl K",
+      "demo": "Datos de demostración",
+      "refresh": "Actualizar",
+      "refreshing": "Actualizando…",
+      "demoNotice": "Datos de demostración: todo es ficticio y nada llega a clientes reales. Desactívalo para trabajar con datos reales.",
+      "waiting": "Pendiente para ti",
+      "alerts": "Alertas",
+      "markAllRead": "Marcar todo como leído",
+      "caughtUp": "Estás al día.",
+      "alertSettings": "Ajustes de alertas",
+      "exitPreview": "Salir de la vista previa",
+      "ownerConsole": "Consola del propietario",
+      "staffConsole": "Consola del personal",
+      "backToConsole": "Volver a la consola",
+      "viewingAs": "Viendo la app como",
+      "updated": "actualizado",
+      "noMatches": "Sin resultados para"
     }
   }
 }

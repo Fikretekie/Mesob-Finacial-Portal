@@ -25,10 +25,15 @@ import {
 } from "reactstrap";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import { apiUrl, ROUTES, S3_BUCKET_NAME } from "../config/api";
-import { getCurrentBusinessId, fetchCurrentBusiness, updateBusiness } from "../utils/businessStorage";
+import { getCurrentBusinessId, fetchCurrentBusiness, updateBusiness, rememberAccountCompanyName } from "../utils/businessStorage";
+import { stopDriveDetection } from "../utils/driveMonitor";
 import { currencies } from "../utils/currencies";
 import "./UserPage.css";
 import { saveAs } from "file-saver";
+import { Capacitor } from "@capacitor/core";
+import { saveFile } from "utils/saveFile";
+import AppPreferences from "components/AppPreferences";
+import { isAppShell } from "utils/appShell";
 
 // Currency options sorted by name, for the Account profile selector.
 const CURRENCY_OPTIONS = Object.keys(currencies)
@@ -262,6 +267,7 @@ function UserPage() {
 
           console.log("Update response:", response.data);
           localStorage.setItem("businessType", userData.businessType || "");
+          rememberAccountCompanyName(userData.companyName || "");
         }
 
         // Mirror the chosen currency into localStorage so every screen (dashboard,
@@ -298,6 +304,7 @@ function UserPage() {
       await axios.delete(
         apiUrl(`${ROUTES.USERS}/${userId}`)
       );
+      await stopDriveDetection();
       localStorage.clear(); // Clear user data
       alert("Account deleted successfully.");
       navigate("/login"); // Redirect to login or homepage
@@ -345,7 +352,9 @@ function UserPage() {
   const downloadCSV = (csvData, fileName) => {
     try {
       const blob = new Blob([csvData], { type: "text/csv;charset=utf-8" });
-      if (isIOSDevice()) {
+      if (Capacitor.isNativePlatform()) {
+        saveFile(blob, fileName);
+      } else if (isIOSDevice()) {
         const url = URL.createObjectURL(blob);
         const newTab = window.open(url, "_blank");
         if (!newTab) {
@@ -573,6 +582,7 @@ function UserPage() {
               maxWidth: "100%",
             }}
           >
+            {isAppShell() && <AppPreferences />}
             <Card
               style={{
                 backgroundColor: "var(--surface-2)",
@@ -625,6 +635,8 @@ function UserPage() {
                       Data Management
                     </NavLink>
                   </NavItem>
+                    {/* Billing is managed on the website only (store rules). */}
+                    {!Capacitor.isNativePlatform() && (
                     <NavItem style={isCompactProfile ? { width: "100%", maxWidth: "100%" } : {}}>
                     <NavLink
                       className={activeTab === "2" ? "active" : ""}
@@ -634,6 +646,7 @@ function UserPage() {
                       Payment Info
                     </NavLink>
                   </NavItem>
+                    )}
                 </Nav>
               </CardHeader>
               <CardBody

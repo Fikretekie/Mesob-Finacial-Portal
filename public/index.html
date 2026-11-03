@@ -23,10 +23,16 @@
 <head>
   <meta charset="utf-8" />
   <script>
-    /* Apply saved theme before paint to avoid a flash. Default: dark. */
+    /* Apply saved theme before paint to avoid a flash (same rules as
+       src/utils/theme.js). Default: dark on the website, "system" in the app. */
     (function () {
       try {
         var t = localStorage.getItem('mksv-theme');
+        var cap = window.Capacitor;
+        if (!t && cap && cap.isNativePlatform && cap.isNativePlatform()) t = 'system';
+        if (t === 'system') {
+          t = window.matchMedia && !window.matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark';
+        }
         document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
       } catch (e) {
         document.documentElement.setAttribute('data-theme', 'dark');

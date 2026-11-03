@@ -1,5 +1,9 @@
 import { apiUrl, ROUTES, CURRENT_ENV } from "../config/api";
-import { clearAppStorageKeepingSession } from "./authStorage";
+import { Capacitor } from "@capacitor/core";
+import { clearAppStorageKeepingSession, rememberSignIn } from "./authStorage";
+import { openWebSignup } from "./webSignup";
+import { takeNextPath } from "./afterLogin";
+import { homePathForRole, storePerms } from "./staffAccess";
 
 export const completeOAuthSignIn = async ({ email, name, provider, userId, navigate }) => {
   if (!email) {
@@ -16,6 +20,12 @@ export const completeOAuthSignIn = async ({ email, name, provider, userId, navig
     const checkResult = await checkResponse.json();
 
     if (!checkResult.exists) {
+      // Phone app: accounts are created on the website, not in the app.
+      if (Capacitor.isNativePlatform()) {
+        openWebSignup(email);
+        navigate("/login", { state: { error: "no_account", email }, replace: true });
+        return;
+      }
       console.log(`New user (OAuth), redirecting to signup [env: ${CURRENT_ENV}]`);
       localStorage.setItem("socialSignup", "true");
       localStorage.setItem("socialEmail", email);
@@ -30,18 +40,24 @@ export const completeOAuthSignIn = async ({ email, name, provider, userId, navig
 
     console.log(`Existing user, OAuth sign-in complete [env: ${CURRENT_ENV}]`);
     const userData = checkResult.user;
-    clearAppStorageKeepingSession();
+    clearAppStorageKeepingSession(userData.id);
     localStorage.setItem("userId", userData.id);
     localStorage.setItem("user_email", userData.email || email);
     localStorage.setItem("user_name", userData.name || "");
     localStorage.setItem("role", userData.role?.toString() || "2");
+    storePerms(userData.staffPermissions);
+    // Same account basics the email sign-in stores (Login.js).
+    localStorage.setItem("businessType", userData.businessType === "Resturant/Cafe" ? "Cafe" : userData.businessType || "");
+    localStorage.setItem("companyName", userData.companyName || "");
+    localStorage.setItem("currency", userData.currency || "USD");
     localStorage.setItem("outstandingDebt", userData.outstandingDebt || "0");
     localStorage.setItem("valueableItems", userData.valueableItems || "0");
     localStorage.setItem("cashBalance", userData.cashBalance || "0");
     localStorage.setItem("authToken", "authenticated");
+    rememberSignIn(userData.email || email, provider);
 
-    const dashboardPath = userData.role === 2 ? "/customer/dashboard" : "/admin/dashboard";
-    navigate(dashboardPath, { replace: true });
+    const dashboardPath = homePathForRole(userData.role ?? 2);
+    navigate(takeNextPath(dashboardPath), { replace: true });
   } catch (apiError) {
     console.error("OAuth completion API error:", apiError);
     navigate("/login", {

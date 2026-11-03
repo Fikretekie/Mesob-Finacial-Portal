@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card, CardBody, Button } from "reactstrap";
 import { Capacitor, registerPlugin } from "@capacitor/core";
@@ -8,6 +8,9 @@ import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import { haversineMiles } from "utils/geo";
 import { saveTrip } from "utils/tripStorage";
 import { getStateAtPoint } from "utils/geoState";
+import { haptic } from "utils/haptics";
+import { logBusinessMiles, setManualTrip, LOAD_PURPOSE, PERSONAL_PURPOSE } from "utils/driveMonitor";
+import { isTrucking } from "utils/mileageRate";
 
 const BackgroundGeolocation = registerPlugin("BackgroundGeolocation");
 
@@ -15,7 +18,9 @@ const MAX_ACCEPTABLE_ACCURACY_METERS = 50;
 const MIN_MOVEMENT_MILES = 0.005; // ~8 meters
 const STATE_CHECK_INTERVAL_MILES = 1; // how often to re-check which state we're in
 
-const PURPOSE_OPTIONS = ["Client Visit", "Delivery", "Commute", "Other"];
+// Trucking: loaded vs empty (deadhead) miles instead of trip purposes.
+const purposeOptions = () =>
+  isTrucking() ? [LOAD_PURPOSE.loaded, LOAD_PURPOSE.empty, "Other"] : ["Client Visit", "Delivery", "Commute", "Other"];
 
 function formatElapsed(totalSeconds) {
   const h = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
@@ -30,6 +35,7 @@ function dateKeyOf(d) {
 
 function MileageTracker() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
 
   const [isTracking, setIsTracking] = useState(false);
@@ -62,10 +68,20 @@ function MileageTracker() {
         } else {
           navigator.geolocation.clearWatch(watchIdRef.current);
         }
+        setManualTrip(false);
       }
       if (timerIdRef.current) clearInterval(timerIdRef.current);
     };
   }, []);
+
+  // "Start trip" on the driving notification lands here ready to go.
+  useEffect(() => {
+    if (location.state?.autoStart && !isTracking) {
+      navigate(location.pathname, { replace: true, state: null });
+      startTrip();
+    }
+    // eslint-disable-next-line
+  }, [location.state]);
 
   /** Adds the miles accumulated since the last state check to whichever
    * state we were in during that stretch (a no-op the very first time,
@@ -136,6 +152,7 @@ function MileageTracker() {
   };
 
   const startTrip = async () => {
+    haptic("medium");
     setError("");
     setDistanceMiles(0);
     setElapsedSeconds(0);
@@ -178,9 +195,11 @@ function MileageTracker() {
     }, 1000);
 
     setIsTracking(true);
+    setManualTrip(true);
   };
 
   const stopTrip = async () => {
+    haptic("medium");
     if (watchIdRef.current !== null) {
       if (Capacitor.isNativePlatform()) {
         await BackgroundGeolocation.removeWatcher({ id: watchIdRef.current });
@@ -200,6 +219,7 @@ function MileageTracker() {
     }));
 
     setIsTracking(false);
+    setManualTrip(false);
     setTripType("business");
     setShowNoteField(false);
     setNote("");
@@ -218,6 +238,13 @@ function MileageTracker() {
 
   const confirmSaveTrip = async () => {
     if (!pendingTrip) return;
+    // Personal miles don't belong in the books — nothing is saved. Except
+    // trucking: IFTA counts every mile the truck drives, so keep them as personal.
+    const truckingPersonal = tripType === "personal" && isTrucking();
+    if (tripType === "personal" && !truckingPersonal) {
+      discardTrip();
+      return;
+    }
     setIsSaving(true);
     const now = pendingTrip.endedAt;
     try {
@@ -228,10 +255,11 @@ function MileageTracker() {
         miles: Number(pendingTrip.miles.toFixed(2)),
         durationSeconds: Math.round(pendingTrip.durationSeconds),
         type: tripType,
-        purpose: PURPOSE_OPTIONS[purposeIndex],
+        purpose: truckingPersonal ? PERSONAL_PURPOSE : purposeOptions()[purposeIndex],
         note: note.trim(),
         stateBreakdown: pendingTrip.stateBreakdown,
       });
+      if (!truckingPersonal) logBusinessMiles(dateKeyOf(now), Number(pendingTrip.miles.toFixed(2)));
       setPendingTrip(null);
       navigate("/customer/trip-history");
     } catch (err) {
@@ -441,7 +469,7 @@ function MileageTracker() {
                   onChange={(e) => setPurposeIndex(Number(e.target.value))}
                   style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-1)" }}
                 >
-                  {PURPOSE_OPTIONS.map((p, i) => (
+                  {purposeOptions().map((p, i) => (
                     <option key={p} value={i}>{p}</option>
                   ))}
                 </select>
@@ -471,7 +499,11 @@ function MileageTracker() {
                 minHeight: "50px",
               }}
             >
-              {isSaving ? t("mileageTracker.saving") : t("mileageTracker.saveTrip")}
+              {isSaving
+                ? t("mileageTracker.saving")
+                : tripType === "personal"
+                ? t(isTrucking() ? "mileageTracker.saveForIfta" : "mileageTracker.discardTrip")
+                : t("mileageTracker.saveTrip")}
             </Button>
             <Button
               onClick={discardTrip}

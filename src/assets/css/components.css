@@ -152,3 +152,10 @@
 
 .mk-btn--ghost { color: var(--text-1); background: var(--surface-3); border-color: var(--border); }
 .mk-btn--ghost:hover:not(:disabled) { background: var(--surface-hover); border-color: var(--border-strong); }
+
+/* Brand logo: /transparent.png has white "SOVA" lettering, invisible on the
+   light theme. Swap in the dark-lettered copy wherever it's used (login,
+   sign-up, confirm, forgot password, app lock). */
+:root[data-theme="light"] img[src="/transparent.png"] {
+  content: url("../img/logo-light.png");
+}

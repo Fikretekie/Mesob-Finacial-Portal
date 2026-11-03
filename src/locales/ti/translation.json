@@ -680,7 +680,8 @@
     "locationError": "ጌጋ ኣካባቢ: {{message}}",
     "signalUnavailable": "ምልክት ግዝያዊ ኣይርከብን፣ ዳግም ይፍትን ኣሎ…",
     "noGpsSupport": "እዚ መሳርሒ ድሌት ጂፒኤስ ኣይድግፍን እዩ።",
-    "saveError": "ጉዕዞ ክዕቀብ ኣይተኻእለን። ርክብካ ኣረጋግጽ ከምኡውን ደጊምካ ፈትን።"
+    "saveError": "ጉዕዞ ክዕቀብ ኣይተኻእለን። ርክብካ ኣረጋግጽ ከምኡውን ደጊምካ ፈትን።",
+    "saveForIfta": "ንማይላት IFTA ዓቅብ"
   },
   "tripHistory": {
     "loading": "ጉዕዞታት ኣብ ምጽናን…",
@@ -717,8 +718,8 @@
       "processingApple": "ናይ Apple መእተዊ ይካየድ ኣሎ…",
       "noAccount": "ክሳብ ሕጂ መለለዪ የብልኩምን?",
       "signUp": "ተመዝገቡ",
-      "accountNotFound": "ኣካውንት ኣይተረኽበን። በጃኹም ተመዝገቡ ወይ ሓገዝ ሓተቱ።",
-      "loginFailed": "እተው ኣይተኻእለን። በጃኹም ደጊምኩም ፈትኑ።",
+      "accountNotFound": "ነዚ ኢመይል ዝኸውን ሕሳብ ኣይረኸብናን።",
+      "loginFailed": "ምእታው ኣይተዓወተን። በጃኹም ደጊምኩም ፈትኑ።",
       "eyebrow": "Meksova Finance",
       "headline1": "መዛግብትኹም፣",
       "headline2": "ኩሉ ግዜ ወቕታዊ።",
@@ -730,7 +731,18 @@
       "loginBtn": "እቶ",
       "google": "ብGoogle ቀጽሉ",
       "apple": "ብApple ቀጽሉ",
-      "signup": "ተመዝገቡ"
+      "signup": "ተመዝገቡ",
+      "welcomeBack": "እንቋዕ ብደሓን ተመለስኩም",
+      "subtitle": "ሕሳባትኩም ወቅታዊ ንምግባር እተዉ።",
+      "orEmail": "ወይ ብኢመይል",
+      "changeEmail": "ቀይር",
+      "continue": "ቀጽል",
+      "signIn": "እቶ",
+      "newHere": "ንመክሶቫ ሓድሽ ዲኹም?",
+      "createAccount": "ሕሳብ ፍጠሩ",
+      "trust": "ናይ ባንኪ ደረጃ ምስጢራዊ ምሕላው · ሓበሬታኹም ፈጺምና ኣይንሸጥን",
+      "wrongPassword": "እዚ ቃለ-ምስጢር ቅኑዕ ኣይኮነን። ደጊምኩም ፈትኑ ወይ ሓድሽ ግበሩ።",
+      "useDifferent": "ካልእ ሕሳብ ተጠቐሙ"
     },
     "marketing": {
       "trustedBy": "ብመቶታት ንእሽተይ ንግዲ ባለታት ዝኣመነ",
@@ -887,6 +899,7 @@
     }
   },
   "nav": {
+    "ownerConsole": "ናይ ዋና መቆጻጸሪ",
     "dashboard": "ዳሽቦርድ",
     "users": "ተጠቀምቲ",
     "financialReport": "ናይ ፋይናንስ ሪፖርት",
@@ -945,13 +958,28 @@
     "jurisdiction": "ዞባ ስልጣን",
     "miles": "ማይላት",
     "noData": "ነዚ ርብዒ ዓመት ዝተመዝገበ ጉዕዞ ወይ ግዝኣት ነዳዲ የለን።",
-    "note": "እዚ ሪፖርት ጠቕላላታት ጥራይ የርኢ — ዝኽፈል ግብሪ ኣይሓስብን። ምስ ናይ IFTA መግለጺኹም ተጠቐሙሉ ወይ ነቲ ኣዳላዊኹም ሃብዎ።",
+    "note": "እዞም ኣሃዛት ከም መእተዊ IFTA ተሰሪዖም ኣለዉ። መጠን ግብሪ ኣብ ነፍሲ ወከፍ ርብዒ ስለ ዝቕየር መጠንን ዝኽፈል ግብርን ኣይረኣዩን፤ ፖርታል መበገሲ ግዝኣትኩም ካብዞም ኣሃዛት ይሕስቦም። ኣሉታዊ ጽሩይ ኣሃዝ ክሬዲት እዩ።",
     "quarter": "ርብዒ ዓመት",
     "subtitle": "ብዞባ ስልጣን ዝተጓዕዙ ማይላትን ዝተገዝአ ነዳድን፣ ብርብዒ ዓመት።",
     "title": "ናይ IFTA ርብዒ ዓመታዊ ሪፖርት",
     "totalGallons": "ጠቕላላ ጋሎናት",
     "totalMiles": "ጠቕላላ ማይላት",
-    "year": "ዓመት"
+    "year": "ዓመት",
+    "loadError": "ጉዕዞታትኩምን ዕድጊ ነዳድኩምን ክጽዓን ኣይተኻእለን። እንደገና ፈትኑ።",
+    "exportError": "PDF ክፍጠር ኣይተኻእለን። እንደገና ፈትኑ።",
+    "exporting": "PDF ይፍጠር ኣሎ…",
+    "exportPdf": "PDF ኣውርድ",
+    "carrierTitle": "ሓበሬታ ኣጓዓዚ (ኣብ ጸብጻብ ይሕተም)",
+    "carrierName": "ስም ኣጓዓዚ",
+    "carrierAccount": "ቁጽሪ ሕሳብ IFTA",
+    "carrierBase": "መበገሲ ግዝኣት",
+    "fleetMpg": "MPG ናይ መካይን",
+    "taxableGallons": "ግብሪ ዝኽፈሎም ጋሎናት",
+    "netGallons": "ጽሩይ ግብሪ ጋሎናት",
+    "total": "ድምር",
+    "noFuel": "ኣብዚ ርብዒ ዕድጊ ነዳዲ ኣይተመዝገበን፤ ስለዚ MPG ን ግብሪ ዝኽፈሎም ጋሎናትን ገና ክሕሰቡ ኣይክእሉን።",
+    "unassigned_one": "1 ጉዕዞ ({{miles}} ማይል) ምምቓል ግዝኣት የብሉን፣ ኣብ ሰንጠረዥ የለን። ቅድሚ ምእታው ማይላቱ ናብ ትኽክለኛ ግዝኣት ወስኹ።",
+    "unassigned_other": "{{count}} ጉዕዞታት ({{miles}} ማይል) ምምቓል ግዝኣት የብሎምን፣ ኣብ ሰንጠረዥ የለዉን። ቅድሚ ምእታው ማይላቶም ናብ ትኽክለኛ ግዝኣታት ወስኹ።"
   },
   "quickScan": {
     "scanReceipt": "ቅብሊት ኣንብቡ",
@@ -1081,7 +1109,19 @@
     "addButton": "{{count}} ናብ Meksova ወስኽ",
     "autoImportLabel": "እዚ ካርድ ንንግዲ ጥራይ እዩ — ብዝመጽእ ግዜ ኩሉ ብኣውቶማቲክ ወስኽ",
     "bannerText": "{{count}} ትራንሳክሺናት ካብ ባንክኻ ግምገማኻ የድልዮም",
-    "bannerButton": "ሕጂ ገምግም"
+    "bannerButton": "ሕጂ ገምግም",
+    "matchNote_one": "1 ክፍሊት ምስ ቀደም ዝመዝገብኩምዎ ወጻኢ ይሰማማዕ፤ ክልተ ግዜ ከይቁጸር ምልክቱ ተላዒሉ። ደጊም ክትውስኹዎ እንተ ደሊኹም ምልክት ግበሩሉ።",
+    "matchNote_other": "{{count}} ክፍሊታት ምስ ቀደም ዝመዝገብኩምዎም ወጻኢታት ይሰማምዑ፤ ክልተ ግዜ ከይቁጸሩ ምልክቶም ተላዒሉ። ደጊም ክትውስኹ እንተ ደሊኹም ምልክት ግበሩ።",
+    "bannerMatches_one": "1 ድሮ ተመዝጊቡ",
+    "bannerMatches_other": "{{count}} ድሮ ተመዝጊቦም",
+    "match": {
+      "receipt": "ምስ ስካን ዝገበርኩምዎ ቅብሊት ይሰማማዕ · {{purpose}}፣ {{date}}",
+      "expense": "ምስ ዘእተኹምዎ ወጻኢ ይሰማማዕ · {{purpose}}፣ {{date}}",
+      "fuel": "ምስ ዕድጊ ነዳዲ ይሰማማዕ · {{date}}"
+    },
+    "noBankTitle": "ዝተራኸበ ባንኪ የለን",
+    "noBankText": "ካርድ ባንክኹም ኣራኽቡ፤ ሓደሽቲ ክፍሊታት ክትግምግምዎም ኣብዚ ክርኣዩ እዮም።",
+    "connectBank": "ባንክኹም ኣራኽቡ"
   },
   "help": {
     "title": "ሓገዝን ድጋፍን",
@@ -1210,6 +1250,314 @@
         "term": "መግለጺ ኣታዊ",
         "def": "ኣብ ሓደ ግዜ ናይ ኣታዊኹም፣ ወጻኢታትኩምን ጽማቝ፣ ብትርፊ ወይ ክሳራ ዝዛዘም።"
       }
+    }
+  },
+  "app": {
+    "tabBarLabel": "ቀንዲ መዳህሰሲ",
+    "tabHome": "መእተዊ",
+    "tabReport": "ጸብጻብ",
+    "tabScan": "ስካን",
+    "tabMileage": "ማይል",
+    "tabMore": "ተወሳኺ",
+    "lockTitle": "Meksova ተዓጽዩ ኣሎ",
+    "lockBody": "ገንዘብኩም ንምርኣይ ብኣሻራ ኣጻብዕ ወይ ብገጽ ክፈቱ።",
+    "unlock": "ክፈት",
+    "usePassword": "ብመሕለፊ ቃል እቶ",
+    "biometricReason": "Meksova ክፈት",
+    "cancel": "ሰርዝ",
+    "offerTitle": "ብኣሻራ ኣጻብዕ ወይ ብገጽ ይኽፈት?",
+    "offerBody": "Meksova ብኣሻራ ኣጻብዕኩም ወይ ብገጽኩም ክፈቱ፤ ካልእ ሰብ ስልክኹም እንተሓዘ ገንዘብኩም ምስጢራዊ ኮይኑ ይጸንሕ።",
+    "turnOn": "ኣበርህ",
+    "notNow": "ሕጂ ኣይኮነን",
+    "settingLabel": "ብኣሻራ ኣጻብዕ / ብገጽ ምኽፋት",
+    "settingHint": "ነቲ መተግበሪ ክትከፍቱ ከለኹም ኣሻራ ኣጻብዕ ወይ ገጽ ይሕተት።",
+    "planTitle": "መደብኩም ንጡፍ ኣይኮነን",
+    "planBody": "መዝገባትኩም ውሑሳት እዮም፣ ክትርእይዎም ድማ ትኽእሉ ኢኹም። መደብ Meksova ደጊሙ ንጡፍ ክሳብ ዝኸውን መዝገባት ምውሳኽን ምቕያርን ደው ኢሉ ኣሎ።",
+    "planBack": "ናብ መበገሲ ተመለስ",
+    "seatUnavailable": "ኣብ ኣፕ ተወሰኽቲ ኣባላት ጉጅለ ምውሳኽ ኣይከኣልን።",
+    "noAccount": "ን{{email}} ገና ሕሳብ Meksova የለን። ሕሳብ ክትፈጥሩ meksova.com ከፊትናልኩም — ድሕሪኡ ተመሊስኩም እተዉ።",
+    "signInFailed": "ምእታው ኣይተዛዘመን። በጃኹም ደጊምኩም ፈትኑ።",
+    "prefsTitle": "ቅጥዕታት ኣፕ",
+    "prefsLanguage": "ቋንቋ",
+    "prefsAppearance": "ትርኢት",
+    "prefsDark": "ጸልማት",
+    "prefsLight": "ብሩህ",
+    "presetAll": "ኩሉ",
+    "receiptsEmptyHint": "ቅብሊት ንምስኣል ኣብ ታሕቲ ስካን ጠውቑ — ምስ ልውውጥ ብኣውቶማቲክ ይዕቀብ።",
+    "businessesTitle": "ንግድታትኩም",
+    "businessCurrent": "ናይ ሕጂ",
+    "businessSwitch": "ንግዲ ቀይር (ናይ ሕጂ፦ {{name}})",
+    "businessDelete": "{{name}} ደምስስ",
+    "businessAddUnavailable": "ኣብ ኣፕ ካልእ ንግዲ ምውሳኽ ኣይከኣልን።",
+    "signOutTitle": "ካብ Meksova ክትወጹ?",
+    "signOutBody": "ኣብዚ ስልኪ ሕሳባትኩም ንምርኣይ ደጊምኩም ክትኣትዉ ኣለኩም።",
+    "offlineSaved": "ካብ መስመር ወጻኢ · ዝተቐመጠ ሓበሬታ ይርአ ኣሎ",
+    "offlineWaiting": "ካብ መስመር ወጻኢ · {{count}} ለውጥታት ክለኣኹ ይጽበዩ",
+    "offlineSyncing": "{{count}} ለውጥታት ይለኣኹ ኣለው…",
+    "offlineWaiting_one": "ካብ መስመር ወጻኢ · 1 ለውጢ ክለኣኽ ይጽበ",
+    "offlineSyncing_one": "1 ለውጢ ይለኣኽ ኣሎ…",
+    "scanTitle": "ቅብሊት ስካን",
+    "scanBody": "ስእሊ ቅብሊት ኣልዕሉ፣ Meksova መጠኑ ይመልእ።",
+    "scanFuelTitle": "ናይ {{station}} ቅብሊትኩም ስካን ግበሩ",
+    "scanFuelTitleGeneric": "ናይ ነዳዲ ቅብሊትኩም ስካን ግበሩ",
+    "scanFuelBody": "ንIFTA ብግዝኣትን ዕለትን ናይዚ ደው ምባል ከም ነዳዲ ይምዝገብ።",
+    "scanFuelBodyExpense": "ብዕለት ናይዚ ደው ምባል ከም ወጻኢ ነዳዲ ይምዝገብ።",
+    "scanOpenCamera": "ካሜራ ክፈት",
+    "scanRepairBody": "ከም ጽገና ይምዝገብ።",
+    "teammateFree": "ቀዳማይ ኣባል ጉጅለኹም ብነጻ እዩ።",
+    "helpPlan": "ናይ ሕጂ ውጥንኩምን ናይ ፈተነ ግዜኹም ዝተረፉ መዓልትታትን ኣብ ላዕሊ ፋይናንሳዊ ጸብጻብ ይርኣዩ። ለውጢ ውጥን ኣብ መተግበሪ ኣይርከብን።",
+    "prefsSystem": "ሲስተም",
+    "scanTakePhoto": "ስእሊ ኣልዕሉ",
+    "scanUpload": "ስእሊ፣ ስክሪንሾት ወይ PDF ጸዓኑ"
+  },
+  "drives": {
+    "native": {
+      "channelDrives": "ጉዕዞታትን ናይ ነዳዲ ደው ምባላትን",
+      "channelRecording": "ምቕዳሕ ጉዕዞ",
+      "askTitle": "ንንግዲ ትዝውሩ ዲኹም?",
+      "askBody": "እዞም ናይ ንግዲ ማይላት ክምዝገቡ ጉዕዞ ጀምሩ።",
+      "askStart": "ጉዕዞ ጀምር",
+      "askDismiss": "ሕጂ ኣይኮነን",
+      "recordingTitle": "ጉዕዞኹም ይቕዳሕ ኣሎ",
+      "recordingBody": "ክሳብ ሕጂ {miles} ማይል",
+      "recordingPersonal": "ውልቃዊ እዩ፣ ኣይትመዝግብ",
+      "classifyTitle": "ናይ {miles} ማይል ጉዕዞ",
+      "classifyBody": "{time} · ንግዲ ድዩ ውልቃዊ?",
+      "business": "ንግዲ",
+      "personal": "ውልቃዊ",
+      "forgotTitle": "ጉዕዞ ገና ይቕዳሕ ኣሎ",
+      "forgotBody": "ምዝዋር ዘቋረጽኩም ይመስል። ጉዕዞ ንምውዳእ ጠውቑ።",
+      "fuelTitle": "ኣብ {station} ናይ ነዳዲ ደው ምባል",
+      "fuelTitleGeneric": "ናይ ነዳዲ ደው ምባል",
+      "fuelBody": "ንመዝገብ IFTA ቅብሊት ሕጂ ስካን ግበሩ።",
+      "fuelScan": "ስኣሉ",
+      "personalTitle": "ጉዕዞ ኣይተቐመጠን",
+      "personalBody": "ውልቃዊ ተባሂሉ። ጌጋ እንተኾይኑ ምለስ ጠውቑ።",
+      "undo": "ምለስ",
+      "autoTitle": "ናይ {miles} ማይል ናይ ንግዲ ጉዕዞ ተመዝጊቡ",
+      "autoBody": "{rule} · ንግዲ ኣይኮነን? ውልቃዊ ጠውቑ።",
+      "ruleHours": "ሰዓታት ስራሕ",
+      "weeklyTitle": "ዝሓለፈ ሰሙን፦ {miles} ናይ ንግዲ ማይል",
+      "weeklyDeduction": "≈ {amount} ቕናሽ",
+      "weeklyWaiting": "{count} ዝምርመሩ ጉዕዞታት",
+      "widgetToday": "ሎሚ ናይ ንግዲ ማይል",
+      "widgetWeek": "ኣብዚ ሰሙን {miles} ማይል",
+      "widgetRecording": "ይቕዳሕ…",
+      "alreadyTitle": "እዚ ጉዕዞ ድሮ ተቐሚጡ እዩ",
+      "alreadyBody": "ንምድምሳሱ ታሪኽ ጉዕዞ ክፈቱ።",
+      "fuelBodyExpense": "ወጻኢ ነዳዲ ክምዝገብ ቅብሊት ሕጂ ስካን ግበሩ።",
+      "storeTitle": "ኣብ {station} ዲኹም?",
+      "storeTitleGeneric": "ደው ምባል ኣብ ድኳን",
+      "storeBody": "እቲ ወጻኢ ክምዝገብ ቅብሊት ስካን ግበሩ።",
+      "repairTitleGeneric": "ደው ምባል ኣብ ጋራጅ",
+      "repairBody": "ወጻኢ ጽገና ክምዝገብ ቅብሊት ስካን ግበሩ።",
+      "loaded": "ጽዕነት ዘለዎ",
+      "empty": "ባዶ",
+      "classifyBodyTrucking": "{time} · ጽዕነት ዘለዎ፣ ባዶ ወይስ ውልቃዊ?",
+      "personalTitleTrucking": "ውልቃዊ ማይላት",
+      "personalBodyTrucking": "ንማይላት IFTA ጥራይ ይዕቀብ፣ ከም ንግዲ ኣይቁጸርን። ጌጋ እንተኾይኑ ምምላስ ጠውቑ።",
+      "fuelUpload": "ጸዓኑ"
+    },
+    "settings": {
+      "title": "ጉዕዞታትን መዘኻኸሪታትን",
+      "detect": "ጉዕዞታተይ ኣለሊ",
+      "detectHint": "ምዝዋር ክትጅምሩ ከለኹም Meksova የስተውዕል።",
+      "autoRecord": "ጉዕዞታት ብኣውቶማቲክ መዝግብ",
+      "autoRecordHint": "ነፍሲ ወከፍ ጉዕዞ ይምዝገብ፤ ድሒርኩም ንግዲ ወይ ውልቃዊ ትብሉ። እንተጠፊኡ፦ ጉዕዞ ክትጅምሩ ንሓተኩም።",
+      "fuel": "መዘኻኸሪ ነዳዲ",
+      "fuelHint": "ኣብ መደበር ነዳዲ ደው ክትብሉ ከለኹም ቅብሊት ስካን ንክትገብሩ የዘኻኽር።",
+      "workdays": "መዓልታት ስራሕ ጥራይ",
+      "workdaysHint": "ቀዳምን ሰንበትን ስቕ ይብል።",
+      "tax": "መዘኻኸሪ ግዜ ግብሪ",
+      "taxHint": "ናይ ርብዒ ዓመት ግምታዊ ግብሪ (ን IFTA ንጽዕነት) ቅድሚ ምብጽሑ ሓደ ሰሙን።",
+      "needsBackground": "እቲ ኤፕ ተዓጽዩ ከሎ ጉዕዞታት ንምምዝጋብን ናይ ነዳዲ ደው ምባላት ንምልላይን፣ ቦታ ናብ \"ኩሉ ግዜ ፍቐድ\" ቀይሩ። ክሳብ ሽዑ Meksova ጉዕዞ ክትጅምሩ ክሓተኩም እዩ።",
+      "needsNotifications": "ናይ Meksova መፍለጢታት ጠፊኦም ስለዘለዉ፣ ናይ ጉዕዞ መዘኻኸሪ ኣይክትርእዩን ኢኹም።",
+      "allow": "ቅጥዕታት ክፈት",
+      "weekly": "ሰሙናዊ ጽማቝ",
+      "weeklyHint": "ሰኑይ ንግሆ፦ ናይ ዝሓለፈ ሰሙን ናይ ንግዲ ማይላት።",
+      "stores": "መዘኻኸሪ ኣብ ድኳናትን ጋራጃትን",
+      "storesHint": "ኣብ ድኳናት ኣቕርቦት፣ መለዋወጢ መካይንን ጋራጃትን ቅብሊት ስካን ንምግባር መዘኻኸሪ።"
+    },
+    "disclosure": {
+      "title": "ናይ ንግዲ ማይላት ብኣውቶማቲክ መዝግቡ",
+      "body": "Meksova እቲ ኤፕ ተዓጽዩ ወይ ኣብ ጥቕሚ ዘይብሉ ከሎ እውን ጉዕዞታትኩም ንምልላይ፣ ናይ ንግዲ ማይላት ንምምዝጋብን ንIFTA ናይ ነዳዲ ደው ምባላት ንምልላይን ሓበሬታ ቦታ ይእክብ።",
+      "point1": "ሓበሬታ ምንቅስቓስ መዓስ ምዝዋር ከም እትጅምሩን እተቋርጹን ይነግረና።",
+      "point2": "ቦታ ክትዝውሩ ከለኹም ጥራይ ይምዝገብ፣ ጉዕዞ ክሳብ እተቐምጡ ኣብ ስልኪኹም ይጸንሕ።",
+      "point3": "ኣብ ዝኾነ ግዜ ኣብ ሕሳብ ከተጥፍእዎ ትኽእሉ ኢኹም።",
+      "continue": "ቀጽል",
+      "notNow": "ሕጂ ኣይኮነን"
+    },
+    "review": {
+      "title": "ዝምርመሩ ጉዕዞታት",
+      "intro": "ናይ ንግዲ ጉዕዞታት ኣብ መዝገብ ማይልኩም ይቕመጡ። ውልቃዊ ጉዕዞታት ኣይቕመጡን።",
+      "purpose": "ዕላማ",
+      "mi": "ማይል",
+      "saveError": "ጉዕዞ ክቕመጥ ኣይከኣለን። ርክብኩም ኣረጋግጹ እሞ ደጊምኩም ፈትኑ።",
+      "emptyTitle": "ኩሉ ተወዲኡ",
+      "emptyBody": "ሓደስቲ ጉዕዞታት ደው ምስ በልኩም ኣብዚ ይርኣዩ።",
+      "viewTrips": "ታሪኽ ጉዕዞ ርአ",
+      "personalToast": "ውልቃዊ ተባሂሉ፣ ኣይተቐመጠን",
+      "recentTitle": "ውልቃዊ ዝተባህሉ",
+      "recentHint": "ኣይተቐመጡን። ብጌጋ ውልቃዊ እንተጠዊቕኩም ኣብ ውሽጢ 24 ሰዓት መልስዎም።",
+      "restore": "መልስ",
+      "introTrucking": "ጽዕነት ዘለዎምን ባዶን ጉዕዞታት ናይ ንግዲ ማይላት እዮም። ውልቃዊ ጉዕዞታት ንማይላት IFTA ጥራይ ይቑጸሩ።",
+      "recentHintTrucking": "ድሕሪ 24 ሰዓት ንማይላት IFTA ይዕቀቡ። ብጌጋ ውልቃዊ እንተ ጠዊቕኩም ቅድሚኡ መልስዎ።"
+    },
+    "banner": {
+      "title": "ዝምርመሩ ጉዕዞታት፦ {{count}}",
+      "sub": "ንግዲ ድዩ ውልቃዊ?"
+    },
+    "reminders": {
+      "estTaxTitle": "ግምታዊ ግብሪ ኣብ ሓደ ሰሙን ይበጽሕ",
+      "estTaxBody": "ናይ ርብዒ ዓመት ግምታዊ ግብሪ ክፍሊትኩም {{date}} ይበጽሕ። ግምትኩም ኣብ Meksova ርአዩ።",
+      "iftaTitle": "ጸብጻብ IFTA ኣብ ሓደ ሰሙን ይበጽሕ",
+      "iftaBody": "ናይ ርብዒ ዓመት ጸብጻብ IFTA ኹም {{date}} ይበጽሕ። ማይላትኩምን ነዳዲኹምን ብግዝኣት ገምግሙ።"
+    },
+    "rules": {
+      "title": "ኩሉ ግዜ ንግዲ",
+      "hours": "ሰዓታት ስራሕ",
+      "hoursHint": "ኣብዘን ሰዓታት ዝጅምሩ ናይ መዓልቲ ስራሕ ጉዕዞታት ከም ንግዲ ይምዝገቡ።",
+      "from": "ካብ",
+      "to": "ክሳብ",
+      "placeHint": "ናብዚ ወይ ካብዚ ዝግበሩ ጉዕዞታት ንግዲ እዮም።",
+      "remove": "{{name}} ኣውጽእ",
+      "addPlace": "ናይ ንግዲ ቦታ ወስኽ",
+      "addTitle": "ናይ ንግዲ ቦታ ወስኽ",
+      "addBody": "ሕጂ ዘለኹምዎ ቦታ የቐምጥ፣ ከም መኽዘንኩም፣ ድኳንኩም ወይ ቀንዲ ዓሚል። ኣብዚ ዝጅምሩ ወይ ዝውድኡ ጉዕዞታት ከም ንግዲ ይምዝገቡ።",
+      "placeName": "ስም",
+      "placePlaceholder": "ንኣብነት መኽዘን",
+      "locationError": "ቦታኹም ክርከብ ኣይከኣለን። ቦታ ከም ዝወልዐ ኣረጋግጹ እሞ ደጊምኩም ፈትኑ።",
+      "locating": "ቦታ ይድለ ኣሎ…",
+      "save": "እዚ ቦታ ኣቐምጥ"
+    },
+    "deduction": {
+      "label": "ቕናሽ ማይል፣ {{year}}",
+      "sub": "{{miles}} ናይ ንግዲ ማይል · ሕጂ {{rate}}/ማይል"
+    },
+    "ifta": {
+      "label": "ማይላት IFTA፣ ርብዒ {{quarter}} {{year}}",
+      "sub": "ግዝኣታት፦ {{count}} · ጸብጻብ IFTA ክፈት",
+      "statesLabel": "ግዝኣታት IFTA",
+      "statesSub": "ርብዒ {{quarter}} {{year}}"
+    }
+  },
+  "console": {
+    "groups": {
+      "Home": "መበገሲ",
+      "Customers": "ዓማዊል",
+      "Insights": "ትንተና",
+      "Engage": "ርክብ",
+      "Platform": "መድረኽ",
+      "Admin": "ምምሕዳር"
+    },
+    "sections": {
+      "overview": {
+        "label": "ሓፈሻዊ ትዕዝብቲ",
+        "purpose": "ሎሚ ዝጽበዩኻ፦ ዘይተዓወቱ ክፍሊታት፣ ዝተደምሰሱ ሕሳባት፣ ዝውድኡ ፈተናታት።"
+      },
+      "approvals": {
+        "label": "ፍቓዳት",
+        "purpose": "ሰራሕተኛታትካ ዝሓተቱዎ ሓደገኛ ስጉምቲ። ክሳብ ተፍቅድ ዋላ ሓንቲ ኣይትፍጸምን።"
+      },
+      "users": {
+        "label": "ዓማዊል",
+        "purpose": "ዝኾነ ዓሚል ድለ፣ ምሉእ ታሪኹ ርአ፣ ሕሳቡ ወይ ክፍሊቱ ኣዐሪ።"
+      },
+      "support": {
+        "label": "ሳጹን ደገፍ",
+        "purpose": "መልእኽቲ ዓማዊል ግዜኡ ከይሓለፈ መልስ።"
+      },
+      "requests": {
+        "label": "ሕቶታት ሓበሬታ",
+        "purpose": "ዓሚል ምስ ሓተተ ሕሳብ ደምስስ ወይ ስደድ። ሕጋዊ ገደብ 30 መዓልቲ።"
+      },
+      "recovery": {
+        "label": "ምምላስ ሓበሬታ",
+        "purpose": "ዓሚል ብጌጋ ዝደምሰሶ መልሶ።"
+      },
+      "revenue": {
+        "label": "እቶት",
+        "purpose": "ንግዲ ይዓቢ ድዩ? ወርሓዊ እቶት፣ ስረዛታትን ምኽንያታቶምን።"
+      },
+      "usage": {
+        "label": "ኣጠቓቕማ",
+        "purpose": "ሰባት ብሓቂ ዝጥቀሙሎም ባህርያትን ክንደይ ተደጋጊሞም ከም ዝምለሱን።"
+      },
+      "messages": {
+        "label": "መልእኽትታት",
+        "purpose": "ኢመይል፣ ምልክታ ወይ ኣብ ኣፕ ዝርአ መልእኽቲ ንዝኾነ ጉጅለ፣ ሕጂ ወይ ደሓር።"
+      },
+      "automations": {
+        "label": "ኣውቶሜሽን",
+        "purpose": "ባዕሎም ዝለኣኹ ኢመይላት፦ እንቋዕ ብደሓን መጻእኩም፣ መዘኻኸሪ ፈተና፣ ዘይተዓወተ ክፍሊት።"
+      },
+      "promos": {
+        "label": "ምርኢታት",
+        "purpose": "ኮድታት ቅናሽን ሽልማት ምልኣኽን።"
+      },
+      "articles": {
+        "label": "ጽሑፋት ሓገዝ",
+        "purpose": "መልሲ ሓንሳእ ጸሓፍ፤ ኣብ ማእከል ሓገዝን መልስታትካን ይርአ።"
+      },
+      "editor": {
+        "label": "ኣርታዒ መርበብ",
+        "purpose": "መርበብን ገጻት ኣፕን ከም ሃናጺ ገጽ ኣርትዕ፣ ድሕሪኡ ኣሕትም።"
+      },
+      "issues": {
+        "label": "ጸገማት",
+        "purpose": "ኣብ መርበብ፣ ኣፕን ሰርቨርን ዘለዉ ጌጋታት ብብዝሒ ዝተተንከፉ ሰባት ተሰሪዖም፣ ምስ ቅልጡፍ መፍትሒ።"
+      },
+      "site": {
+        "label": "ቁጽጽር መርበብ",
+        "purpose": "ሓድሽ ስሪት ከይለቐቕካ ኣፕን መርበብን ብቐጥታ ቀይር፦ መልእኽቲ፣ ጽገና፣ ባህርያት።"
+      },
+      "health": {
+        "label": "ጥዕና ስርዓት",
+        "purpose": "ምቁራጽን ጌጋታትን ቅድሚ ዓማዊል ፍለጥ፣ ሓብሮም ድማ።"
+      },
+      "policies": {
+        "label": "ፖሊሲታት",
+        "purpose": "ውዕል ኣጠቓቕማን ፖሊሲ ብሕትውናን፣ መን ከም ዝተቐበሎምን።"
+      },
+      "changelog": {
+        "label": "ሓደሽቲ ነገራት",
+        "purpose": "ድሕሪ ምሕዳስ ዓማዊል ዝርእዩዎ መዘኻኸሪ ስሪት።"
+      },
+      "staff": {
+        "label": "ሰራሕተኛታት",
+        "purpose": "መእተዊ ሰራሕተኛታትን ነፍሲ ወከፍ እንታይ ክገብር ከም ዝኽእልን።"
+      },
+      "rules": {
+        "label": "ሕግታት",
+        "purpose": "እዚ እንተ ኾይኑ እቲ ግበር፦ ምምዳብ፣ መለለዪን ምክትታልን ብዘይ ንስኻ።"
+      },
+      "alerts": {
+        "label": "መጠንቀቕታታት",
+        "purpose": "ብዛዕባ እንታይ ከም እንሕብረካን ኣበይን፦ ኢመይል ወይ ስልኪ።"
+      },
+      "activity": {
+        "label": "ንጥፈታት",
+        "purpose": "ነፍሲ ወከፍ ስጉምቲ ምምሕዳር፦ መን እንታይ መዓስ ገበረ።"
+      }
+    },
+    "common": {
+      "search": "ዝኾነ ድለ…  Ctrl K",
+      "demo": "ናይ ፈተነ ሓበሬታ",
+      "refresh": "ኣሐድስ",
+      "refreshing": "ይሕደስ ኣሎ…",
+      "demoNotice": "ናይ ፈተነ ሓበሬታ፦ ኣብዚ ዘሎ ኩሉ ምናባዊ እዩ፤ ናብ ሓቀኛታት ዓማዊል ዝበጽሕ የለን። ብሓቀኛ ሓበሬታ ንምስራሕ ኣጥፍኦ።",
+      "waiting": "ንዓኻ ዝጽበዩ",
+      "alerts": "መጠንቀቕታታት",
+      "markAllRead": "ኩሉ ከም ዝተንበበ ምልክት ግበር",
+      "caughtUp": "ኩሉ ርኢኻዮ።",
+      "alertSettings": "ቅጥዕታት መጠንቀቕታ",
+      "exitPreview": "ቅድመ-ምርኣይ ውጻእ",
+      "ownerConsole": "መቆጻጸሪ ዋና",
+      "staffConsole": "መቆጻጸሪ ሰራሕተኛታት",
+      "backToConsole": "ናብ መቆጻጸሪ ተመለስ",
+      "viewingAs": "ኣፕ ከም",
+      "updated": "ተሓዲሱ",
+      "noMatches": "ዝተረኽበ የለን፦"
     }
   }
 }

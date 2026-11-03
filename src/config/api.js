@@ -183,6 +183,19 @@ export const ROUTES = {
   DOCUMENT: "Document",
   /** Must match Documents.js delete payload (Lambda POST branch). */
   DOCUMENT_DELETE_ACTION: "deleteDocument",
+  /** Runtime site settings (banner, maintenance, feature switches) --
+   * GET is public so the app and website can read it; PUT is super-admin only. */
+  SITE_CONFIG: "SiteConfig",
+  /** Super-admin action log -- GET lists, POST appends. */
+  ADMIN_AUDIT: "AdminAudit",
+  /** Owner broadcasts (email / push) -- GET lists sent + scheduled, POST queues one. */
+  ADMIN_MESSAGES: "AdminMessages",
+  /** Staff accounts -- GET lists, POST invites (creates the Cognito login),
+   * PUT /{id} changes permissions/status, DELETE /{id} removes access. */
+  ADMIN_STAFF: "AdminStaff",
+  /** Console collections (tickets, requests, automations, promos, changelog,
+   * recycle bin, metrics) -- GET/PUT/DELETE AdminData/{collection}[/{id}]. */
+  ADMIN_DATA: "AdminData",
 };
 
 /**

@@ -22,6 +22,12 @@ import { useTranslation } from "react-i18next";
 import LanguageSelector from "components/Languageselector/LanguageSelector";
 import DownloadReportModal from "components/DownloadReportModal";
 import BusinessSwitcher from "components/BusinessSwitcher";
+import { rememberAccountCompanyName, rememberAccountBusinessType } from "utils/businessStorage";
+import { setThemePref } from "utils/theme";
+import { stopDriveDetection } from "utils/driveMonitor";
+import { clearForSignOut } from "utils/authStorage";
+import { isAppShell } from "utils/appShell";
+import { getCustomerRoutes, adminRoutes } from "routes";
 
 function DemoNavbar(props) {
   const { t } = useTranslation();
@@ -39,10 +45,7 @@ function DemoNavbar(props) {
   );
   const toggleTheme = () => {
     const next = theme === "dark" ? "light" : "dark";
-    document.documentElement.setAttribute("data-theme", next);
-    try {
-      localStorage.setItem("mksv-theme", next);
-    } catch (e) {}
+    setThemePref(next);
     setTheme(next);
   };
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -59,6 +62,9 @@ function DemoNavbar(props) {
   const [scheduleCount, setScheduleCount] = useState(1);
 
   const userRole = parseInt(localStorage.getItem("role"));
+  // On the admin side the console has its own tools; customer-app controls
+  // (business switcher, report/transaction buttons) would act on nothing.
+  const inConsole = location.pathname.startsWith("/admin");
 
   const [color, setColor] = useState("transparent");
   const sidebarToggle = React.useRef();
@@ -69,6 +75,31 @@ function DemoNavbar(props) {
   const isDashboardPage =
     location.pathname.includes("/dashboard");
   const showNavbarActionButtons = (!isMobile || isLandscapeMobile) && isDashboardPage;
+
+  // Phone app: the top bar carries the page title (large-title pattern — it
+  // fades in once the page's own heading scrolls away).
+  const appShell = isAppShell();
+  // App Home: the business name (and switcher) takes the title's place.
+  const appHome = appShell && location.pathname === "/customer/dashboard";
+  const pageTitle = (() => {
+    if (!appShell) return "";
+    const match = [...getCustomerRoutes(), ...adminRoutes].find(
+      (r) => r.layout + r.path === location.pathname
+    );
+    if (!match) return "";
+    if (match.path === "/dashboard") return t("app.tabHome");
+    return match.nameKey ? t(match.nameKey, match.name) : match.name;
+  })();
+  useEffect(() => {
+    if (!appShell) return undefined;
+    const panel = document.querySelector(".main-panel");
+    if (!panel) return undefined;
+    const onScroll = () =>
+      document.documentElement.classList.toggle("app-scrolled", panel.scrollTop > 48);
+    onScroll();
+    panel.addEventListener("scroll", onScroll, { passive: true });
+    return () => panel.removeEventListener("scroll", onScroll);
+  }, [appShell, location.pathname]);
 
   const isTrialActive = () =>
     trialEndDate && new Date() < trialEndDate && scheduleCount < 4;
@@ -105,6 +136,8 @@ function DemoNavbar(props) {
         apiUrl(`${ROUTES.USERS}/${userId}`)
       );
       setCompanyName(response.data?.user?.companyName || "");
+      rememberAccountCompanyName(response.data?.user?.companyName);
+      rememberAccountBusinessType(response.data?.user?.businessType);
     } catch (error) {
       console.error("Error fetching company name:", error);
       setCompanyName("");
@@ -144,7 +177,8 @@ function DemoNavbar(props) {
 
   const handleLogout = async () => {
     try {
-      localStorage.clear();
+      await stopDriveDetection();
+      clearForSignOut();
       await signOut();
       navigate("/login");
     } catch (error) {
@@ -217,13 +251,19 @@ function DemoNavbar(props) {
           location.pathname.indexOf("full-screen-maps") !== -1
             ? "navbar-absolute fixed-top"
             : "navbar-absolute fixed-top " +
-              (color === "transparent" ? "navbar-transparent " : "")
+              (color === "transparent" ? "navbar-transparent " : "") +
+              (appHome ? "mksv-appbar--home" : "")
         }
       >
         <Container fluid style={{ display: "flex", flexWrap: "nowrap", alignItems: "center", justifyContent: "space-between" }}>
 
           {/* ── LEFT: Hamburger + Language Selector ── */}
           <div style={{ display: "flex", flexWrap: "nowrap", alignItems: "center", gap: "1rem", flexShrink: 0 }}>
+            {appHome ? (
+              <BusinessSwitcher variant="name" />
+            ) : (
+              appShell && <span className="mksv-appbar-title">{pageTitle}</span>
+            )}
             <div className="navbar-toggle">
               <button
                 type="button"
@@ -320,7 +360,7 @@ function DemoNavbar(props) {
           </div>
 
           {/* ── CENTER: Company Name ── */}
-          {companyName && (
+          {companyName && !inConsole && (
             <div
               style={{
                 position: "absolute",
@@ -349,7 +389,7 @@ function DemoNavbar(props) {
           <div style={{ display: "flex", flexWrap: "nowrap", alignItems: "center", gap: "6px", flexShrink: 0 }}>
 
             {/* Download Report + Add Transaction — desktop & landscape only, dashboard pages only */}
-            {showNavbarActionButtons && (
+            {showNavbarActionButtons && !inConsole && (
               <>
                 <button
                   type="button"
@@ -419,7 +459,7 @@ function DemoNavbar(props) {
               </>
             )}
 
-            <BusinessSwitcher />
+            {!appHome && !inConsole && <BusinessSwitcher />}
 
             {/* Profile Dropdown — always last */}
             <Nav navbar style={{ margin: 0, padding: 0 }}>
@@ -446,10 +486,17 @@ function DemoNavbar(props) {
                   )}
                 </DropdownToggle>
                 <DropdownMenu end style={{ maxWidth: "calc(100vw - 16px)" }}>
+                  {inConsole && (
+                    <DropdownItem header className="account-dropdown__who">
+                      {localStorage.getItem("user_email")}
+                    </DropdownItem>
+                  )}
+                  {!inConsole && (
                   <DropdownItem onClick={() => navigate(userRole === 1 ? "/admin/profile" : "/customer/profile")}>
                     <svg className="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                     {t("nav.account", "Account")}
                   </DropdownItem>
+                  )}
                   <DropdownItem divider />
                   <DropdownItem onClick={handleLogout}>
                     <svg className="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>

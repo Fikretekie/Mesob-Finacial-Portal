@@ -3,9 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Card, CardBody } from "reactstrap";
 
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
-import { fetchTrips, getTripsForDay, getMonthSummary, getYearBusinessMiles } from "utils/tripStorage";
-
-const IRS_RATE_PER_MILE = 0.67;
+import { fetchTrips, getTripsForDay, getMonthSummary, getYearBusinessMiles, getTripsForQuarter, getMilesByState } from "utils/tripStorage";
+import { currentRateLabel, isTrucking, yearDeduction } from "utils/mileageRate";
 
 function dateKeyOf(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -70,7 +69,11 @@ function TripHistory() {
   const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const monthSummary = getMonthSummary(trips, monthKey);
   const yearBusinessMiles = getYearBusinessMiles(trips, now.getFullYear());
-  const deduction = yearBusinessMiles * IRS_RATE_PER_MILE;
+  const deduction = yearDeduction(trips, now.getFullYear());
+  // Trucking has no mileage deduction; IFTA states this quarter instead.
+  const trucking = isTrucking();
+  const quarter = Math.floor(now.getMonth() / 3) + 1;
+  const quarterStates = Object.keys(getMilesByState(getTripsForQuarter(trips, now.getFullYear(), quarter))).length;
 
   if (loading) {
     return (
@@ -101,9 +104,9 @@ function TripHistory() {
             icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#096afa" strokeWidth="1.8" strokeLinecap="round"><path d="M4 19c3-6 6-9 9-9s6 3 6 3" /></svg>}
           />
           <StatTile
-            label={t("tripHistory.estDeduction")}
-            value={`$${deduction.toFixed(2)}`}
-            sub={t("tripHistory.perMile", { rate: `$${IRS_RATE_PER_MILE.toFixed(2)}` })}
+            label={trucking ? t("drives.ifta.statesLabel") : t("tripHistory.estDeduction")}
+            value={trucking ? String(quarterStates) : `$${deduction.toFixed(2)}`}
+            sub={trucking ? t("drives.ifta.statesSub", { quarter, year: now.getFullYear() }) : t("tripHistory.perMile", { rate: currentRateLabel() })}
             iconBg="rgba(0,217,126,0.14)"
             icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>}
           />

@@ -30,6 +30,8 @@ import {
   addBusinessSeat,
   removeBusinessSeat,
 } from "utils/businessStorage";
+import { useTranslation } from "react-i18next";
+import { isAppShell } from "utils/appShell";
 
 // Holds the new-business details across a PayPal seat approval redirect. The
 // business is NOT created until we return approved, so an abandoned approval
@@ -38,9 +40,12 @@ const PENDING_BUSINESS_KEY = "mksv_pending_business";
 
 /** Lets an account switch between multiple businesses, or add a new one.
  * Always visible in the navbar -- additive, doesn't change single-business
- * accounts' behavior until they actually add a second business. */
-function BusinessSwitcher() {
+ * accounts' behavior until they actually add a second business.
+ * variant="name" (phone app Home): the trigger is the business name itself. */
+function BusinessSwitcher({ variant = "icon" }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const appShell = isAppShell();
   const [businesses, setBusinesses] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -230,8 +235,120 @@ function BusinessSwitcher() {
     }
   };
 
+  const briefcase = (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="7" width="18" height="13" rx="2" />
+      <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+  );
+
+  // Phone app: a bottom sheet of list rows instead of the desktop dropdown.
+  // No "Add another business" here — each extra business is a paid seat,
+  // and the app sells nothing (store rules).
+  const sheetRows = [
+    ...(canSeeDefault ? [{ businessId: "", name: getDefaultBusinessName(), isDefault: true }] : []),
+    ...visibleBusinesses,
+  ];
+  const appSwitcher = (
+    <>
+      {variant === "name" ? (
+        <button
+          type="button"
+          className="mksv-biz-name"
+          aria-haspopup="dialog"
+          aria-label={t("app.businessSwitch", { name: currentName })}
+          onClick={() => setDropdownOpen(true)}
+        >
+          <span className="mksv-biz-avatar mksv-biz-name__badge" aria-hidden="true">
+            {(currentName || "?").trim().charAt(0).toUpperCase()}
+          </span>
+          <span className="mksv-biz-name__text">{currentName}</span>
+          <svg className="mksv-biz-name__chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
+      ) : (
+        <button
+          type="button"
+          className="mksv-biz-trigger"
+          aria-haspopup="dialog"
+          aria-label={t("app.businessSwitch", { name: currentName })}
+          onClick={() => setDropdownOpen(true)}
+        >
+          {briefcase}
+        </button>
+      )}
+      <Modal
+        isOpen={dropdownOpen}
+        toggle={() => setDropdownOpen(false)}
+        className="mksv-biz-sheet"
+        labelledBy="mksv-biz-sheet-title"
+        returnFocusAfterClose
+      >
+        <div className="mksv-sheet__head">
+          <h2 id="mksv-biz-sheet-title" className="mksv-sheet__title">{t("app.businessesTitle")}</h2>
+          <button type="button" className="mksv-sheet__close" aria-label={t("app.cancel")} onClick={() => setDropdownOpen(false)}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        </div>
+        <ul className="mksv-list mksv-biz-list">
+          {sheetRows.map((b) => {
+            const isCurrent = b.isDefault ? !currentId : currentId === b.businessId;
+            return (
+              <li key={b.businessId || "default"} className="mksv-biz-item">
+                <button
+                  type="button"
+                  className="mksv-row"
+                  aria-current={isCurrent || undefined}
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    if (isCurrent) return;
+                    if (b.isDefault) switchToDefaultBusiness();
+                    else switchToBusiness(b);
+                  }}
+                >
+                  <span className="mksv-row__icon mksv-biz-avatar" aria-hidden="true">
+                    {(b.name || "?").trim().charAt(0).toUpperCase()}
+                  </span>
+                  <span className="mksv-row__body">
+                    <span className="mksv-row__title">{b.name}</span>
+                    {isCurrent && <span className="mksv-row__sub">{t("app.businessCurrent")}</span>}
+                  </span>
+                  {isCurrent && (
+                    <svg className="mksv-biz-check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M5 12.5l4.5 4.5L19 7.5" />
+                    </svg>
+                  )}
+                </button>
+                {!b.isDefault && !isTeamMember && (
+                  <button
+                    type="button"
+                    className="mksv-biz-delete"
+                    aria-label={t("app.businessDelete", { name: b.name })}
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      setDeleteTarget(b);
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
+                    </svg>
+                  </button>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+        {!isTeamMember && <p className="mksv-sheet__note">{t("app.businessAddUnavailable")}</p>}
+      </Modal>
+    </>
+  );
+
   return (
     <>
+      {appShell ? appSwitcher : (
       <Dropdown isOpen={dropdownOpen} toggle={() => setDropdownOpen((o) => !o)}>
         <DropdownToggle
           aria-label={`Switch business (current: ${currentName})`}
@@ -252,10 +369,7 @@ function BusinessSwitcher() {
             boxShadow: "none",
           }}
         >
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="7" width="18" height="13" rx="2" />
-            <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-          </svg>
+          {briefcase}
         </DropdownToggle>
         <DropdownMenu end style={{ maxWidth: "calc(100vw - 16px)" }}>
           {canSeeDefault && (
@@ -332,6 +446,7 @@ function BusinessSwitcher() {
           )}
         </DropdownMenu>
       </Dropdown>
+      )}
 
       <Modal isOpen={showAddModal} toggle={() => !saving && resetAddModal()} className="add-transaction-modal add-business-modal">
         <ModalHeader toggle={() => !saving && resetAddModal()}>

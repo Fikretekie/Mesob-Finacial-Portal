@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "reactstrap";
 import { useNavigate } from "react-router-dom";
+import { isAppShell } from "utils/appShell";
 
 const UserSubscriptionInfo = ({
   userSubscription,
@@ -11,6 +12,8 @@ const UserSubscriptionInfo = ({
 
   // Teammates don't manage billing — never show them subscribe/trial prompts.
   if (localStorage.getItem("isTeamMember") === "true") return null;
+  // No subscribe prompts inside the phone app (store rules).
+  if (isAppShell()) return null;
 
   const isTrialActive = () => {
     return new Date() < trialEndDate && scheduleCount < 4;

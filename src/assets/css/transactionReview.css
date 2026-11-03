@@ -1,4 +1,5 @@
-.tr-review-page { padding-bottom: 90px; }
+/* Top offset clears the position:absolute navbar, like .team-page. */
+.tr-review-page { padding: calc(84px + clamp(12px, 3vw, 24px)) 16px 90px; }
 .tr-review-loading { display: flex; align-items: center; justify-content: center; min-height: 50vh; }
 
 .tr-review-error {
@@ -150,4 +151,29 @@
   font-size: 0.8rem;
   color: var(--text-2);
   cursor: pointer;
+}
+/* Bank charge that matches an expense already recorded (utils/bankMatch.js). */
+.tr-review-match {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-3);
+  color: var(--text-2);
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: normal;
+}
+.tr-review-match-note {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  background: var(--surface-2);
+  color: var(--text-1);
+  font-size: 0.86rem;
+  line-height: 1.45;
 }

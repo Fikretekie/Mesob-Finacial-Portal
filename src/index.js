@@ -22,14 +22,24 @@ import "assets/css/demo.css";
 import "assets/css/tokens.css";
 import "assets/css/components.css";
 import "assets/css/app-chrome.css";
+import "assets/css/native-app.css";
 
 // Login stays eager — it is the landing page, so there is nothing to lazy-load
 // before it. Everything behind auth is code-split so the first paint is small.
 import Login from "../src/views/Login";
 import OAuthListener from "components/OAuthListener";
 import NativeOAuthListener from "components/NativeOAuthListener";
+import NativeBackButton from "components/NativeBackButton";
+import NativeShortcuts from "components/NativeShortcuts";
+import AppLock from "components/AppLock";
+import OfflineBar from "components/OfflineBar";
+import { installOffline } from "utils/offline";
+import { isAppShell } from "./utils/appShell";
+import { initNativeChrome } from "./utils/nativeChrome";
+import { initTheme } from "./utils/theme";
 import { getNativeIdToken } from "./utils/nativeOAuth";
 import "./i18n";
+import { installErrorReporter } from "./utils/issues";
 
 const AdminLayout = lazy(() => import("layouts/Admin.js"));
 const FinancialLayout = lazy(() => import("layouts/financial.js"));
@@ -39,10 +49,13 @@ const SignupPage = lazy(() => import("./views/Signup"));
 const ForgotPassword = lazy(() => import("views/ForgotPassword"));
 const SubscriptionPlans = lazy(() => import("views/Payment/SubscriptionPlans"));
 const Confirm = lazy(() => import("views/Confirm"));
-const TermsOfUse = lazy(() => import("views/Terms"));
+const PolicyPage = lazy(() => import("views/PolicyPage"));
 const CompleteProfile = lazy(() => import("views/CompleteProfile"));
 
 import { getEnv } from "./config/api";
+
+// Uncaught errors in the website/app report themselves to the owner console.
+installErrorReporter();
 
 // Create Redux store
 const store = configureStore({
@@ -228,12 +241,24 @@ window.fetch = async (input, init = {}) => {
   return __origFetch(input, init);
 };
 
+// Phone-app chrome (tab bar, lock, offline bar) keys off this class.
+const appShell = isAppShell();
+// Offline mode: cached reads + queued writes (after the auth wrappers above).
+if (appShell) installOffline(axios);
+if (appShell) document.documentElement.classList.add("app-shell");
+initNativeChrome();
+initTheme();
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <Provider store={store}>
     <BrowserRouter>
       <NativeOAuthListener />
+      <NativeBackButton />
+      <NativeShortcuts />
+      {appShell && <AppLock />}
+      {appShell && <OfflineBar />}
       <Suspense
         fallback={
           <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
@@ -258,8 +283,12 @@ root.render(
         <Route path="/admin/*" element={<AdminLayout />} />
         <Route path="/customer/*" element={<CustomerLayout />} />
         {/* Subscription Routes */}
-        <Route path="/subscription" element={<SubscriptionPlans />} />
-        <Route path="/terms-of-use" element={<TermsOfUse />} />
+        <Route
+          path="/subscription"
+          element={appShell ? <Navigate to="/customer/subscription" replace /> : <SubscriptionPlans />}
+        />
+        <Route path="/terms-of-use" element={<PolicyPage kind="terms" />} />
+        <Route path="/privacy-policy" element={<PolicyPage kind="privacy" />} />
         {/* Redirect any unknown routes to /login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>

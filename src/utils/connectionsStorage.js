@@ -1,6 +1,7 @@
 import axios from "axios";
 import { apiUrl, ROUTES } from "config/api";
 import { getCurrentBusinessId } from "utils/businessStorage";
+import { getSiteConfig } from "utils/siteConfig";
 
 function ownerId() {
   return localStorage.getItem("userId") || "anonymous";
@@ -30,6 +31,9 @@ export const PROVIDERS = [
 
 /** True once the API keys/flags for a provider are wired at build time. */
 export function isProviderLive(provider) {
+  // The owner console can force a provider on/off at runtime; null = build flag.
+  const override = getSiteConfig().features?.[provider.id];
+  if (typeof override === "boolean") return override;
   try {
     return String(process.env[provider.envKey] || "").toLowerCase() === "true";
   } catch (e) {
