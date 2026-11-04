@@ -1006,7 +1006,9 @@
     "gallons": "Galones",
     "cancel": "Cancelar",
     "save": "Guardar",
-    "saving": "Guardando..."
+    "saving": "Guardando...",
+    "receiptDate": "Fecha del recibo",
+    "invalidDate": "Introduce la fecha del recibo. No puede ser futura."
   },
   "team": {
     "title": "Equipo",

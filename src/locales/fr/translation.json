@@ -1006,7 +1006,9 @@
     "gallons": "Gallons",
     "cancel": "Annuler",
     "save": "Enregistrer",
-    "saving": "Enregistrement..."
+    "saving": "Enregistrement...",
+    "receiptDate": "Date du reçu",
+    "invalidDate": "Saisissez la date du reçu. Elle ne peut pas être dans le futur."
   },
   "team": {
     "title": "Équipe",

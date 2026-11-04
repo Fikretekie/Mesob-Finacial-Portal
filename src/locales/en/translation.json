@@ -998,7 +998,9 @@
     "gallons": "Gallons",
     "cancel": "Cancel",
     "save": "Save",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "receiptDate": "Receipt date",
+    "invalidDate": "Enter the receipt's date. It can't be in the future."
   },
   "team": {
     "title": "Team",

@@ -1006,7 +1006,9 @@
     "gallons": "Galaan",
     "cancel": "Jooji",
     "save": "Kaydi",
-    "saving": "Waa la kaydinayaa..."
+    "saving": "Waa la kaydinayaa...",
+    "receiptDate": "Taariikhda rasiidka",
+    "invalidDate": "Geli taariikhda rasiidka. Ma noqon karto mid mustaqbalka ah."
   },
   "team": {
     "title": "Kooxda",

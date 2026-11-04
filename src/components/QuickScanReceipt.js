@@ -66,6 +66,9 @@ async function pdfToImage(file) {
   return new File([blob], (file.name || "receipt").replace(/\.pdf$/i, "") + ".jpg", { type: "image/jpeg" });
 }
 
+const dayKey = (d) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
 function QuickScanReceipt({ renderTrigger } = {}) {
   const { t } = useTranslation();
   const fileInputRef = useRef(null);
@@ -88,6 +91,8 @@ function QuickScanReceipt({ renderTrigger } = {}) {
   //   fixed     -> capitalized as fixed asset (New_Item / assetType "fixed")
   const [destination, setDestination] = useState("expense");
   const [itemName, setItemName] = useState("");
+  // Which day the purchase is booked on: an older receipt belongs to its own period.
+  const [receiptDate, setReceiptDate] = useState(() => dayKey(new Date()));
   // Set when the scan came from a fuel-stop notification: { lat, lng, at, station }.
   const [fuelStop, setFuelStop] = useState(null);
 
@@ -119,6 +124,7 @@ function QuickScanReceipt({ renderTrigger } = {}) {
     setGallons("");
     setDestination("expense");
     setItemName("");
+    setReceiptDate(dayKey(new Date()));
     setError("");
     setFuelStop(null);
     clearFuelStop();
@@ -181,6 +187,7 @@ function QuickScanReceipt({ renderTrigger } = {}) {
       setAmount(totalNum ? String(totalNum) : "");
       const stop = readFuelStop();
       setFuelStop(stop);
+      if (stop?.at) setReceiptDate(dayKey(new Date(stop.at)));
       if (vendor) setItemName(String(vendor));
       else if (stop?.station) setItemName(stop.station);
       // From a fuel / repair-shop notification we already know the category, whatever the vendor reads as.
@@ -199,6 +206,7 @@ function QuickScanReceipt({ renderTrigger } = {}) {
       const known = stopCategory(stop);
       if (stop) {
         setFuelStop(stop);
+        if (stop.at) setReceiptDate(dayKey(new Date(stop.at)));
         if (stop.station) setItemName(stop.station);
       }
       if (known) {
@@ -224,11 +232,18 @@ function QuickScanReceipt({ renderTrigger } = {}) {
       setError("State and gallons are required for a fuel expense.");
       return;
     }
+    if (!receiptDate || receiptDate > dayKey(new Date())) {
+      setError(t("quickScan.invalidDate"));
+      return;
+    }
 
     setIsSaving(true);
     setError("");
     const userId = localStorage.getItem("userId");
     const businessId = getCurrentBusinessId();
+    const day = new Date(`${receiptDate}T12:00:00`);
+    // Today's receipts keep the real time; the server stamps them.
+    const dated = receiptDate === dayKey(new Date()) ? {} : { createdAt: day.toISOString() };
 
     const transaction = isAssetDestination
       ? {
@@ -242,6 +257,7 @@ function QuickScanReceipt({ renderTrigger } = {}) {
           originalAmount: amountNum,
           assetType: destination === "fixed" ? "fixed" : "current",
           assetName: itemName.trim(),
+          ...dated,
           ...(businessId ? { businessId } : {}),
         }
       : {
@@ -253,17 +269,16 @@ function QuickScanReceipt({ renderTrigger } = {}) {
           originalAmount: amountNum,
           subType: destination === "cogs" ? "COGS" : "Expense",
           status: "Paid",
+          ...dated,
           ...(businessId ? { businessId } : {}),
         };
 
     let fuelPurchase = null;
     if (isFuelTunnel) {
-      // IFTA date = the day of the stop, when the scan came from its notification.
-      const day = fuelStop ? new Date(fuelStop.at) : new Date();
       fuelPurchase = {
         userId,
         purchase: {
-          dateKey: `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`,
+          dateKey: receiptDate,
           date: day.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
           state,
           gallons: parseFloat(gallons),
@@ -429,6 +444,16 @@ function QuickScanReceipt({ renderTrigger } = {}) {
               <FormGroup>
                 <Label>{t("quickScan.amount")}</Label>
                 <Input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
+              </FormGroup>
+              <FormGroup>
+                <Label for="mksv-scan-date">{t("quickScan.receiptDate")}</Label>
+                <Input
+                  id="mksv-scan-date"
+                  type="date"
+                  value={receiptDate}
+                  max={dayKey(new Date())}
+                  onChange={(e) => setReceiptDate(e.target.value)}
+                />
               </FormGroup>
               <FormGroup>
                 <Label>{t("quickScan.recordAs")}</Label>
