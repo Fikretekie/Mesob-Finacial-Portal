@@ -61,7 +61,6 @@ final class DriveEvents {
     static void onDriveStart(Context c) {
         if (!DrivePrefs.enabled(c)) return;
         DrivePrefs.prefs(c).edit().putLong("lastEnterAt", System.currentTimeMillis()).apply();
-        DriveNotify.cancel(c, DriveNotify.ID_FUEL);
         if (DrivePrefs.manualTrip(c)) return;
         if (DrivePrefs.workdaysOnly(c) && DrivePrefs.isWeekend()) return;
         if (DrivePrefs.autoRecord(c) && DrivePrefs.hasBackgroundLocation(c)) {

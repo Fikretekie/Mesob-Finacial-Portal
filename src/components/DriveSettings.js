@@ -8,6 +8,7 @@ import {
   driveDetectionAvailable,
   getDriveSettings,
   getDriveStatus,
+  openDriveAppSettings,
   requestBackgroundLocation,
   requestDrivePermissions,
   saveDriveSettings,
@@ -42,7 +43,7 @@ const Row = ({ id, label, hint, on, onChange, disabled }) => (
 // Account → "Drives & reminders". Turning drive detection on first shows the
 // disclosure Google Play requires before asking for background location.
 const DriveSettings = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [settings, setSettings] = useState(getDriveSettings);
   const [status, setStatus] = useState(null);
   const [disclosure, setDisclosure] = useState(false);
@@ -90,6 +91,14 @@ const DriveSettings = () => {
 
   const needsBackground = settings.enabled && status && !status.backgroundLocation;
   const notificationsOff = settings.enabled && status && !status.notifications;
+  const activityOff = settings.enabled && status && !status.activity;
+  const batteryLimited = settings.enabled && status && status.batteryUnrestricted === false;
+  const when = (ms) => new Date(ms).toLocaleString(i18n.language, { dateStyle: "medium", timeStyle: "short" });
+  const stopResult = () => {
+    if (status.lastCheckResult === "failed") return t("drives.settings.stopFailed");
+    if (status.lastCheckResult === "none") return t("drives.settings.stopNone");
+    return status.lastCheckName || t("drives.settings.stopFound");
+  };
 
   return (
     <section className="mksv-prefs" aria-labelledby="mksv-drive-title">
@@ -152,6 +161,47 @@ const DriveSettings = () => {
 
       {settings.enabled && settings.autoRecord && (
         <BusinessRules rules={settings.rules} onChange={(rules) => apply({ ...settings, rules })} />
+      )}
+
+      {settings.enabled && status && (
+        <div className="mksv-prefs__group">
+          <div className="mksv-setting">
+            <div className="mksv-setting__text">
+              <div className="mksv-setting__label">{t("drives.settings.lastDrive")}</div>
+              <div className="mksv-setting__hint">{status.lastDriveAt ? when(status.lastDriveAt) : t("drives.settings.never")}</div>
+            </div>
+          </div>
+          <div className="mksv-setting">
+            <div className="mksv-setting__text">
+              <div className="mksv-setting__label">{t("drives.settings.lastStop")}</div>
+              <div className="mksv-setting__hint">
+                {status.lastCheckAt ? `${when(status.lastCheckAt)} · ${stopResult()}` : t("drives.settings.never")}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activityOff && (
+        <div className="mksv-setting-warn" role="status">
+          <p>{t("drives.settings.needsActivity")}</p>
+          <button
+            type="button"
+            className="mksv-app-btn mksv-app-btn--ghost"
+            onClick={() => requestDrivePermissions().then(setStatus).catch(() => {})}
+          >
+            {t("drives.settings.allow")}
+          </button>
+        </div>
+      )}
+
+      {batteryLimited && (
+        <div className="mksv-setting-warn" role="status">
+          <p>{t("drives.settings.needsBattery")}</p>
+          <button type="button" className="mksv-app-btn mksv-app-btn--ghost" onClick={() => openDriveAppSettings().catch(() => {})}>
+            {t("drives.settings.allow")}
+          </button>
+        </div>
       )}
 
       {(needsBackground || notificationsOff) && (

@@ -217,6 +217,12 @@ public class DriveRecorderService extends Service {
         if (raw == null) return;
         try {
             JSONObject drive = new JSONObject(raw);
+            // Before the minimum-miles check: a short hop can still end at a pump.
+            JSONArray points = drive.optJSONArray("points");
+            if (points != null && points.length() > 0 && DrivePrefs.stopChecks(c)) {
+                JSONArray end = points.getJSONArray(points.length() - 1);
+                FuelStops.scheduleCheck(c, end.getDouble(0), end.getDouble(1));
+            }
             if (drive.optDouble("miles", 0) < MIN_DRIVE_MILES) return;
             drive.put("miles", Math.round(drive.optDouble("miles") * 100) / 100.0);
             drive.put("endedAt", System.currentTimeMillis());
@@ -231,11 +237,6 @@ public class DriveRecorderService extends Service {
             } else {
                 DriveStore.add(c, drive);
                 DriveNotify.classify(c, drive);
-            }
-            JSONArray points = drive.optJSONArray("points");
-            if (points != null && points.length() > 0 && DrivePrefs.stopChecks(c)) {
-                JSONArray end = points.getJSONArray(points.length() - 1);
-                FuelStops.scheduleCheck(c, end.getDouble(0), end.getDouble(1));
             }
         } catch (Exception ignored) {
             // Corrupt leftover — nothing worth saving.

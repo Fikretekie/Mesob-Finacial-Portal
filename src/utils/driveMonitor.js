@@ -135,6 +135,7 @@ export function stopDriveDetection() {
 export const getDriveStatus = () => DriveMonitor.getStatus();
 export const requestDrivePermissions = () => DriveMonitor.requestDrivePermissions();
 export const requestBackgroundLocation = () => DriveMonitor.requestBackgroundLocation();
+export const openDriveAppSettings = () => DriveMonitor.openAppSettings();
 
 /** Tells Android a hand-started trip is running, so it doesn't record the same drive twice. */
 export function setManualTrip(active) {

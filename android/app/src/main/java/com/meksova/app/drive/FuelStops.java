@@ -15,6 +15,7 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.CircularBounds;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.net.SearchNearbyRequest;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.api.net.SearchNearbyResponse;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -35,15 +36,19 @@ import org.json.JSONObject;
  * "Did the user just stop somewhere with a receipt worth scanning?" — a gas
  * station, a business-supply store or a repair shop. Google Places when a key
  * is configured (see app/build.gradle), else OpenStreetMap's public Overpass API.
- * Runs only after a 3-minute stop, so a few lookups per driver per day.
+ * Runs only after a real stop, so a few lookups per driver per day.
  */
 final class FuelStops {
 
-    /** How long a stop must last before it counts as a fill-up. */
-    static final long DWELL_MS = 3 * 60 * 1000;
+    /** Parked this long mid-drive counts as a stop: short enough to catch a fill-up while still at the pump. */
+    static final long DWELL_MS = 90 * 1000;
+    /** Android already said the user left the car, so this only lets the location settle. */
+    private static final long AFTER_EXIT_MS = 30 * 1000;
 
     private static final String TAG = "MeksovaStops";
-    private static final int RADIUS_M = 80;
+    private static final int FUEL_RADIUS_M = 120;
+    /** Store pins sit mid-building, so a normal parking spot is often 100-200 m away. */
+    private static final int STORE_RADIUS_M = 250;
     private static final long REPEAT_WINDOW_MS = 60 * 60 * 1000;
     /** Google answered "nothing here" — don't second-guess it with the fallback. */
     private static final Stop NONE = new Stop("", "");
@@ -74,19 +79,16 @@ final class FuelStops {
     private FuelStops() {}
 
     /**
-     * Car stopped at (lat, lng) without the recorder running: check again
-     * after the dwell time, and only if the user hasn't driven off by then.
+     * The user left the car at (lat, lng): look it up shortly. It still runs if
+     * they've driven off by then, because a quick fill-up still has a receipt.
      */
     static void scheduleCheck(Context c, double lat, double lng) {
-        long exitAt = System.currentTimeMillis();
-        DrivePrefs.prefs(c).edit().putLong("lastExitAt", exitAt).apply();
         Intent i = new Intent(c, FuelCheckReceiver.class)
             .putExtra("lat", lat)
-            .putExtra("lng", lng)
-            .putExtra("exitAt", exitAt);
+            .putExtra("lng", lng);
         PendingIntent pi = PendingIntent.getBroadcast(c, 4110, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
-        am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, exitAt + DWELL_MS, pi);
+        am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + AFTER_EXIT_MS, pi);
     }
 
     /** Looks up (lat, lng) off the main thread and notifies if it's a fuel station, store or repair shop. */
@@ -130,10 +132,27 @@ final class FuelStops {
         String key = placesKey(c);
         if (!key.isEmpty()) {
             Stop r = lookupGoogle(c, key, lat, lng, fuel, stores);
-            if (r == NONE) return null;
-            if (r != null) return r;
+            if (r == NONE) {
+                recordCheck(c, "none", "");
+                return null;
+            }
+            if (r != null) {
+                recordCheck(c, "found", r.name);
+                return r;
+            }
         }
-        return lookupOsm(lat, lng, fuel, stores);
+        Stop r = lookupOsm(lat, lng, fuel, stores);
+        recordCheck(c, r == null ? "failed" : "found", r == null ? "" : r.name);
+        return r;
+    }
+
+    /** The last lookup's outcome, shown in the app's drive settings. */
+    private static void recordCheck(Context c, String result, String name) {
+        DrivePrefs.prefs(c).edit()
+            .putLong("lastCheckAt", System.currentTimeMillis())
+            .putString("lastCheckResult", result)
+            .putString("lastCheckName", name)
+            .apply();
     }
 
     private static boolean has(List<String> types, String[] wanted) {
@@ -160,29 +179,21 @@ final class FuelStops {
         try {
             Context app = c.getApplicationContext();
             if (!Places.isInitialized()) Places.initializeWithNewPlacesApiEnabled(app, key);
-            List<String> types = new ArrayList<>();
-            if (fuel) types.add("gas_station");
+            PlacesClient client = Places.createClient(app);
+            // Gas stations first, on the tighter radius: the store next door
+            // shouldn't win, and a store's lot shouldn't read as a fuel stop.
+            if (fuel) {
+                Place place = nearest(client, lat, lng, FUEL_RADIUS_M, Collections.singletonList("gas_station"));
+                if (place != null) return new Stop(nameOf(place), FUEL);
+            }
             if (stores) {
+                List<String> types = new ArrayList<>();
                 Collections.addAll(types, STORE_TYPES);
                 Collections.addAll(types, REPAIR_TYPES);
+                Place place = nearest(client, lat, lng, STORE_RADIUS_M, types);
+                if (place != null) return new Stop(nameOf(place), has(place.getPlaceTypes(), REPAIR_TYPES) ? REPAIR : STORE);
             }
-            SearchNearbyRequest request = SearchNearbyRequest.builder(
-                    CircularBounds.newInstance(new LatLng(lat, lng), RADIUS_M),
-                    Arrays.asList(Place.Field.DISPLAY_NAME, Place.Field.TYPES))
-                .setIncludedTypes(types)
-                .setMaxResultCount(1)
-                .setRankPreference(SearchNearbyRequest.RankPreference.DISTANCE)
-                .build();
-            SearchNearbyResponse response = Tasks.await(Places.createClient(app).searchNearby(request), 20, TimeUnit.SECONDS);
-            List<Place> places = response.getPlaces();
-            if (places == null || places.isEmpty()) return NONE;
-            Place place = places.get(0);
-            List<String> placeTypes = place.getPlaceTypes();
-            // A gas station with a car wash is still a fuel stop.
-            String kind = fuel && has(placeTypes, new String[] { "gas_station" }) ? FUEL
-                : has(placeTypes, REPAIR_TYPES) ? REPAIR : STORE;
-            String name = place.getDisplayName();
-            return new Stop(name == null ? "" : name, kind);
+            return NONE;
         } catch (Exception e) {
             // Key / billing / network trouble: say why in logcat, then try the fallback.
             Log.w(TAG, "Places lookup failed: " + e.getMessage());
@@ -190,9 +201,28 @@ final class FuelStops {
         }
     }
 
+    private static Place nearest(PlacesClient client, double lat, double lng, int radius, List<String> types) throws Exception {
+        SearchNearbyRequest request = SearchNearbyRequest.builder(
+                CircularBounds.newInstance(new LatLng(lat, lng), radius),
+                Arrays.asList(Place.Field.DISPLAY_NAME, Place.Field.TYPES))
+            .setIncludedTypes(types)
+            // Asking for just 1 sometimes comes back empty when places do exist.
+            .setMaxResultCount(5)
+            .setRankPreference(SearchNearbyRequest.RankPreference.DISTANCE)
+            .build();
+        SearchNearbyResponse response = Tasks.await(client.searchNearby(request), 20, TimeUnit.SECONDS);
+        List<Place> places = response.getPlaces();
+        return places == null || places.isEmpty() ? null : places.get(0);
+    }
+
+    private static String nameOf(Place place) {
+        String name = place.getDisplayName();
+        return name == null ? "" : name;
+    }
+
     /** OpenStreetMap fallback. Public Overpass servers are often overloaded; fine for development only. */
     private static Stop lookupOsm(double lat, double lng, boolean fuel, boolean stores) {
-        String around = "(around:" + RADIUS_M + "," + lat + "," + lng + ")";
+        String around = "(around:" + FUEL_RADIUS_M + "," + lat + "," + lng + ")";
         StringBuilder q = new StringBuilder("[out:json][timeout:10];(");
         if (fuel) q.append("nwr").append(around).append("[amenity=fuel];");
         if (stores) {

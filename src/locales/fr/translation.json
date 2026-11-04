@@ -1376,7 +1376,15 @@
       "weekly": "Résumé hebdomadaire",
       "weeklyHint": "Lundi matin : les miles professionnels de la semaine passée.",
       "stores": "Rappels en magasin et au garage",
-      "storesHint": "Un rappel pour scanner le reçu dans les magasins de fournitures, de pièces auto et les garages."
+      "storesHint": "Un rappel pour scanner le reçu dans les magasins de fournitures, de pièces auto et les garages.",
+      "needsActivity": "L'activité physique est désactivée pour Meksova : l'app ne peut pas savoir quand vous conduisez.",
+      "needsBattery": "Android peut arrêter Meksova en arrière-plan et manquer des trajets. Dans les réglages, mettez Batterie sur Sans restriction.",
+      "lastDrive": "Dernier trajet détecté",
+      "lastStop": "Dernier arrêt vérifié",
+      "never": "Rien pour l'instant",
+      "stopNone": "aucune station ni magasin à proximité",
+      "stopFailed": "échec de la recherche, vérifiez votre connexion",
+      "stopFound": "lieu trouvé"
     },
     "disclosure": {
       "title": "Enregistrez vos miles professionnels automatiquement",

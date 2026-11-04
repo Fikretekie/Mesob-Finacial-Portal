@@ -2,8 +2,13 @@ package com.meksova.app.drive;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.net.Uri;
 import android.os.Build;
+import android.os.PowerManager;
+import android.provider.Settings;
 import androidx.core.app.NotificationManagerCompat;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -89,7 +94,24 @@ public class DriveMonitorPlugin extends Plugin {
         r.put("notifications", NotificationManagerCompat.from(c).areNotificationsEnabled());
         r.put("location", DrivePrefs.has(c, Manifest.permission.ACCESS_FINE_LOCATION));
         r.put("backgroundLocation", DrivePrefs.hasBackgroundLocation(c));
+        PowerManager pm = (PowerManager) c.getSystemService(Context.POWER_SERVICE);
+        r.put("batteryUnrestricted", pm.isIgnoringBatteryOptimizations(c.getPackageName()));
+        // What actually happened on this phone, for the settings screen.
+        SharedPreferences p = DrivePrefs.prefs(c);
+        r.put("lastDriveAt", p.getLong("lastEnterAt", 0));
+        r.put("lastCheckAt", p.getLong("lastCheckAt", 0));
+        r.put("lastCheckResult", p.getString("lastCheckResult", ""));
+        r.put("lastCheckName", p.getString("lastCheckName", ""));
         return r;
+    }
+
+    /** This app's Android settings page, where Battery can be set to Unrestricted. */
+    @PluginMethod
+    public void openAppSettings(PluginCall call) {
+        Context c = getContext();
+        Intent i = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + c.getPackageName()));
+        getActivity().startActivity(i);
+        call.resolve();
     }
 
     /** Activity, notifications and location — the dialogs Android shows in-app. */

@@ -1374,7 +1374,15 @@
       "weekly": "Soo koobid toddobaadle",
       "weeklyHint": "Isniinta subaxdii: mayllada ganacsiga toddobaadkii hore.",
       "stores": "Xasuusin dukaamada iyo garaashyada",
-      "storesHint": "Xasuusin aad ku iskaan gareyso rasiidka dukaamada sahayda, qalabka gaariga iyo garaashyada."
+      "storesHint": "Xasuusin aad ku iskaan gareyso rasiidka dukaamada sahayda, qalabka gaariga iyo garaashyada.",
+      "needsActivity": "Dhaqdhaqaaqa jirka waa u xiran yahay Meksova, markaa ma ogaan karto goorta aad wado.",
+      "needsBattery": "Android waxay joojin kartaa Meksova gadaasha, safarrona way ka dhaafi kartaa. Dejinta, Battery ka dhig Unrestricted.",
+      "lastDrive": "Safarkii ugu dambeeyay ee la ogaaday",
+      "lastStop": "Joogsigii ugu dambeeyay ee la hubiyay",
+      "never": "Weli waxba",
+      "stopNone": "kaalin shidaal ama dukaan agtaada kuma jiro",
+      "stopFailed": "raadintu way fashilantay, hubi xiriirkaaga",
+      "stopFound": "meel ayaa la helay"
     },
     "disclosure": {
       "title": "Si toos ah u diiwaangeli mayllada ganacsiga",

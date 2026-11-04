@@ -1376,7 +1376,15 @@
       "weekly": "Resumen semanal",
       "weeklyHint": "Lunes por la mañana: millas de trabajo de la semana pasada.",
       "stores": "Recordatorios en tiendas y talleres",
-      "storesHint": "Un recordatorio para escanear el recibo en tiendas de suministros, autopartes y talleres."
+      "storesHint": "Un recordatorio para escanear el recibo en tiendas de suministros, autopartes y talleres.",
+      "needsActivity": "La actividad física está desactivada para Meksova, así que no puede saber cuándo conduces.",
+      "needsBattery": "Android puede detener Meksova en segundo plano y perder viajes. En ajustes, pon Batería en Sin restricciones.",
+      "lastDrive": "Último viaje detectado",
+      "lastStop": "Última parada revisada",
+      "never": "Nada todavía",
+      "stopNone": "sin gasolinera ni tienda cerca",
+      "stopFailed": "la búsqueda falló, revisa tu conexión",
+      "stopFound": "lugar encontrado"
     },
     "disclosure": {
       "title": "Registra millas de trabajo automáticamente",
