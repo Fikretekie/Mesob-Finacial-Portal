@@ -46,6 +46,11 @@ const FinancialLayout = lazy(() => import("layouts/financial.js"));
 const CustomerLayout = lazy(() => import("layouts/Customer"));
 const MesobFinanceLogin = lazy(() => import("views/MesobFinanceLogin"));
 const SignupPage = lazy(() => import("./views/Signup"));
+// The phone app has its own sign-in screens; the website's stay as they are.
+const AppLogin = lazy(() => import("./views/AppLogin"));
+const AppSignup = lazy(() => import("./views/AppSignup"));
+const AppForgotPassword = lazy(() => import("./views/AppForgotPassword"));
+const AppConfirm = lazy(() => import("./views/AppConfirm"));
 const ForgotPassword = lazy(() => import("views/ForgotPassword"));
 const SubscriptionPlans = lazy(() => import("views/Payment/SubscriptionPlans"));
 const Confirm = lazy(() => import("views/Confirm"));
@@ -268,14 +273,14 @@ root.render(
       >
       <Routes>
         {/* Route for the Login page */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={appShell ? <AppLogin /> : <Login />} />
         <Route path="/oauth-redirect" element={<OAuthListener />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/forgot-password" element={appShell ? <AppForgotPassword /> : <ForgotPassword />} />
         <Route path="/mesonfinancelogin" element={<MesobFinanceLogin />} />
         <Route path="/complete-profile" element={<CompleteProfile />} />
-        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/signup" element={appShell ? <AppSignup /> : <SignupPage />} />
         {/* New Confirm route */}
-        <Route path="/confirm" element={<Confirm />} />
+        <Route path="/confirm" element={appShell ? <AppConfirm /> : <Confirm />} />
         {/* Admin routes */}
         <Route path="/financial/*" element={<FinancialLayout />} />
 

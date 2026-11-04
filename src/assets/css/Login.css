@@ -953,11 +953,11 @@
 
 /* Phones: no floating card — the screen is the sign-in page, like an app. */
 @media (max-width: 860px) {
-  .auth__panel {
+  .auth__panel:has(.login-box--v2) {
     align-items: flex-start;
     padding: calc(var(--app-safe-top, 0px) + 32px) 20px calc(var(--app-safe-bottom, 0px) + 24px);
   }
-  .auth .login-box {
+  .auth .login-box--v2 {
     max-width: 440px;
     margin: 0 auto;
     padding: 0;
@@ -968,7 +968,7 @@
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
-  .auth .login-box::before { display: none; }
+  .auth .login-box--v2::before { display: none; }
 }
 
 /* "Remember me": the last email used on this phone, one tap to continue. */
