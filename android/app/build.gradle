@@ -1,5 +1,21 @@
 apply plugin: 'com.android.application'
 
+// Release signing. Credentials live in android/keystore.properties (git-ignored);
+// see android/keystore.properties.example. Without it, release builds are unsigned.
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+// Google Places key for fuel-stop detection: MEKSOVA_PLACES_KEY in
+// android/local.properties (git-ignored). Without it the app falls back to
+// OpenStreetMap. Restrict the key to Places API (New) + this app's package/SHA-1.
+def localProperties = new Properties()
+if (rootProject.file("local.properties").exists()) {
+    localProperties.load(new FileInputStream(rootProject.file("local.properties")))
+}
+
 android {
     namespace = "com.meksova.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -10,14 +26,28 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders = [placesKey: localProperties.getProperty("MEKSOVA_PLACES_KEY", "")]
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
+            if (keystorePropertiesFile.exists()) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
@@ -36,6 +66,11 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     implementation project(':capacitor-android')
+    // Drive detection: activity recognition + fused location (com.meksova.app.drive)
+    implementation "com.google.android.gms:play-services-location:21.3.0"
+    // Stop lookups (gas station / store / repair shop): Places API (New) via the
+    // official SDK, which identifies the app to an Android-restricted key itself.
+    implementation "com.google.android.libraries.places:places:4.1.0"
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"

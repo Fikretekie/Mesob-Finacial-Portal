@@ -27,9 +27,12 @@ import { Helmet } from "react-helmet";
 import { FaEye, FaDownload } from "react-icons/fa";
 import NotificationAlert from "react-notification-alert";
 import JSZip from "jszip";
-import { saveAs } from "file-saver";
+import { saveFile } from "utils/saveFile";
 import LanguageSelector from "components/Languageselector/LanguageSelector";
 import { useTranslation } from "react-i18next";
+import { isAppShell } from "utils/appShell";
+import { formatMoney } from "utils/currency";
+import AppListSkeleton from "components/AppListSkeleton";
 
 const Receipts = ({ selectedUser }) => {
   const { t } = useTranslation();
@@ -49,6 +52,8 @@ const Receipts = ({ selectedUser }) => {
   const [users, setUsers] = useState([]);
   const userRole = parseInt(localStorage.getItem("role") || 1);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const appShell = isAppShell();
+  const [preset, setPreset] = useState("all");
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
   const isMobileLandscape = isMobile && isLandscape;
 
@@ -233,14 +238,7 @@ const Receipts = ({ selectedUser }) => {
 
     const blob = await response.blob();
     const fileName = `receipt-${receipt.transactionPurpose || "unknown"}-${Date.now()}.${fileExtension}`;
-    const downloadUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = downloadUrl;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(downloadUrl);
+    await saveFile(blob, fileName);
   } catch (error) {
     console.error("Error downloading receipt:", error);
     notify("tr", `Error downloading receipt: ${error.message}`, "danger");
@@ -270,6 +268,27 @@ const Receipts = ({ selectedUser }) => {
     setEndDate("");
     setSearchedDates(null);
     setSelectedType("all");
+  };
+
+  // Phone app: one-tap date presets instead of From/To/Run/Clear.
+  const applyPreset = (key) => {
+    setPreset(key);
+    if (key === "all") {
+      handleClear();
+      return;
+    }
+    const now = new Date();
+    let from;
+    if (key === "month") from = new Date(now.getFullYear(), now.getMonth(), 1);
+    else if (key === "30d") from = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29);
+    else if (key === "quarter") from = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
+    else from = new Date(now.getFullYear(), 0, 1);
+    const to = new Date(now);
+    to.setHours(23, 59, 59, 999);
+    setStartDate(from.toISOString());
+    setEndDate(to.toISOString());
+    const ymd = (d) => d.toISOString().slice(0, 10);
+    setSearchedDates({ from: ymd(from), to: ymd(to) });
   };
 
   const handleDownloadAll = async () => {
@@ -331,7 +350,7 @@ const Receipts = ({ selectedUser }) => {
       await Promise.all(downloadPromises);
 
       const blob = await zip.generateAsync({ type: "blob" });
-      saveAs(blob, "receipts.zip");
+      await saveFile(blob, "receipts.zip");
       notify("tr", "All receipts downloaded successfully!", "success");
     } catch (error) {
       console.error("Error downloading all receipts:", error);
@@ -444,6 +463,85 @@ const Receipts = ({ selectedUser }) => {
           </Row>
         )}
 
+        {appShell && userRole !== 0 ? (
+          <div className="mksv-page">
+            <header className="mksv-page__head">
+              <h1 className="mksv-page__title">{t("receipts.title")}</h1>
+              <button
+                type="button"
+                className="mksv-head-action"
+                onClick={handleDownloadAll}
+                disabled={disabled || loading || receipts.length === 0}
+              >
+                <FaDownload aria-hidden="true" />
+                {t("receipts.downloadAll")}
+              </button>
+            </header>
+            <div className="dash-filter__presets mksv-presets" role="group" aria-label={t("financialReport.dateRange", "Date range")}>
+              {[
+                { key: "all", label: t("app.presetAll") },
+                { key: "month", label: t("dashboard.presetThisMonth", "This month") },
+                { key: "30d", label: t("dashboard.presetLast30", "Last 30 days") },
+                { key: "quarter", label: t("dashboard.presetQuarter", "Quarter") },
+                { key: "ytd", label: t("dashboard.presetYtd", "YTD") },
+              ].map((p) => (
+                <button
+                  key={p.key}
+                  type="button"
+                  aria-pressed={preset === p.key}
+                  className={`dash-preset${preset === p.key ? " is-active" : ""}`}
+                  onClick={() => applyPreset(p.key)}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            {loading ? (
+              <AppListSkeleton rows={5} />
+            ) : receipts.length === 0 ? (
+              <div className="mksv-empty">
+                <span className="mksv-empty__icon" aria-hidden="true">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z" />
+                    <path d="M9 8h6M9 12h6" />
+                  </svg>
+                </span>
+                <p className="mksv-empty__title">{t("receipts.noReceipts")}</p>
+                <p className="mksv-empty__body">{t("app.receiptsEmptyHint")}</p>
+              </div>
+            ) : (
+              <ul className="mksv-list">
+                {receipts.map((receipt) => (
+                  <li key={receipt.id || receipt.receiptUrl}>
+                    <button
+                      type="button"
+                      className="mksv-row"
+                      onClick={() => !disabled && handlePreview(receipt)}
+                      disabled={disabled}
+                    >
+                      <span className="mksv-row__icon" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z" />
+                          <path d="M9 8h6M9 12h6" />
+                        </svg>
+                      </span>
+                      <span className="mksv-row__body">
+                        <span className="mksv-row__title">
+                          {receipt.transactionPurpose || receipt.subType || receipt.transactionType}
+                        </span>
+                        <span className="mksv-row__sub">
+                          {new Date(receipt.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                          {receipt.subType ? ` · ${receipt.subType}` : ""}
+                        </span>
+                      </span>
+                      <span className="mksv-row__amt">{formatMoney(receipt.transactionAmount)}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ) : (
         <Row style={{ marginTop: userRole === 0 ? (isMobile ? 8 : 12) : 80 }}>
           <Col xs={12}>
             <Card style={{ backgroundColor: "var(--surface-2)", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
@@ -697,6 +795,7 @@ const Receipts = ({ selectedUser }) => {
             </Card>
           </Col>
         </Row>
+        )}
       </div>
 
       <Modal

@@ -40,6 +40,7 @@ import LanguageSelector from "components/Languageselector/LanguageSelector";
 import { faPlus, faDownload, faSearch } from "@fortawesome/free-solid-svg-icons";
 import DownloadReportModal from "components/DownloadReportModal";
 import QuickScanReceipt from "components/QuickScanReceipt";
+import { isAppShell } from "utils/appShell";
 import BalanceValue from "components/BalanceValue";
 import {
   FINANCIAL_COLORS,
@@ -57,6 +58,8 @@ import {
   filterItemsByTimeRange as engineFilterByRange,
 } from "utils/accounting";
 import { currencySymbol } from "utils/currency";
+import DriveReviewBanner from "components/DriveReviewBanner";
+import DeductionCard from "components/DeductionCard";
 
 // User's display-currency symbol (e.g. "$", "Br"). Module-scope so chart option
 // builders and formatters outside the component can use it too; read from the
@@ -385,6 +388,9 @@ function Dashboard() {
   }, []);
 
   const isMobileLandscape = isMobile && isLandscape;
+  // Inside the phone app the tab bar owns Scan, so the dashboard swaps the
+  // web toolbar + Scan button for one compact action row under the greeting.
+  const appShell = isAppShell();
 
   useEffect(() => {
     if (userRole === "0" && !location.pathname.includes("/admin")) {
@@ -1182,8 +1188,9 @@ function Dashboard() {
       <Helmet>
   <title>Dashboard - Meksova </title>
 </Helmet>
-<PendingReviewBanner />
-{isMobile ?
+{/* Phone app: shown under the actions instead, clear of the fixed top bar. */}
+{!appShell && <PendingReviewBanner />}
+{isMobile && !appShell ?
         <PanelHeader
           size={isMobileLandscape ? "md" : isMobile ? "sm" : "sm"}
           content={
@@ -1326,7 +1333,7 @@ function Dashboard() {
         </div>
       )}
 
-      <div className="content" style={{ position: "relative", marginTop: isMobile ? 0 : 80 }}>
+      <div className="content" style={{ position: "relative", marginTop: isMobile ? (appShell ? 84 : 0) : 80 }}>
         <LoadingOverlay loading={loadingFinancialData} text="Loading financial data..." />
 
 
@@ -1353,7 +1360,41 @@ function Dashboard() {
                 ? ` ${t("dashboard.forSelectedPeriod", "for the selected period")}`
                 : ""}
             </p>
-            <QuickScanReceipt />
+            {appShell ? (
+              <div className="mksv-dash-actions">
+                {userRole !== 0 && (
+                  <button
+                    type="button"
+                    className="mksv-dash-action mksv-dash-action--primary"
+                    onClick={handleAddTransactionClick}
+                    aria-disabled={isSubscriptionGateActive() || undefined}
+                  >
+                    <FontAwesomeIcon icon={faPlus} />
+                    {t("dashboard.addTransaction")}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="mksv-dash-action"
+                  aria-disabled={isSubscriptionGateActive() || undefined}
+                  onClick={() => {
+                    if (isSubscriptionGateActive()) {
+                      navigate(SUBSCRIPTION_ROUTE);
+                      return;
+                    }
+                    setShowDownloadReportModal(true);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faDownload} />
+                  {t("financialReport.downloadReport")}
+                </button>
+                <PendingReviewBanner />
+                <DriveReviewBanner />
+                <DeductionCard />
+              </div>
+            ) : (
+              <QuickScanReceipt />
+            )}
           </div>
           <span className="dash-overview__meta">
             {t("dashboard.booksCurrent", "Books current")} ·{" "}

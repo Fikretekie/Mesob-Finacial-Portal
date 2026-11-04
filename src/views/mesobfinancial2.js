@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { saveFile } from "utils/saveFile";
 import { useNavigate } from "react-router-dom";
 import {
   Card,
@@ -1431,12 +1432,27 @@ const MesobFinancial2 = () => {
     }
   }, [showAddTransaction, transactionType]);
 
+  // "Open the add-transaction form" requests (dashboard button, app-icon
+  // shortcut) wait for the plan data, then apply the same gate as the button.
+  const [pendingAddOpen, setPendingAddOpen] = useState(false);
   useEffect(() => {
     if (location.state?.openTransactionModal) {
-      setShowAddTransaction(true);
+      setPendingAddOpen(true);
       navigate(location.pathname, { replace: true });
     }
   }, [location.state, navigate]);
+  useEffect(() => {
+    if (!pendingAddOpen) return;
+    const exempt = userRole === 1 || localStorage.getItem("isTeamMember") === "true";
+    if (!exempt && !userSubscription && trialEndDate === null) return; // plan not loaded yet
+    setPendingAddOpen(false);
+    if (isSubscriptionGateActive()) {
+      navigate(SUBSCRIPTION_ROUTE);
+      return;
+    }
+    setShowAddTransaction(true);
+    // eslint-disable-next-line
+  }, [pendingAddOpen, userSubscription, trialEndDate]);
 
   // Auto-sync: a receipt scan (or other quick add) fires this — refetch the
   // transaction list so the scanned entry shows immediately for the active
@@ -2521,7 +2537,7 @@ const MesobFinancial2 = () => {
       const csvData = generateCSV(items);
       if (csvData) {
         const blob = new Blob([csvData], { type: "text/csv;charset=utf-8" });
-        saveAs(blob, "transactions.csv");
+        await saveFile(blob, "transactions.csv");
       }
       const uploadSuccess = await uploadCSVToS3(csvData);
       if (!uploadSuccess) {

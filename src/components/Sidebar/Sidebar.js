@@ -18,6 +18,12 @@ const ICON_PATHS = {
       <rect x="3" y="14" width="7" height="7" rx="1.5" />
     </>
   ),
+  "/console": (
+    <>
+      <path d="M12 14l4-4" />
+      <path d="M3.34 19a10 10 0 1 1 17.32 0" />
+    </>
+  ),
   "/financial-report": (
     <>
       <line x1="6" y1="20" x2="6" y2="13" />
@@ -247,4 +253,5 @@ function Sidebar(props) {
   );
 }
 
+export { NavIcon };
 export default Sidebar;

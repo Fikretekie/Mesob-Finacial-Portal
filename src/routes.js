@@ -1,4 +1,5 @@
 import { lazy } from "react";
+import { isAppShell } from "utils/appShell";
 import { getSiteConfig, isFeatureOn } from "utils/siteConfig";
 
 // Each view is code-split into its own chunk (React.lazy) so visiting a page
@@ -11,6 +12,7 @@ const UserPage = lazy(() => import("views/UserPage"));
 const CSVReports = lazy(() => import("views/CSVReports"));
 const AdminSubscriptions = lazy(() => import("views/Payment/AdminSubscriptions"));
 const SubscriptionPlans = lazy(() => import("views/Payment/SubscriptionPlans"));
+const AppPlanNotice = lazy(() => import("components/AppPlanNotice"));
 const MesobFinancial2 = lazy(() => import("views/mesobfinancial2"));
 const Documents = lazy(() => import("views/Documents"));
 const MileageTracker = lazy(() => import("views/MileageTracker"));
@@ -21,6 +23,7 @@ const Team = lazy(() => import("views/Team"));
 const Connections = lazy(() => import("views/Connections"));
 const TransactionReview = lazy(() => import("views/TransactionReview"));
 const HelpCenter = lazy(() => import("views/HelpCenter"));
+const DriveReview = lazy(() => import("views/DriveReview"));
 const OwnerConsole = lazy(() => import("views/OwnerConsole"));
 
 const adminRoutes = [
@@ -198,6 +201,15 @@ const getCustomerRoutes = () => {
     layout: "/customer",
     invisible: true,
   },
+  {
+    path: "/drives",
+    feature: "mileage",
+    name: "Drives to review",
+    nameKey: "drives.review.title",
+    component: <DriveReview />,
+    layout: "/customer",
+    invisible: true,
+  },
   // Team management is owner-only — teammates can't add/remove users.
   ...(localStorage.getItem("isTeamMember") !== "true"
     ? [
@@ -236,9 +248,11 @@ const getCustomerRoutes = () => {
           name: "Subscribe",
           nameKey: "nav.subscribe",
           icon: "business_money-coins",
-          component: <SubscriptionPlans />,
+          // The phone app sells nothing (store rules): same route, so every
+          // "go subscribe" navigation lands on a neutral status screen instead.
+          component: isAppShell() ? <AppPlanNotice /> : <SubscriptionPlans />,
           layout: "/customer",
-          invisible: userRole === 1,
+          invisible: userRole === 1 || isAppShell(),
         },
       ]
     : []),

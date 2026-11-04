@@ -19,7 +19,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faApple } from "@fortawesome/free-brands-svg-icons";
 import { Spinner } from "reactstrap";
 import "../assets/css/Login.css";
-import LanguageSelector from "components/Languageselector/LanguageSelector";
+import AuthLanguage from "components/AuthLanguage";
 import { useSiteConfig } from "utils/siteConfig";
 import "../assets/css/site-gate.css";
 
@@ -617,11 +617,7 @@ const SignupPage = () => {
                     </>
                   ) : (
                     <>
-                      <FontAwesomeIcon
-                        icon={faApple}
-                        className="social-icon"
-                        style={{ color: "var(--text-1)" }}
-                      />
+                      <FontAwesomeIcon icon={faApple} className="social-icon" />
                       {t("auth.signup.apple")}
                     </>
                   )}
@@ -981,7 +977,6 @@ const SignupPage = () => {
     }
   };
 
-
   if (site.features.signups === false) {
     return (
       <div className="sg-wall">
@@ -1001,9 +996,6 @@ const SignupPage = () => {
       </Helmet>
       <NotificationAlert ref={notificationAlertRef} />
       <div className="auth">
-        <div className="auth__lang">
-          <LanguageSelector />
-        </div>
         <aside className="auth__brand">
           <div className="auth__logo">
             <img src={logo} alt="Meksova Finance" />
@@ -1030,7 +1022,7 @@ const SignupPage = () => {
         </aside>
 
         <main className="auth__panel">
-          <div className="login-box signup-box">
+          <div className="login-box signup-box login-box--v2">
             {personalizing ? (
               <div className="signup-personalize">
                 <div className="signup-personalize__ring" aria-hidden="true">
@@ -1110,6 +1102,9 @@ const SignupPage = () => {
                 {renderStepContent()}
               </>
             )}
+            <div className="auth-foot">
+              <AuthLanguage />
+            </div>
           </div>
         </main>
       </div>

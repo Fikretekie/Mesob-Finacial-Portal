@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setSelectedUser } from "../../store/userSlice";
 import { updateUser, fetchTransactions } from "utils/adminApi";
+import { saveFile } from "utils/saveFile";
 import { getData } from "utils/adminData";
 import { useAccess } from "utils/staffAccess";
 import { submitOrRun } from "utils/approvals";
@@ -16,14 +17,7 @@ export function downloadCsv(name, rows) {
   if (!rows.length) return;
   const head = Object.keys(rows[0]);
   const text = [head.map(csvCell).join(","), ...rows.map((r) => head.map((h) => csvCell(r[h])).join(","))].join("\n");
-  const url = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  saveFile(new Blob([text], { type: "text/csv;charset=utf-8" }), name);
 }
 
 function Field({ k, children }) {

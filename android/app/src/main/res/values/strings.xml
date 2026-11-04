@@ -4,4 +4,8 @@
     <string name="title_activity_main">Meksova</string>
     <string name="package_name">com.meksova.app</string>
     <string name="custom_url_scheme">com.meksova.app</string>
+    <string name="shortcut_scan">Scan receipt</string>
+    <string name="shortcut_trip">Start trip</string>
+    <string name="shortcut_add">Add transaction</string>
+    <string name="widget_description">Business miles today and one-tap Start trip</string>
 </resources>

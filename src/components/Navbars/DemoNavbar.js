@@ -22,6 +22,12 @@ import { useTranslation } from "react-i18next";
 import LanguageSelector from "components/Languageselector/LanguageSelector";
 import DownloadReportModal from "components/DownloadReportModal";
 import BusinessSwitcher from "components/BusinessSwitcher";
+import { rememberAccountCompanyName, rememberAccountBusinessType } from "utils/businessStorage";
+import { setThemePref } from "utils/theme";
+import { stopDriveDetection } from "utils/driveMonitor";
+import { clearForSignOut } from "utils/authStorage";
+import { isAppShell } from "utils/appShell";
+import { getCustomerRoutes, adminRoutes } from "routes";
 
 function DemoNavbar(props) {
   const { t } = useTranslation();
@@ -39,10 +45,7 @@ function DemoNavbar(props) {
   );
   const toggleTheme = () => {
     const next = theme === "dark" ? "light" : "dark";
-    document.documentElement.setAttribute("data-theme", next);
-    try {
-      localStorage.setItem("mksv-theme", next);
-    } catch (e) {}
+    setThemePref(next);
     setTheme(next);
   };
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -72,6 +75,31 @@ function DemoNavbar(props) {
   const isDashboardPage =
     location.pathname.includes("/dashboard");
   const showNavbarActionButtons = (!isMobile || isLandscapeMobile) && isDashboardPage;
+
+  // Phone app: the top bar carries the page title (large-title pattern — it
+  // fades in once the page's own heading scrolls away).
+  const appShell = isAppShell();
+  // App Home: the business name (and switcher) takes the title's place.
+  const appHome = appShell && location.pathname === "/customer/dashboard";
+  const pageTitle = (() => {
+    if (!appShell) return "";
+    const match = [...getCustomerRoutes(), ...adminRoutes].find(
+      (r) => r.layout + r.path === location.pathname
+    );
+    if (!match) return "";
+    if (match.path === "/dashboard") return t("app.tabHome");
+    return match.nameKey ? t(match.nameKey, match.name) : match.name;
+  })();
+  useEffect(() => {
+    if (!appShell) return undefined;
+    const panel = document.querySelector(".main-panel");
+    if (!panel) return undefined;
+    const onScroll = () =>
+      document.documentElement.classList.toggle("app-scrolled", panel.scrollTop > 48);
+    onScroll();
+    panel.addEventListener("scroll", onScroll, { passive: true });
+    return () => panel.removeEventListener("scroll", onScroll);
+  }, [appShell, location.pathname]);
 
   const isTrialActive = () =>
     trialEndDate && new Date() < trialEndDate && scheduleCount < 4;
@@ -108,6 +136,8 @@ function DemoNavbar(props) {
         apiUrl(`${ROUTES.USERS}/${userId}`)
       );
       setCompanyName(response.data?.user?.companyName || "");
+      rememberAccountCompanyName(response.data?.user?.companyName);
+      rememberAccountBusinessType(response.data?.user?.businessType);
     } catch (error) {
       console.error("Error fetching company name:", error);
       setCompanyName("");
@@ -147,7 +177,8 @@ function DemoNavbar(props) {
 
   const handleLogout = async () => {
     try {
-      localStorage.clear();
+      await stopDriveDetection();
+      clearForSignOut();
       await signOut();
       navigate("/login");
     } catch (error) {
@@ -220,13 +251,19 @@ function DemoNavbar(props) {
           location.pathname.indexOf("full-screen-maps") !== -1
             ? "navbar-absolute fixed-top"
             : "navbar-absolute fixed-top " +
-              (color === "transparent" ? "navbar-transparent " : "")
+              (color === "transparent" ? "navbar-transparent " : "") +
+              (appHome ? "mksv-appbar--home" : "")
         }
       >
         <Container fluid style={{ display: "flex", flexWrap: "nowrap", alignItems: "center", justifyContent: "space-between" }}>
 
           {/* ── LEFT: Hamburger + Language Selector ── */}
           <div style={{ display: "flex", flexWrap: "nowrap", alignItems: "center", gap: "1rem", flexShrink: 0 }}>
+            {appHome ? (
+              <BusinessSwitcher variant="name" />
+            ) : (
+              appShell && <span className="mksv-appbar-title">{pageTitle}</span>
+            )}
             <div className="navbar-toggle">
               <button
                 type="button"
@@ -422,7 +459,7 @@ function DemoNavbar(props) {
               </>
             )}
 
-            {!inConsole && <BusinessSwitcher />}
+            {!appHome && !inConsole && <BusinessSwitcher />}
 
             {/* Profile Dropdown — always last */}
             <Nav navbar style={{ margin: 0, padding: 0 }}>

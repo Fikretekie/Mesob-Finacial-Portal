@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { SiteBanner } from "components/SiteGate";
+import { currentRate } from "utils/mileageRate";
 import useConfigDraft from "./useConfigDraft";
 import { Confirm, Notice, fmtDateTime } from "./shared";
 
@@ -37,6 +38,8 @@ function Tri({ value, onChange, label }) {
 export default function SiteControlTab() {
   const { saved, draft, set, dirty, save, discard, busy, flash, status } = useConfigDraft();
   const [confirm, setConfirm] = useState(false);
+  const [rateFrom, setRateFrom] = useState("");
+  const [rateVal, setRateVal] = useState("");
 
   if (!draft) return <div className="oc-card"><div className="oc-skel oc-skel--block" /></div>;
 
@@ -182,6 +185,47 @@ export default function SiteControlTab() {
             <span className="oc-field__label">Message</span>
             <input className="oc-input" value={draft.app.updateMessage} onChange={(e) => set("app.updateMessage", e.target.value)} />
           </label>
+        </section>
+
+        <section className="oc-card">
+          <div className="oc-card__head">
+            <h2 className="oc-card__title">IRS mileage rate</h2>
+            <span className="oc-card__meta mono">now ${currentRate().toFixed(3)}/mi</span>
+          </div>
+          <p className="oc-muted">When the IRS announces a new rate, add it here. Trips on or after that date use it in deductions. No app update needed.</p>
+          {(draft.app.mileageRates || []).length > 0 && (
+            <ul className="oc-rates">
+              {draft.app.mileageRates.map((r, i) => (
+                <li key={`${r.from}-${i}`} className="oc-rates__row">
+                  <span className="mono">from {r.from}</span>
+                  <span className="mono">${Number(r.rate).toFixed(3)}/mi</span>
+                  <button type="button" className="oc-link-btn" onClick={() => set("app.mileageRates", draft.app.mileageRates.filter((_, j) => j !== i))}>Remove</button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="oc-inline">
+            <label className="oc-field oc-field--grow">
+              <span className="oc-field__label">From date</span>
+              <input className="oc-input" type="date" value={rateFrom} onChange={(e) => setRateFrom(e.target.value)} />
+            </label>
+            <label className="oc-field oc-field--grow">
+              <span className="oc-field__label">$ per mile</span>
+              <input className="oc-input mono" type="number" step="0.005" min="0.1" max="2" value={rateVal} onChange={(e) => setRateVal(e.target.value)} placeholder="0.780" />
+            </label>
+            <button
+              type="button"
+              className="oc-btn oc-btn--ghost"
+              disabled={!rateFrom || !(Number(rateVal) > 0)}
+              onClick={() => {
+                set("app.mileageRates", [...(draft.app.mileageRates || []).filter((r) => r.from !== rateFrom), { from: rateFrom, rate: Number(rateVal) }].sort((a, b) => (a.from < b.from ? 1 : -1)));
+                setRateFrom("");
+                setRateVal("");
+              }}
+            >
+              Add rate
+            </button>
+          </div>
         </section>
 
         <section className="oc-card">

@@ -1,0 +1,1690 @@
+/* Phone-app chrome: bottom tab bar, app lock, offline screen, unlock setting.
+   Only active under html.app-shell (set in index.js inside the native app).
+   Kept out of app-chrome.css on purpose — that file is a frequent merge hotspot. */
+
+:root {
+  --tabbar-h: 64px;
+  --app-safe-bottom: max(var(--safe-area-inset-bottom, 0px), env(safe-area-inset-bottom, 0px));
+}
+
+/* ── Bottom tab bar ─────────────────────────────────────────── */
+.mksv-tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1020;
+  display: flex;
+  align-items: stretch;
+  height: calc(var(--tabbar-h) + var(--app-safe-bottom));
+  padding-bottom: var(--app-safe-bottom);
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -8px 24px -12px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s ease;
+}
+
+html.app-shell .main-panel {
+  padding-bottom: calc(var(--tabbar-h) + var(--app-safe-bottom) + 12px);
+}
+/* Room for the offline bar so it never covers the end of a page. */
+html.app-shell.offline-bar .main-panel {
+  padding-bottom: calc(var(--tabbar-h) + var(--app-safe-bottom) + 64px);
+}
+
+/* Sidebar drawer or keyboard open: get the bar out of the way. */
+html.nav-open .mksv-tabbar,
+html.kb-open .mksv-tabbar {
+  transform: translateY(100%);
+}
+
+.mksv-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 2px 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-2);
+  font-family: var(--font-sans);
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.mksv-tab:hover,
+.mksv-tab:focus {
+  text-decoration: none;
+}
+/* Hover only where there is a real pointer; on touch, a tapped tab must not
+   stay highlighted and look selected. */
+@media (hover: hover) {
+  .mksv-tab:hover { color: var(--text-1); }
+}
+.mksv-tab:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: -4px;
+  border-radius: 10px;
+}
+.mksv-tab.is-active {
+  color: var(--accent);
+}
+.mksv-tab__label {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.1;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Centre Scan action: raised blue disc. */
+.mksv-tab--scan {
+  color: var(--text-1);
+}
+.mksv-tab__scan-disc {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-top: -22px;
+  border-radius: 50%;
+  background: var(--accent-solid);
+  color: var(--accent-ink);
+  border: 4px solid var(--surface-2);
+  box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.55);
+}
+.mksv-tab--scan:active .mksv-tab__scan-disc {
+  transform: scale(0.94);
+}
+.mksv-tab--scan:disabled {
+  opacity: 0.6;
+}
+
+/* Tablets in landscape keep the permanent sidebar instead. */
+@media (min-width: 992px) {
+  .mksv-tabbar {
+    display: none;
+  }
+  html.app-shell .main-panel {
+    padding-bottom: 0;
+  }
+}
+
+/* ── Lock full-screen state ──────────────────────────────────── */
+.mksv-app-lock {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 24px calc(24px + var(--app-safe-bottom));
+  background: var(--bg);
+  color: var(--text-1);
+  text-align: center;
+}
+.mksv-app-lock__logo {
+  position: absolute;
+  top: 28px;
+  width: 44px;
+  height: auto;
+}
+.mksv-app-lock__icon {
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 4px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.mksv-app-lock__title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.mksv-app-lock__body {
+  margin: 0 0 12px;
+  max-width: 320px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.mksv-app-btn {
+  width: 100%;
+  max-width: 320px;
+  min-height: 48px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mksv-app-btn:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+}
+.mksv-app-btn--primary {
+  background: var(--accent-solid);
+  color: var(--accent-ink);
+}
+.mksv-app-btn--primary:disabled {
+  opacity: 0.6;
+}
+.mksv-app-btn--ghost {
+  background: transparent;
+  color: var(--text-2);
+  border-color: var(--border-strong);
+}
+/* Second choice beside a primary action (e.g. Upload next to Take photo). */
+.mksv-app-btn--secondary {
+  background: var(--surface-3);
+  color: var(--text-1);
+  border-color: var(--border-strong);
+}
+
+/* ── "Turn on fingerprint unlock?" offer (reactstrap modal body) ── */
+.mksv-lock-offer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 22px 22px !important;
+  text-align: center;
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+.mksv-lock-offer__title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.mksv-lock-offer__body {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+/* ── Account page: unlock switch ─────────────────────────────── */
+.mksv-lock-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.mksv-lock-setting__label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.mksv-lock-setting__hint {
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+.mksv-switch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 32px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-3);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.mksv-switch__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--text-2);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.mksv-switch.is-on {
+  background: var(--accent-solid);
+  border-color: var(--accent-solid);
+}
+.mksv-switch.is-on .mksv-switch__thumb {
+  transform: translateX(20px);
+  background: #fff;
+}
+.mksv-switch:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+}
+
+/* ── App-shell polish: make the web layout feel like a phone app ── */
+html.app-shell {
+  --app-safe-top: var(--safe-area-inset-top, 0px);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Edge-to-edge (see utils/nativeChrome.js): the navbar's own glass runs up
+   behind the status bar, so the top reads as one piece in both themes. */
+html.app-shell .navbar.navbar-absolute,
+html.app-shell .navbar.navbar-absolute.navbar-transparent {
+  padding-top: calc(var(--app-safe-top) + 4px);
+  /* Solid, so content scrolling underneath never shows through the icons;
+     the template otherwise leaves it fully transparent on mobile. */
+  background: var(--bg) !important;
+  border-bottom: 1px solid var(--border);
+}
+html.app-shell .main-panel {
+  padding-top: var(--app-safe-top);
+  overscroll-behavior-y: none;
+}
+html.app-shell .sidebar {
+  padding-top: var(--app-safe-top);
+}
+html.app-shell .modal-dialog {
+  margin-top: calc(var(--app-safe-top) + 12px);
+}
+
+/* Phone apps don't show a scrollbar track. */
+html.app-shell * {
+  scrollbar-width: none;
+}
+html.app-shell ::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 991px) {
+  /* The template positions the navbar absolute inside the scrolling
+     .main-panel, so it scrolls away with the content. Pin it like an app bar. */
+  html.app-shell .navbar.navbar-absolute {
+    position: fixed !important;
+    left: 0;
+    right: 0;
+  }
+
+  /* "More" in the tab bar opens the sidebar; the hamburger was a duplicate.
+     Kept in the DOM (hidden) because More clicks it to toggle state. */
+  html.app-shell .navbar .navbar-toggle {
+    display: none !important;
+  }
+  /* With the hamburger gone, keep language + theme as tight as the right-hand group. */
+  html.app-shell .navbar .container-fluid > div:first-child {
+    gap: 6px !important;
+  }
+  html.app-shell .navbar .container-fluid > div:first-child > * {
+    margin-left: 0 !important;
+  }
+
+  /* Date presets: one swipeable row instead of wrapping onto two. */
+  html.app-shell .dash-filter__presets {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin: 0 -15px;
+    padding: 2px 15px;
+    scroll-padding-inline: 15px;
+  }
+  html.app-shell .dash-filter__presets > * {
+    flex: 0 0 auto;
+  }
+}
+
+/* Tap outside the open sidebar to close it. */
+.mksv-nav-scrim {
+  display: none;
+}
+html.app-shell.nav-open .mksv-nav-scrim {
+  display: block;
+  position: fixed;
+  inset: 0 0 0 260px;
+  z-index: 1029;
+  padding: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* Press feedback, since touch has no hover. */
+html.app-shell .mksv-tab:active,
+html.app-shell .mksv-dash-action:active,
+html.app-shell .mksv-app-btn:active,
+html.app-shell .dash-preset:active {
+  transform: scale(0.96);
+}
+html.app-shell .mksv-tab,
+html.app-shell .mksv-dash-action,
+html.app-shell .dash-preset {
+  transition: transform 0.1s ease, color 0.15s ease;
+}
+
+/* Dashboard action row (replaces the web toolbar + Scan button in the app). */
+.mksv-dash-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.mksv-dash-action {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.mksv-dash-action--primary {
+  background: var(--accent-solid);
+  border-color: var(--accent-solid);
+  color: var(--accent-ink);
+}
+.mksv-dash-action[aria-disabled="true"] {
+  opacity: 0.55;
+}
+.mksv-dash-action:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+}
+
+/* Login is outside the main layout, so it clears the status bar itself. */
+html.app-shell .auth__lang {
+  top: calc(var(--app-safe-top) + 12px);
+}
+
+/* Toast alerts (react-notification-alert) position themselves with inline
+   top values; shift the whole stack below the status bar. */
+html.app-shell div[style*="position: fixed"][style*="z-index: 9999"] {
+  transform: translateY(var(--app-safe-top));
+}
+
+/* The tab bar's centre Scan replaces the per-page Scan Receipt buttons. */
+html.app-shell .main-panel .mksv-scan-btn {
+  display: none;
+}
+
+/* Blank app-coloured screen while Login checks for a saved session, so the
+   sign-in form never flashes for someone who is already signed in. */
+.auth-restoring {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+}
+
+/* ── Login: inline notice + "Sign up" (opens the website in the app) ── */
+.login-notice {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-1);
+  font-size: 14px;
+  line-height: 1.45;
+  text-align: left;
+}
+.login-signup-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ── Plan status (stands in for the Subscribe page inside the app) ── */
+.mksv-plan-notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 420px;
+  margin: 104px auto 0;
+  padding: 32px 24px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  text-align: center;
+}
+.mksv-plan-notice__icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.mksv-plan-notice__title {
+  margin: 4px 0 0;
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.mksv-plan-notice__body {
+  margin: 0 0 8px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+/* =====================================================================
+   App visual system: calm, flat, banking-app surfaces (app shell only).
+   The website keeps its glass look. Inside the phone app the glows, sheen
+   and blur go, cards become solid with a hairline, and labels read as
+   normal sentence-case text. Numbers stay mono + tabular.
+   ===================================================================== */
+html.app-shell,
+html.app-shell[data-theme] {
+  --glass-bg: var(--surface-2);
+  --glass-bg-2: var(--surface-2);
+  --glass-border: var(--border);
+  --glass-blur: none;
+  --glass-sheen: linear-gradient(transparent, transparent);
+  --glass-inset: 0 0 0 0 transparent;
+  --card-border: var(--border);
+  --card-glow: 0 0 0 0 transparent;
+}
+html.app-shell .main-panel {
+  background: var(--bg) !important;
+}
+
+/* Sentence-case labels instead of spaced-out mono capitals. */
+html.app-shell :is(
+  .mk-eyebrow,
+  .card-stats .card-category,
+  .card-stats--hero .card-category,
+  .hero-flow__lbl,
+  .hero-flow__net .hk,
+  .hero-subline .hk,
+  .chart-card__title,
+  .dash-overview__meta,
+  .dash-viewall,
+  .dash-filter__lbl,
+  .dash-tx__sub,
+  .add-transaction-modal fieldset > legend,
+  .main-panel .card label
+) {
+  font-family: var(--font-sans) !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+html.app-shell :is(
+  .mk-eyebrow,
+  .card-stats .card-category,
+  .card-stats--hero .card-category,
+  .hero-flow__lbl,
+  .hero-flow__net .hk,
+  .hero-subline .hk,
+  .chart-card__title
+) {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--text-2) !important;
+}
+/* Matches app-chrome.css's own (:not-heavy) selector so it actually wins. */
+html.app-shell .main-panel .card:not(.card-stats):not(.chart-card) label {
+  font-family: var(--font-sans) !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+html.app-shell .dash-preset {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+html.app-shell .dash-overview__meta {
+  padding: 5px 12px;
+  font-size: 12px;
+}
+
+/* One button language: 12px radius, 44px+ tall, no caps, no coloured glow.
+   Radius is not !important so deliberate inline shapes (the round Start Trip
+   button) keep theirs. */
+html.app-shell .main-panel .btn,
+html.app-shell .modal .btn {
+  min-height: 44px;
+  border-radius: 12px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+  box-shadow: none !important;
+}
+
+/* Alerts: calm surface with a coloured edge instead of a solid red slab. */
+html.app-shell .alert {
+  border: 1px solid var(--border-strong) !important;
+  border-left-width: 4px !important;
+  border-radius: 12px !important;
+  background: var(--surface-3) !important;
+  color: var(--text-1) !important;
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+}
+html.app-shell .alert-danger { border-left-color: var(--red) !important; }
+html.app-shell .alert-success { border-left-color: var(--green) !important; }
+html.app-shell .alert-warning { border-left-color: var(--amber) !important; }
+html.app-shell .alert-info,
+html.app-shell .alert-primary { border-left-color: var(--accent) !important; }
+html.app-shell .alert .close,
+html.app-shell .alert [data-notify="icon"] {
+  color: var(--text-2) !important;
+  opacity: 1;
+}
+
+/* Top bar: page title, fading in once the page heading scrolls away. */
+html.app-shell .navbar .container-fluid > div:first-child > :not(.mksv-appbar-title):not(.mksv-biz-name) {
+  display: none !important;
+}
+.mksv-appbar-title {
+  max-width: 52vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-1);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+html.app-scrolled .mksv-appbar-title {
+  opacity: 1;
+  transform: none;
+}
+
+/* Home: the bar blends into the page until content scrolls under it. */
+html.app-shell:not(.app-scrolled) .navbar.mksv-appbar--home {
+  border-bottom-color: transparent;
+}
+html.app-shell .navbar.mksv-appbar--home .container-fluid > div:first-child {
+  flex: 1 1 auto !important;
+  flex-shrink: 1 !important;
+  min-width: 0;
+}
+
+/* Home top bar: the current business, which is also the switcher. */
+.mksv-biz-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 4px 8px 4px 6px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  cursor: pointer;
+}
+/* Pull the hit area out so the badge lines up with the page heading. */
+html.app-shell .navbar .container-fluid > div:first-child > .mksv-biz-name {
+  margin-left: -7px !important;
+}
+.mksv-biz-name:active {
+  background: var(--surface-2);
+}
+.mksv-biz-name:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+}
+.mksv-biz-name__badge {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 15px;
+}
+.mksv-biz-name__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 17px;
+  font-weight: 700;
+}
+.mksv-biz-name__chev {
+  flex: 0 0 auto;
+  color: var(--text-2);
+}
+
+/* Modals become bottom sheets on phones. */
+@media (max-width: 767px) {
+  html.app-shell .modal-dialog {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: none;
+    margin: 0 !important;
+  }
+  html.app-shell .modal.fade .modal-dialog {
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  html.app-shell .modal.show .modal-dialog {
+    transform: none;
+  }
+  html.app-shell .modal-content {
+    max-height: calc(100vh - var(--app-safe-top) - 24px);
+    overflow-y: auto;
+    border-radius: 20px 20px 0 0 !important;
+    border: 1px solid var(--border-strong);
+    border-bottom: 0;
+    padding-bottom: var(--app-safe-bottom);
+  }
+  /* Grab handle: the universal "this is a sheet" cue. */
+  html.app-shell .modal-content::before {
+    content: "";
+    display: block;
+    flex: 0 0 auto;
+    width: 40px;
+    height: 4px;
+    margin: 8px auto 0;
+    border-radius: 2px;
+    background: var(--border-strong);
+  }
+}
+
+/* Account: app preferences group. */
+.mksv-prefs {
+  margin-bottom: 20px;
+}
+.mksv-prefs__title {
+  margin: 0 0 10px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.mksv-prefs__group {
+  margin-bottom: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.mksv-prefs__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  min-height: 56px;
+  padding: 8px 16px;
+}
+.mksv-prefs__row + .mksv-prefs__row {
+  border-top: 1px solid var(--border);
+}
+.mksv-prefs__label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.mksv-segmented {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+}
+.mksv-segmented__opt {
+  min-width: 56px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-2);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.mksv-segmented__opt.is-on {
+  background: var(--surface-2);
+  color: var(--text-1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+.mksv-segmented__opt:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 1px;
+}
+.mksv-prefs__signout {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--red);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mksv-prefs__signout:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+}
+
+/* =====================================================================
+   App screens: shared page header, phone list rows, empty + skeleton.
+   ===================================================================== */
+html.app-shell .content:has(> .mksv-page) {
+  background: transparent !important;
+}
+.mksv-page {
+  padding-top: 92px;
+}
+.mksv-page__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0 14px;
+}
+.mksv-page__title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+}
+.mksv-head-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.mksv-head-action:disabled {
+  opacity: 0.5;
+}
+.mksv-head-action:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+}
+.mksv-presets {
+  margin-bottom: 16px !important;
+}
+
+/* Phone list: one card, hairline-divided rows. */
+.mksv-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.mksv-list > li + li {
+  border-top: 1px solid var(--border);
+}
+.mksv-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 16px;
+  border: 0;
+  background: transparent;
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+button.mksv-row:active {
+  background: var(--surface-3);
+}
+.mksv-row:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: -2px;
+}
+.mksv-row__icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.mksv-row__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.mksv-row__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.mksv-row__sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.mksv-row__amt {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+/* Empty state: one icon, one line, one hint. */
+.mksv-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 24px;
+  border-radius: 16px;
+  border: 1px dashed var(--border-strong);
+  text-align: center;
+}
+.mksv-empty__icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.mksv-empty__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.mksv-empty__body {
+  margin: 0;
+  max-width: 300px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+/* Skeleton shimmer. */
+.mksv-row--skeleton {
+  cursor: default;
+}
+.mksv-skel {
+  display: block;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--surface-3) 0%, var(--surface-hover) 50%, var(--surface-3) 100%);
+  background-size: 200% 100%;
+  animation: mksv-shimmer 1.2s ease-in-out infinite;
+}
+.mksv-row__icon.mksv-skel {
+  border-radius: 12px;
+}
+.mksv-skel--line {
+  width: var(--w, 60%);
+  height: 12px;
+}
+.mksv-skel--sub {
+  width: 38%;
+  height: 10px;
+}
+.mksv-skel--amt {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 14px;
+}
+@keyframes mksv-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mksv-skel { animation: none; }
+}
+
+/* Account tabs: segmented control instead of stacked black boxes. */
+html.app-shell .profile-page-nav {
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: 0 !important;
+  padding: 3px;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px;
+  background: var(--surface-3);
+}
+html.app-shell .profile-page-nav .nav-item {
+  flex: 1 1 0;
+  width: auto !important;
+  min-width: 0;
+}
+html.app-shell .profile-page-nav .nav-link {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 6px 8px !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  color: var(--text-2) !important;
+  font-size: 14px;
+  font-weight: 600;
+}
+html.app-shell .profile-page-nav .nav-link.active {
+  background: var(--surface-2) !important;
+  color: var(--text-1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+/* Page change: a short rise-and-fade, like a native screen push. */
+html.app-shell .main-panel > div > .content {
+  animation: mksv-page-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes mksv-page-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.app-shell .main-panel > div > .content { animation: none; }
+}
+
+/* Pull to refresh indicator. */
+.mksv-ptr {
+  position: fixed;
+  top: calc(var(--app-safe-top) + 72px);
+  left: 50%;
+  z-index: 1031;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-left: -20px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--accent);
+  box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  opacity: var(--ptr-o, 0);
+  transform: translateY(var(--ptr-y, -24px)) rotate(var(--ptr-r, 0deg));
+}
+.mksv-ptr.is-loading svg {
+  animation: mksv-spin 0.8s linear infinite;
+}
+@keyframes mksv-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Business switcher (app): quiet trigger + bottom sheet of rows ── */
+.mksv-biz-trigger {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-1);
+  cursor: pointer;
+}
+.mksv-biz-trigger:active {
+  background: var(--surface-3);
+}
+.mksv-biz-trigger:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+}
+.mksv-biz-sheet .modal-content {
+  padding: 0 16px 16px;
+  background: var(--surface-1);
+}
+.mksv-sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0 14px;
+}
+.mksv-sheet__title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.mksv-sheet__close {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--text-2);
+  cursor: pointer;
+}
+.mksv-sheet__close:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+}
+.mksv-biz-item {
+  display: flex;
+  align-items: center;
+}
+.mksv-biz-item > .mksv-row {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.mksv-biz-avatar {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+}
+.mksv-row[aria-current] .mksv-row__sub {
+  color: var(--accent);
+  font-weight: 600;
+}
+.mksv-biz-check {
+  flex: 0 0 auto;
+  color: var(--accent);
+}
+.mksv-biz-delete {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  margin-right: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+}
+.mksv-biz-delete:active {
+  background: var(--surface-3);
+  color: var(--red);
+}
+.mksv-biz-delete:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: -2px;
+}
+.mksv-sheet__note {
+  margin: 12px 4px 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+/* Settings: native language picker styled as a quiet value + chevron. */
+.mksv-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-2);
+}
+.mksv-select select {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 40px;
+  max-width: 52vw;
+  padding: 0 28px 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-3);
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.mksv-select select:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+}
+.mksv-select svg {
+  position: absolute;
+  right: 9px;
+  pointer-events: none;
+}
+label.mksv-prefs__row {
+  margin: 0;
+  cursor: pointer;
+}
+
+/* Sign-out confirmation sheet. */
+.mksv-confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 16px 16px 12px;
+  text-align: center;
+}
+.mksv-confirm__body {
+  margin: 0 0 6px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+.mksv-confirm .mksv-app-btn {
+  max-width: none;
+}
+.mksv-app-btn--danger {
+  background: var(--red);
+  color: #fff;
+}
+
+/* ── Drives & reminders (Account) ── */
+.mksv-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 64px;
+  padding: 12px 16px;
+}
+.mksv-setting + .mksv-setting {
+  border-top: 1px solid var(--border);
+}
+.mksv-setting__label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.mksv-setting__hint {
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+.mksv-switch:disabled {
+  opacity: 0.5;
+}
+.mksv-setting-warn {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--amber);
+  background: var(--surface-2);
+}
+.mksv-setting-warn p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-1);
+}
+.mksv-setting-warn .mksv-app-btn {
+  max-width: none;
+  min-height: 44px;
+}
+.mksv-disclosure__list {
+  margin: 0 0 8px;
+  padding-left: 20px;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.mksv-disclosure__list li + li {
+  margin-top: 4px;
+}
+
+/* ── Home: "N drives to review" ── */
+.mksv-dash-actions {
+  flex-wrap: wrap;
+}
+.mksv-drive-banner {
+  flex: 1 0 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+.mksv-drive-banner:active {
+  background: var(--surface-3);
+}
+.mksv-drive-banner:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+}
+
+/* ── Drives to review ── */
+.mksv-drives__intro {
+  margin: -4px 0 16px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+.mksv-drives {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mksv-drive {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.mksv-drive__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mksv-drive__miles {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.mksv-drive__miles small {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.mksv-drive__when {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.mksv-drive__purpose {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.mksv-drive__actions {
+  display: flex;
+  gap: 10px;
+}
+.mksv-drive__actions .mksv-app-btn {
+  flex: 1 1 0;
+  max-width: none;
+}
+.mksv-app-btn:disabled {
+  opacity: 0.55;
+}
+
+/* Drives marked personal: restorable for a day. */
+.mksv-drives__recent {
+  margin-top: 24px;
+}
+.mksv-drives__hint {
+  margin: -4px 0 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+.mksv-drive-personal {
+  cursor: default;
+}
+.mksv-drive-personal__restore {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* "Marked personal · Undo" bar, above the tab bar. */
+.mksv-undo {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(var(--tabbar-h) + var(--app-safe-bottom) + 12px);
+  z-index: 1040;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  padding: 8px 8px 8px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-3);
+  color: var(--text-1);
+  font-size: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.mksv-undo button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Account → "Always business" rules. */
+.mksv-rule-hours {
+  gap: 12px;
+}
+.mksv-rule-hours__field {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.mksv-rule-hours__field .mksv-select select {
+  width: 100%;
+  max-width: none;
+}
+.mksv-rule-remove {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+}
+.mksv-rule-add {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mksv-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 4px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.mksv-field input {
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-3);
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-size: 16px;
+}
+.mksv-field input:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 1px;
+}
+.mksv-field__error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--red);
+  text-align: left;
+}
+
+/* Home: year-to-date mileage deduction. */
+.mksv-deduction {
+  flex: 1 0 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+.mksv-deduction:active {
+  background: var(--surface-3);
+}
+.mksv-deduction:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+}
+.mksv-deduction__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.mksv-deduction__amount {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--green);
+}
+.mksv-deduction__sub {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+/* "Offline · 2 changes waiting" bar, under the top bar. */
+.mksv-offline-bar {
+  position: fixed;
+  bottom: calc(var(--tabbar-h) + var(--app-safe-bottom) + 12px);
+  left: 16px;
+  right: 16px;
+  z-index: 1035;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  border-left: 3px solid var(--amber);
+  background: var(--surface-3);
+  color: var(--text-1);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+.mksv-offline-bar--syncing {
+  border-left-color: var(--accent);
+}
+.mksv-deduction__amount--neutral {
+  color: var(--text-1);
+}
+.mksv-deduction__amount small {
+  font-size: 15px;
+  color: var(--text-2);
+}
+
+/* ── More sheet: every page that isn't a tab, as a 2-column grid. ── */
+.mksv-more-sheet .modal-content {
+  padding: 0 16px 16px;
+  background: var(--surface-1);
+}
+.mksv-more-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0 0 4px;
+  list-style: none;
+}
+.mksv-more-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 88px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-2);
+  color: var(--text-1);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.mksv-more-tile:hover,
+.mksv-more-tile:focus {
+  color: var(--text-1);
+  text-decoration: none;
+}
+.mksv-more-tile:active {
+  background: var(--surface-3);
+}
+.mksv-more-tile:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.mksv-more-tile .nav-ico {
+  width: 22px;
+  height: 22px;
+  color: var(--text-2);
+}
+.mksv-more-tile__label {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.mksv-more-tile.is-active {
+  border-color: var(--accent);
+}
+.mksv-more-tile.is-active .nav-ico {
+  color: var(--accent);
+}
+.mksv-more-tile__badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--accent-solid);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+.mksv-more-tile__badge--soon {
+  background: var(--surface-3);
+  color: var(--text-2);
+}
+
+/* Bank-charge review: its fixed "Add" bar sits above the tab bar, not under it. */
+html.app-shell .tr-review-footer {
+  bottom: calc(var(--tabbar-h) + var(--app-safe-bottom));
+}
+/* Bank charges waiting: a full-width row among Home's actions in the app. */
+.mksv-dash-actions .pending-review-banner {
+  flex: 1 0 100%;
+  margin: 0;
+}

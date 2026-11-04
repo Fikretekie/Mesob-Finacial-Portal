@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { saveFile } from "utils/saveFile";
 import {
   Card,
   CardHeader,
@@ -97,14 +98,7 @@ const handleDownload = async (url) => {
 
     const blob = await response.blob();
     const fileName = url.split("/").pop();
-    const downloadUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = downloadUrl;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(downloadUrl);
+    await saveFile(blob, fileName);
 
   } catch (error) {
     console.error("Error downloading CSV:", error);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { saveFile } from "utils/saveFile";
 import {
   Modal,
   ModalHeader,
@@ -1023,7 +1024,7 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
 
     const dateStr = new Date().toISOString().split("T")[0];
     const filename = `${(companyName || "Financial").replace(/\s+/g, "_")}_Report_${dateStr}.pdf`;
-    doc.save(filename);
+    await saveFile(doc.output("blob"), filename);
     toggle();
   } catch (error) {
     console.error("PDF generation error:", error);

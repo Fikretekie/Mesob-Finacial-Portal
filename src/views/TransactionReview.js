@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { Spinner } from "reactstrap";
 import { syncTransactions, confirmTransactions, fetchConnections } from "utils/connectionsStorage";
+import { loadChargeMatches } from "utils/bankMatch";
 import { apiUrl, ROUTES } from "config/api";
 import "../assets/css/team.css";
+import "../assets/css/connections.css";
 import "../assets/css/transactionReview.css";
 
 const EXPENSE_CATEGORIES = [
@@ -66,15 +68,20 @@ function TransactionReview() {
   const [saving, setSaving] = useState(false);
   const [uploadingId, setUploadingId] = useState(null);
   const [error, setError] = useState("");
+  const [noBank, setNoBank] = useState(false);
 
   useEffect(() => {
     Promise.all([syncTransactions(), fetchConnections()])
-      .then(([syncData, connData]) => {
+      .then(async ([syncData, connData]) => {
         const txns = syncData?.transactions || [];
+        // Charges already recorded (scanned receipt, fuel purchase, typed expense)
+        // start unticked so they aren't counted twice.
+        const matches = await loadChargeMatches(txns).catch(() => ({}));
         setRows(
           txns.map((txn) => ({
             ...txn,
-            selected: true,
+            selected: !matches[txn.id],
+            match: matches[txn.id] || null,
             purpose: guessCategory(txn),
             manualPurpose: "",
             receiptUrl: "",
@@ -83,6 +90,11 @@ function TransactionReview() {
         setAutoImportAll(!!connData?.plaid?.autoImportAll);
       })
       .catch((err) => {
+        // No bank linked yet: an empty state, not an error.
+        if (err?.response?.status === 400 && /no bank connection/i.test(err.response.data?.message || "")) {
+          setNoBank(true);
+          return;
+        }
         console.error("Sync failed:", err);
         setError(t("transactionReview.syncError"));
       })
@@ -127,6 +139,13 @@ function TransactionReview() {
   };
 
   const selectedRows = useMemo(() => rows.filter((r) => r.selected), [rows]);
+  const matchedCount = useMemo(() => rows.filter((r) => r.match).length, [rows]);
+
+  const matchLabel = (m) =>
+    t(`transactionReview.match.${m.source}`, {
+      purpose: m.purpose,
+      date: new Date(m.day).toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+    });
   const netTotal = useMemo(() => selectedRows.reduce((sum, r) => sum - r.amount, 0), [selectedRows]);
 
   const handleToggleAutoImport = (checked) => {
@@ -177,14 +196,29 @@ function TransactionReview() {
           <p className="team-sub">
             {rows.length
               ? t("transactionReview.subtitle", { selected: selectedRows.length, total: rows.length })
-              : t("transactionReview.noneFound")}
+              : noBank || error
+                ? null
+                : t("transactionReview.noneFound")}
           </p>
         </div>
       </div>
 
       {error && <p className="tr-review-error">{error}</p>}
+      {matchedCount > 0 && (
+        <p className="tr-review-match-note" role="status">
+          {t("transactionReview.matchNote", { count: matchedCount })}
+        </p>
+      )}
 
-      {rows.length === 0 ? (
+      {noBank ? (
+        <div className="tr-review-caught-up">
+          <div className="tr-review-caught-up-title">{t("transactionReview.noBankTitle")}</div>
+          <p className="tr-review-caught-up-text">{t("transactionReview.noBankText")}</p>
+          <button type="button" className="conn-btn" onClick={() => navigate("/customer/connections")}>
+            {t("transactionReview.connectBank")}
+          </button>
+        </div>
+      ) : error && rows.length === 0 ? null : rows.length === 0 ? (
         <div className="tr-review-caught-up">
           <div className="tr-review-caught-up-icon">✓</div>
           <div className="tr-review-caught-up-title">{t("transactionReview.caughtUpTitle")}</div>
@@ -209,6 +243,7 @@ function TransactionReview() {
                 <div className="tr-review-info">
                   <div className="tr-review-name">{r.name}</div>
                   <div className="tr-review-date">{r.date}</div>
+                  {r.match && <div className="tr-review-match">{matchLabel(r.match)}</div>}
                 </div>
 
                 <div className="tr-review-category-wrap">
@@ -254,6 +289,7 @@ function TransactionReview() {
         </div>
       )}
 
+      {!noBank && (
       <div className="tr-review-footer">
         <div className="tr-review-footer-left">
           {rows.length > 0 && (
@@ -278,6 +314,7 @@ function TransactionReview() {
           <span>{t("transactionReview.autoImportLabel")}</span>
         </label>
       </div>
+      )}
     </div>
   );
 }

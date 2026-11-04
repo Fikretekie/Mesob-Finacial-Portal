@@ -375,6 +375,7 @@ const features = (t) => [
 const SubscriptionPlans = () => {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [billingCycle, setBillingCycle] = useState("monthly");
   const [userData, setUserData] = useState(null);
@@ -408,7 +409,14 @@ const SubscriptionPlans = () => {
     }
   };
 
-  useEffect(() => { if (getUserId()) fetchUser(); }, []);
+  // Signed out (e.g. arrived from the phone app's "Continue on meksova.com"
+  // in a fresh browser): sign in first, then come straight back here —
+  // instead of showing plans whose Pay buttons fail with "User not logged in".
+  useEffect(() => {
+    if (getUserId()) fetchUser();
+    else navigate(`/login?next=${encodeURIComponent("/customer/subscription")}`, { replace: true });
+    // eslint-disable-next-line
+  }, []);
 
   // Native app: PayPal opens in an in-app browser tab (has its own close
   // button, unlike the app's WebView) -- refresh subscription status once

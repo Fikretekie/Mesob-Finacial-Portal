@@ -141,6 +141,26 @@ export function switchToDefaultBusiness() {
   window.location.reload();
 }
 
+/** The account's own companyName (the first/default business) as the server
+ * has it. Nothing else stored it, so the default business showed as
+ * "My Business" until the user edited their profile. */
+export function rememberAccountCompanyName(name) {
+  if (typeof name !== "string") return;
+  ensureDefaultBusinessCaptured();
+  localStorage.setItem(DEFAULT_COMPANY_NAME_KEY, name);
+  if (!getCurrentBusinessId()) localStorage.setItem("companyName", name);
+}
+
+/** Same for the account's businessType (Trucking, Rideshare…): Google/Apple
+ * sign-in never stored it, which left categories empty and trucking off. */
+export function rememberAccountBusinessType(type) {
+  if (typeof type !== "string" || !type) return;
+  const legacy = type === "Resturant/Cafe" ? "Cafe" : type;
+  ensureDefaultBusinessCaptured();
+  localStorage.setItem(DEFAULT_BUSINESS_TYPE_KEY, legacy);
+  if (!getCurrentBusinessId()) localStorage.setItem("businessType", legacy);
+}
+
 /** Display name for the account's first/default business (for the switcher's
  * "My Business" entry, separate from whichever business is active now). */
 export function getDefaultBusinessName() {

@@ -9,6 +9,12 @@ import { getCurrentBusinessId } from "utils/businessStorage";
 import { getStateAtPoint } from "utils/geoState";
 import { US_STATES } from "utils/usStates";
 import { can } from "utils/permissions";
+import { clearFuelStop, fuelCategory, readFuelStop, repairCategory } from "utils/fuelStop";
+import { enqueue } from "utils/offline";
+import { isAppShell } from "utils/appShell";
+import { Capacitor } from "@capacitor/core";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+import { FilePicker } from "@capawesome/capacitor-file-picker";
 
 const FUEL_VENDOR_KEYWORDS = [
   "shell", "chevron", "exxon", "mobil", "bp", "marathon", "citgo", "sunoco",
@@ -36,7 +42,31 @@ const toBase64 = (file) =>
  * Trucking accounts scanning a Fuel Expense, also asks for State/Gallons
  * and writes a FuelPurchase record alongside the normal Transaction, so it
  * counts toward IFTA too. */
-function QuickScanReceipt() {
+const isPdf = (file) => file.type === "application/pdf" || /\.pdf$/i.test(file.name || "");
+
+// E-receipts often arrive as PDFs. The receipt reader takes images, so render
+// page 1 to a JPEG here (pdf.js loads only when a PDF is actually picked).
+async function pdfToImage(file) {
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf");
+  // Runs pdf.js in-page instead of a separate worker file; fine for a one-page receipt.
+  await import("pdfjs-dist/legacy/build/pdf.worker.entry");
+  const doc = await pdfjs.getDocument({ data: await file.arrayBuffer(), isEvalSupported: false }).promise;
+  const page = await doc.getPage(1);
+  const base = page.getViewport({ scale: 1 });
+  const viewport = page.getViewport({ scale: Math.min(3, 1600 / base.width) });
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(viewport.width);
+  canvas.height = Math.round(viewport.height);
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#fff"; // PDFs are transparent where nothing is printed
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  await page.render({ canvasContext: ctx, viewport }).promise;
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.9));
+  doc.destroy();
+  return new File([blob], (file.name || "receipt").replace(/\.pdf$/i, "") + ".jpg", { type: "image/jpeg" });
+}
+
+function QuickScanReceipt({ renderTrigger } = {}) {
   const { t } = useTranslation();
   const fileInputRef = useRef(null);
   const [isBusy, setIsBusy] = useState(false);
@@ -58,6 +88,8 @@ function QuickScanReceipt() {
   //   fixed     -> capitalized as fixed asset (New_Item / assetType "fixed")
   const [destination, setDestination] = useState("expense");
   const [itemName, setItemName] = useState("");
+  // Set when the scan came from a fuel-stop notification: { lat, lng, at, station }.
+  const [fuelStop, setFuelStop] = useState(null);
 
   const businessType = localStorage.getItem("businessType") || "";
   const expenseOptions = businessTypes[businessType]?.expenses || [];
@@ -66,6 +98,16 @@ function QuickScanReceipt() {
   // operating expense, not to goods capitalized as inventory/assets.
   const isFuelTunnel =
     businessType === "Trucking" && category === "Fuel Expense" && destination === "expense";
+
+  // A stop from a notification already says what the receipt is: fuel, or a
+  // repair (maintenance). A store stop leaves the category to the vendor guess.
+  const stopCategory = (stop) => {
+    if (!stop) return "";
+    const kind = stop.kind || "fuel";
+    if (kind === "fuel") return fuelCategory(businessType, expenseOptions);
+    if (kind === "repair") return repairCategory(businessType, expenseOptions);
+    return "";
+  };
 
   const resetAndClose = () => {
     setShowReview(false);
@@ -78,10 +120,20 @@ function QuickScanReceipt() {
     setDestination("expense");
     setItemName("");
     setError("");
+    setFuelStop(null);
+    clearFuelStop();
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const tryAutoFillState = async () => {
+  const tryAutoFillState = async (stop) => {
+    if (stop) {
+      setIsLocating(true);
+      getStateAtPoint(stop.lat, stop.lng)
+        .then((detected) => detected && setState(detected))
+        .catch(() => {})
+        .finally(() => setIsLocating(false));
+      return;
+    }
     if (!("geolocation" in navigator)) return;
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
@@ -104,13 +156,14 @@ function QuickScanReceipt() {
   };
 
   const handleFileSelected = async (e) => {
-    const file = e.target.files[0];
+    let file = e.target.files[0];
     if (!file) return;
 
     setIsBusy(true);
     setError("");
     setShowReview(true);
     try {
+      if (isPdf(file)) file = await pdfToImage(file);
       const compressed = await imageCompression(file, {
         maxSizeMB: 3,
         maxWidthOrHeight: 1920,
@@ -126,17 +179,32 @@ function QuickScanReceipt() {
       const totalNum = total ? parseFloat(String(total).replace(/[^0-9.]/g, "")) : null;
 
       setAmount(totalNum ? String(totalNum) : "");
+      const stop = readFuelStop();
+      setFuelStop(stop);
       if (vendor) setItemName(String(vendor));
-      const guessed = guessCategoryFromVendor(vendor, businessType);
+      else if (stop?.station) setItemName(stop.station);
+      // From a fuel / repair-shop notification we already know the category, whatever the vendor reads as.
+      const guessed = stopCategory(stop) || guessCategoryFromVendor(vendor, businessType);
       setCategory(guessed);
       if (guessed === "Fuel Expense") {
-        tryAutoFillState();
+        tryAutoFillState(stop);
         const gallonsNum = ocrGallons ? parseFloat(String(ocrGallons).replace(/[^0-9.]/g, "")) : null;
         if (gallonsNum) setGallons(String(gallonsNum));
       }
     } catch (err) {
       console.error("Quick scan failed:", err);
       setError("Could not read the receipt. You can still enter the amount manually below.");
+      // Unreadable (or offline): a stop still pre-fills its category (+ the fuel stop's state).
+      const stop = readFuelStop();
+      const known = stopCategory(stop);
+      if (stop) {
+        setFuelStop(stop);
+        if (stop.station) setItemName(stop.station);
+      }
+      if (known) {
+        setCategory(known);
+        if (known === "Fuel Expense") tryAutoFillState(stop);
+      }
     } finally {
       setIsBusy(false);
     }
@@ -159,10 +227,79 @@ function QuickScanReceipt() {
 
     setIsSaving(true);
     setError("");
-    try {
-      const userId = localStorage.getItem("userId");
-      let receiptUrl = "";
+    const userId = localStorage.getItem("userId");
+    const businessId = getCurrentBusinessId();
 
+    const transaction = isAssetDestination
+      ? {
+          // Capitalize: goods kept as stock, or equipment. Not an expense/COGS.
+          userId,
+          transactionType: "New_Item",
+          subType: "New_Item",
+          status: "Paid",
+          transactionPurpose: itemName.trim(),
+          transactionAmount: amountNum,
+          originalAmount: amountNum,
+          assetType: destination === "fixed" ? "fixed" : "current",
+          assetName: itemName.trim(),
+          ...(businessId ? { businessId } : {}),
+        }
+      : {
+          // Operating expense, or cost of goods expensed now (subType "COGS").
+          userId,
+          transactionType: "Pay",
+          transactionPurpose: category || "Other",
+          transactionAmount: amountNum,
+          originalAmount: amountNum,
+          subType: destination === "cogs" ? "COGS" : "Expense",
+          status: "Paid",
+          ...(businessId ? { businessId } : {}),
+        };
+
+    let fuelPurchase = null;
+    if (isFuelTunnel) {
+      // IFTA date = the day of the stop, when the scan came from its notification.
+      const day = fuelStop ? new Date(fuelStop.at) : new Date();
+      fuelPurchase = {
+        userId,
+        purchase: {
+          dateKey: `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`,
+          date: day.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          state,
+          gallons: parseFloat(gallons),
+          pricePerGallon: Number((amountNum / parseFloat(gallons)).toFixed(3)),
+          totalCost: amountNum,
+          source: "manual",
+          ...(businessId ? { businessId } : {}),
+        },
+      };
+    }
+
+    // No signal (phone app): keep the whole scan — photo, transaction, fuel —
+    // and send it when the connection is back.
+    const queueScan = async () => {
+      await enqueue({
+        type: "scan",
+        upload: receiptFile
+          ? {
+              url: apiUrl(ROUTES.RECEIPT),
+              body: JSON.stringify({ fileName: receiptFile.name, fileType: receiptFile.type, fileContent: await toBase64(receiptFile), userId }),
+            }
+          : null,
+        transaction: { url: apiUrl(ROUTES.TRANSACTION), data: transaction },
+        fuel: fuelPurchase ? { url: apiUrl(ROUTES.FUEL_PURCHASE), data: fuelPurchase } : null,
+      });
+      resetAndClose();
+    };
+
+    let transactionSent = false;
+    try {
+      if (isAppShell() && navigator.onLine === false) {
+        await queueScan();
+        return;
+      }
+
+      let receiptUrl = "";
       if (receiptFile) {
         const fileContent = await toBase64(receiptFile);
         const uploadRes = await axios.post(apiUrl(ROUTES.RECEIPT), {
@@ -174,53 +311,9 @@ function QuickScanReceipt() {
         receiptUrl = uploadRes.data?.url || "";
       }
 
-      const businessId = getCurrentBusinessId();
-
-      const transaction = isAssetDestination
-        ? {
-            // Capitalize: goods kept as stock, or equipment. Not an expense/COGS.
-            userId,
-            transactionType: "New_Item",
-            subType: "New_Item",
-            status: "Paid",
-            transactionPurpose: itemName.trim(),
-            transactionAmount: amountNum,
-            originalAmount: amountNum,
-            assetType: destination === "fixed" ? "fixed" : "current",
-            assetName: itemName.trim(),
-            receiptUrl,
-            ...(businessId ? { businessId } : {}),
-          }
-        : {
-            // Operating expense, or cost of goods expensed now (subType "COGS").
-            userId,
-            transactionType: "Pay",
-            transactionPurpose: category || "Other",
-            transactionAmount: amountNum,
-            originalAmount: amountNum,
-            subType: destination === "cogs" ? "COGS" : "Expense",
-            receiptUrl,
-            status: "Paid",
-            ...(businessId ? { businessId } : {}),
-          };
-      await axios.post(apiUrl(ROUTES.TRANSACTION), transaction);
-
-      if (isFuelTunnel) {
-        const today = new Date();
-        const dateKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-        await axios.post(apiUrl(ROUTES.FUEL_PURCHASE), {
-          userId,
-          purchase: {
-            dateKey,
-            date: today.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-            state,
-            gallons: parseFloat(gallons),
-            totalCost: amountNum,
-            source: "manual",
-            ...(businessId ? { businessId } : {}),
-          },
-        });
-      }
+      await axios.post(apiUrl(ROUTES.TRANSACTION), { ...transaction, receiptUrl });
+      transactionSent = true;
+      if (fuelPurchase) await axios.post(apiUrl(ROUTES.FUEL_PURCHASE), fuelPurchase);
 
       // Auto-sync: tell whichever screen is open (Dashboard / Financial Report)
       // to refetch so the scanned transaction appears immediately, for the
@@ -229,10 +322,53 @@ function QuickScanReceipt() {
 
       resetAndClose();
     } catch (err) {
+      // Connection dropped before anything was saved: queue the whole scan instead.
+      if (isAppShell() && !err.response && !transactionSent) {
+        try {
+          await queueScan();
+          return;
+        } catch (e) {
+          // Fall through to the error.
+        }
+      }
       console.error("Quick scan save failed:", err);
       setError("Could not save. Please try again.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Phone app: the native camera or photo picker. Unlike the hidden file input,
+  // it doesn't need a tap inside the page, so a notification button can open
+  // it straight away. "upload" picks an existing photo or screenshot.
+  const openNative = async (mode) => {
+    if (!Capacitor.isNativePlatform()) {
+      fileInputRef.current?.click();
+      return;
+    }
+    try {
+      let file;
+      if (mode === "upload") {
+        // Photos, screenshots and PDF e-receipts, from the phone's file picker.
+        const { files } = await FilePicker.pickFiles({ types: ["image/*", "application/pdf"], limit: 1 });
+        const picked = files && files[0];
+        if (!picked) return;
+        const src = picked.webPath || (picked.path ? Capacitor.convertFileSrc(picked.path) : "");
+        const blob = picked.blob || (await (await fetch(src)).blob());
+        file = new File([blob], picked.name || "receipt", { type: picked.mimeType || blob.type });
+      } else {
+        const photo = await Camera.getPhoto({
+          source: CameraSource.Camera,
+          resultType: CameraResultType.Uri,
+          quality: 85,
+          correctOrientation: true,
+        });
+        const blob = await (await fetch(photo.webPath)).blob();
+        file = new File([blob], `receipt.${photo.format || "jpeg"}`, { type: blob.type || "image/jpeg" });
+      }
+      await handleFileSelected({ target: { files: [file] } });
+    } catch (e) {
+      // Cancelled, or permission refused — nothing to save.
     }
   };
 
@@ -249,6 +385,7 @@ function QuickScanReceipt() {
         style={{ display: "none" }}
         onChange={handleFileSelected}
       />
+      {renderTrigger ? renderTrigger({ open: () => fileInputRef.current?.click(), openNative, busy: isBusy }) : (
       <button
         onClick={() => fileInputRef.current?.click()}
         disabled={isBusy}
@@ -265,6 +402,7 @@ function QuickScanReceipt() {
         )}
         {!isBusy && t("quickScan.scanReceipt")}
       </button>
+      )}
 
       <Modal isOpen={showReview} toggle={isBusy ? undefined : resetAndClose}>
         <ModalHeader toggle={isBusy ? undefined : resetAndClose}>{t("quickScan.scannedReceipt")}</ModalHeader>

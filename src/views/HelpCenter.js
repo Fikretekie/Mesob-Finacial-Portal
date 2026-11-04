@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
+import { isAppShell } from "utils/appShell";
 import "./HelpCenter.css";
 
 // Help content lives here as data with English text inline. Each item is
@@ -114,7 +115,8 @@ function HelpCenter() {
       GUIDES.map((g) => ({
         id: g.id,
         title: t(`help.guides.${g.id}.q`, g.q),
-        body: t(`help.guides.${g.id}.a`, g.a),
+        // The phone app can't point users to subscribing (store rules).
+        body: g.id === "subscription" && isAppShell() ? t("app.helpPlan") : t(`help.guides.${g.id}.a`, g.a),
       })).filter((g) => !q || g.title.toLowerCase().includes(q) || g.body.toLowerCase().includes(q)),
     [t, q]
   );

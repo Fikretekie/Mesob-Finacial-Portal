@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { saveFile } from "utils/saveFile";
 import {
   Card,
   CardHeader,
@@ -500,13 +501,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
       try {
         const response = await fetch(url, { mode: "cors" });
         const blob = await response.blob();
-        const link = document.createElement("a");
-        link.href = window.URL.createObjectURL(blob);
-        link.download = name;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(link.href);
+        await saveFile(blob, name);
         notify("tr", t("documents.downloadStarted"), "success");
       } catch (err) {
         window.open(url, "_blank");
