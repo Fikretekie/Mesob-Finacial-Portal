@@ -22,6 +22,10 @@ import {
   calculateTotalFixedAssets as engFixedAtCost,
   calculateAccumulatedDepreciation as engAccumDep,
   calculateDepreciationExpense as engDepExpense,
+  calculateNetIncome as engNetIncome,
+  isCountableOutflow,
+  itemsThrough,
+  outflowAmount,
 } from "../utils/accounting";
 
 import { jsPDF } from "jspdf";
@@ -152,18 +156,20 @@ const DownloadReportModal = ({
       const amt = parseFloat(t.transactionAmount) || 0;
       const p = t.transactionPurpose || t.purpose || "";
       if (t.transactionType === "Receive") rev[p] = (rev[p] || 0) + amt;
-      else if (t.transactionType === "Pay" && t.subType !== "New_Item" && !t.payableId)
-        exp[p] = (exp[p] || 0) + amt;
+      else if (t.subType !== "COGS" && t.subType !== "New_Item" && isCountableOutflow(t, source))
+        exp[p] = (exp[p] || 0) + outflowAmount(t, source);
     });
+    const range = periodRange();
+    const through = itemsThrough(source, range);
     return {
       items: filtered,
       revenues: rev,
       expenses: exp,
-      totalCash: num(engCash(filtered, Number(initialBalance) || 0)),
+      totalCash: num(engCash(through, Number(initialBalance) || 0)),
       totalRevenue: num(engRevenue(filtered)),
       totalExpenses: num(engExpenses(filtered, source)),
-      totalPayable: num(engPayable(filtered, source, Number(initialoutstandingDebt) || 0)),
-      totalInventory: num(engInventory(filtered, Number(initialvalueableItems) || 0)),
+      totalPayable: num(engPayable(through, source, Number(initialoutstandingDebt) || 0, range && range.to)),
+      totalInventory: num(engInventory(through, Number(initialvalueableItems) || 0)),
     };
   }, [
     period, fromDate, toDate, items, allItems, revenues, expenses,
@@ -178,7 +184,8 @@ const DownloadReportModal = ({
     const source = Array.isArray(allItems) && allItems.length ? allItems : (Array.isArray(items) ? items : []);
     const filtered = Array.isArray(report.items) ? report.items : [];
     const r = periodRange();
-    const asOf = r && r.to ? new Date(r.to) : new Date();
+    const asOf = r && r.to ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(r.to) ? `${r.to}T12:00:00` : r.to) : new Date();
+    const through = itemsThrough(source, r);
     const n = (v) => parseFloat(v) || 0;
 
     const totalRevenue = n(engRevenue(filtered));
@@ -190,14 +197,15 @@ const DownloadReportModal = ({
     const otherExpense = Math.max(0, totalExp - cogs - operatingExpenses);
     const netIncome = totalRevenue - cogs - operatingExpenses - otherExpense - depreciation;
 
-    const cash = n(engCash(filtered, Number(initialBalance) || 0));
-    const inventory = n(engInventory(filtered, Number(initialvalueableItems) || 0));
-    const fixedAtCost = n(engFixedAtCost(filtered));
+    const cash = n(engCash(through, Number(initialBalance) || 0));
+    const inventory = n(engInventory(through, Number(initialvalueableItems) || 0));
+    const fixedAtCost = n(engFixedAtCost(through));
     const accumDep = n(engAccumDep(source, asOf));
     const netFixed = fixedAtCost - accumDep;
-    const payable = n(engPayable(filtered, source, Number(initialoutstandingDebt) || 0));
+    const payable = n(engPayable(through, source, Number(initialoutstandingDebt) || 0, r && r.to));
     const openingEquity = (Number(initialBalance) || 0) + (Number(initialvalueableItems) || 0) - (Number(initialoutstandingDebt) || 0);
-    const retained = netIncome;
+    // All profit to date, not just this period's, so the balance sheet ties.
+    const retained = n(engNetIncome(through, source)) - accumDep;
 
     const totalCurrentAssets = cash + inventory;
     const totalAssets = totalCurrentAssets + netFixed;
@@ -231,8 +239,17 @@ const DownloadReportModal = ({
 
   useEffect(() => {
     const list = Array.isArray(report.items) ? report.items : [];
-    const bal = Number(initialBalance) || 0;
-    const debt = Number(initialoutstandingDebt) || 0;
+    // The charts open with what was on hand when the period began.
+    const range = periodRange();
+    const source = Array.isArray(allItems) && allItems.length ? allItems : list;
+    let openedAt = null;
+    if (range && range.from) {
+      openedAt = new Date(/^\d{4}-\d{2}-\d{2}$/.test(range.from) ? `${range.from}T12:00:00` : range.from);
+      openedAt.setDate(openedAt.getDate() - 1);
+    }
+    const before = openedAt ? itemsThrough(source, { to: openedAt }) : [];
+    const bal = num(engCash(before, Number(initialBalance) || 0));
+    const debt = num(engPayable(before, source, Number(initialoutstandingDebt) || 0, openedAt));
 
     let cashOnHand = bal;
     let revenue = 0;

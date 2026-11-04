@@ -6,10 +6,12 @@
 // Ported verbatim from the Financial Report's (accrual-correct) calculations:
 //   - inventory sales booked GROSS (full price -> revenue, cost -> COGS)
 //   - fixed-asset sales booked NET (gain -> other income / loss -> other expense)
-//   - a partially-paid Payable contributes only its REMAINING balance (the
-//     installment Pay records supply the paid portion)
+//   - a bill (Payable) is expensed in full on its own date; payments against it
+//     only move cash and reduce what's owed
 //   - asset purchases (New_Item / Payable+New_Item) are capitalized, not expensed
 //   - net income = total revenue − total expenses
+//   - income-statement figures cover a period; balances (cash, inventory, fixed
+//     assets, payable) are "as of" the period's end, so use itemsThrough for those
 //
 // All money functions return a 2-decimal STRING (matching the original call
 // sites, which do parseFloat(...)); item helpers return arrays.
@@ -43,6 +45,31 @@ export function normalizeTransactions(raw) {
   });
 }
 
+// "2026-03-31" must mean that day here, not UTC midnight (the evening before in the US).
+const toDate = (value) =>
+  typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)
+    ? new Date(`${value}T00:00:00`)
+    : new Date(value);
+
+const dayStart = (value) => {
+  const d = toDate(value);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+const dayEnd = (value) => {
+  const d = toDate(value);
+  d.setHours(23, 59, 59, 999);
+  return d;
+};
+
+/** Everything up to the end of a range (or everything, with no range): the input for balances. */
+export function itemsThrough(items, range) {
+  if (!range || !range.to) return items || [];
+  const end = dayEnd(range.to);
+  return (items || []).filter((item) => new Date(item.createdAt) <= end);
+}
+
 /** Filter by an optional {from,to} date range and a purpose search term. */
 export function filterItemsByTimeRange(items, range, searchTerm = "") {
   const term = (searchTerm || "").toLowerCase();
@@ -51,15 +78,13 @@ export function filterItemsByTimeRange(items, range, searchTerm = "") {
       (item.transactionPurpose || "").toLowerCase().includes(term)
     );
   }
-  const fromDate = new Date(range.from);
-  fromDate.setHours(0, 0, 0, 0);
-  const toDate = new Date(range.to);
-  toDate.setHours(23, 59, 59, 999);
+  const from = dayStart(range.from);
+  const to = dayEnd(range.to);
   return (items || []).filter((item) => {
     const itemDate = new Date(item.createdAt);
     return (
-      itemDate >= fromDate &&
-      itemDate <= toDate &&
+      itemDate >= from &&
+      itemDate <= to &&
       (item.transactionPurpose || "").toLowerCase().includes(term)
     );
   });
@@ -100,36 +125,44 @@ export function calculateOtherExpense(filteredItems) {
   return total.toFixed(2);
 }
 
-/** Countable P&L outflow? Excludes outstanding-debt and asset purchases.
+/** Countable P&L outflow? Excludes outstanding-debt and asset purchases, and
+ *  payments on a bill: the bill itself is the expense.
  *  `allItems` is the full (unfiltered) list, needed to resolve payableId. */
 export function isCountableOutflow(value, allItems) {
   const isPayableNewItem =
     value.transactionType === "Payable" && value.subType === "New_Item";
-  let isPaymentForNewItem = false;
-  if (
+  const isPaymentOnBill =
     value.transactionType === "Pay" &&
     value.payableId &&
-    value.payableId !== "outstanding-debt"
-  ) {
-    const originalPayable = (allItems || []).find((item) => item.id === value.payableId);
-    if (originalPayable && originalPayable.subType === "New_Item") {
-      isPaymentForNewItem = true;
-    }
-  }
+    value.payableId !== "outstanding-debt" &&
+    (allItems || []).some((item) => item.id === value.payableId);
   return (
-    (value.transactionType === "Pay" ||
-      (value.transactionType === "Payable" && value.status !== "Paid")) &&
+    (value.transactionType === "Pay" || value.transactionType === "Payable") &&
     value.payableId !== "outstanding-debt" &&
     !(value.transactionPurpose || "").includes("Outstanding Debt") &&
     !isPayableNewItem &&
-    !isPaymentForNewItem
+    !isPaymentOnBill
   );
 }
 
-/** A Payable contributes its REMAINING balance; a Pay contributes its amount. */
-export function outflowAmount(value) {
+/** What's still owed on a bill today (its amount shrinks as it's paid). */
+function billOwedNow(bill) {
+  if (bill.status === "Paid") return 0;
+  return num(bill.remainingAmount != null ? bill.remainingAmount : bill.transactionAmount);
+}
+
+function paymentsOnBill(bill, allItems, after = null) {
+  return (allItems || []).reduce((sum, item) => {
+    if (item.transactionType !== "Pay" || item.payableId !== bill.id) return sum;
+    if (after && new Date(item.createdAt) <= after) return sum;
+    return sum + num(item.transactionAmount);
+  }, 0);
+}
+
+/** A bill counts at its full amount (still owed + already paid); a Pay at its amount. */
+export function outflowAmount(value, allItems) {
   return value.transactionType === "Payable"
-    ? num(value.remainingAmount != null ? value.remainingAmount : value.transactionAmount)
+    ? billOwedNow(value) + paymentsOnBill(value, allItems)
     : num(value.transactionAmount);
 }
 
@@ -142,7 +175,7 @@ export function calculateCOGS(filteredItems, allItems) {
   }, 0);
   const directCogs = (filteredItems || []).reduce((sum, value) => {
     if (value.subType === "COGS" && isCountableOutflow(value, allItems)) {
-      return sum + outflowAmount(value);
+      return sum + outflowAmount(value, allItems);
     }
     return sum;
   }, 0);
@@ -152,7 +185,7 @@ export function calculateCOGS(filteredItems, allItems) {
 export function calculateOperatingExpenses(filteredItems, allItems) {
   const total = (filteredItems || []).reduce((sum, value) => {
     if (value.subType !== "COGS" && isCountableOutflow(value, allItems)) {
-      return sum + outflowAmount(value);
+      return sum + outflowAmount(value, allItems);
     }
     return sum;
   }, 0);
@@ -211,17 +244,22 @@ export function calculateTotalCash(filteredItems, initialBalance = 0) {
   return (num(initialBalance) + totalReceived - totalPaid - newItemReceived).toFixed(2);
 }
 
-export function calculateTotalPayable(filteredItems, allItems, initialOutstandingDebt = 0) {
+/** What's owed as of `asOf` (default today): bills dated by then, counting
+ *  anything paid on them after that date as still owed at the time. */
+export function calculateTotalPayable(filteredItems, allItems, initialOutstandingDebt = 0, asOf = null) {
+  const end = asOf ? dayEnd(asOf) : null;
   const totalPayable = (filteredItems || []).reduce(
     (sum, v) =>
-      v.transactionType === "Payable" && v.status !== "Paid"
-        ? sum + num(v.transactionAmount)
+      v.transactionType === "Payable"
+        ? sum + billOwedNow(v) + (end ? paymentsOnBill(v, allItems, end) : 0)
         : sum,
     0
   );
   const outstandingDebtPayments = (allItems || []).reduce(
     (sum, v) =>
-      v.payableId === "outstanding-debt" && v.transactionType === "Pay"
+      v.payableId === "outstanding-debt" &&
+      v.transactionType === "Pay" &&
+      (!end || new Date(v.createdAt) <= end)
         ? sum + num(v.transactionAmount)
         : sum,
     0
@@ -317,7 +355,7 @@ function lotAccumulated(lot, asOf) {
 
 /** Total accumulated depreciation across all fixed assets as of a date. */
 export function calculateAccumulatedDepreciation(allItems, asOf = new Date()) {
-  const when = asOf ? new Date(asOf) : new Date();
+  const when = asOf ? dayEnd(asOf) : new Date();
   return getFixedAssetLots(allItems)
     .reduce((sum, lot) => sum + lotAccumulated(lot, when), 0)
     .toFixed(2);
@@ -327,8 +365,9 @@ export function calculateAccumulatedDepreciation(allItems, asOf = new Date()) {
  *  for "up to now"). It is the change in accumulated depreciation over the
  *  window, so each dollar of cost is expensed exactly once over the asset's life. */
 export function calculateDepreciationExpense(allItems, range = null) {
-  const to = range && range.to ? new Date(range.to) : new Date();
-  const from = range && range.from ? new Date(range.from) : new Date(0);
+  const to = range && range.to ? dayEnd(range.to) : new Date();
+  // The moment before the range: a month that starts inside it hasn't been counted yet.
+  const from = range && range.from ? new Date(dayStart(range.from).getTime() - 1) : new Date(0);
   return getFixedAssetLots(allItems)
     .reduce((sum, lot) => sum + (lotAccumulated(lot, to) - lotAccumulated(lot, from)), 0)
     .toFixed(2);
@@ -422,6 +461,7 @@ export function computeSummary(rawItems, opts = {}) {
   } = opts;
   const items = normalize ? normalizeTransactions(rawItems) : (rawItems || []);
   const filtered = filterItemsByTimeRange(items, range, searchTerm);
+  const through = itemsThrough(items, range);
   return {
     items,
     filtered,
@@ -435,9 +475,9 @@ export function computeSummary(rawItems, opts = {}) {
     totalExpenses: parseFloat(calculateTotalExpenses(filtered, items)),
     netIncome: parseFloat(calculateNetIncome(filtered, items)),
     estimatedTax: parseFloat(calculateEstimatedTax(filtered, items)),
-    totalCash: parseFloat(calculateTotalCash(filtered, initialBalance)),
-    totalPayable: parseFloat(calculateTotalPayable(filtered, items, initialOutstandingDebt)),
-    totalInventory: parseFloat(calculateTotalInventory(filtered, initialValueableItems)),
-    totalFixedAssets: parseFloat(calculateTotalFixedAssets(filtered)),
+    totalCash: parseFloat(calculateTotalCash(through, initialBalance)),
+    totalPayable: parseFloat(calculateTotalPayable(through, items, initialOutstandingDebt, range && range.to)),
+    totalInventory: parseFloat(calculateTotalInventory(through, initialValueableItems)),
+    totalFixedAssets: parseFloat(calculateTotalFixedAssets(through)),
   };
 }

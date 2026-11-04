@@ -1527,28 +1527,10 @@ const MesobFinancial2 = () => {
       ) {
         const purpose = transaction.transactionPurpose;
 
-        // Exclude Payable+New_Item (asset purchases on credit) from expenses
-        const isPayableNewItem = transaction.transactionType === "Payable" && transaction.subType === "New_Item";
-
-        // Exclude Pay transactions that are payments for New_Item Payables (asset purchases)
-        let isPaymentForNewItem = false;
-        if (transaction.transactionType === "Pay" && transaction.payableId && transaction.payableId !== "outstanding-debt") {
-          const originalPayable = items.find(item => item.id === transaction.payableId);
-          if (originalPayable && originalPayable.subType === "New_Item") {
-            isPaymentForNewItem = true;
-          }
-        }
-
-        if (
-          transaction.payableId !== "outstanding-debt" &&
-          !purpose.includes("Outstanding Debt") &&
-          !isPayableNewItem &&
-          !isPaymentForNewItem &&
-          transaction.subType !== "COGS"
-        ) {
-          // COGS-tagged purchases are shown under Cost of Goods Sold, not in the
-          // Operating Expenses detail — keep them out of the expenses map.
-          newExpenses[purpose] = (newExpenses[purpose] || 0) + amount;
+        // COGS-tagged purchases are shown under Cost of Goods Sold, not in the
+        // Operating Expenses detail — keep them out of the expenses map.
+        if (transaction.subType !== "COGS" && acct.isCountableOutflow(transaction, items)) {
+          newExpenses[purpose] = (newExpenses[purpose] || 0) + acct.outflowAmount(transaction, items);
         }
 
         if (transaction.transactionType === "Payable") {
@@ -1873,8 +1855,7 @@ const MesobFinancial2 = () => {
             return filteredItems.some(
               (item) =>
                 item.transactionPurpose === purpose &&
-                (item.transactionType === "Pay" ||
-                  (item.transactionType === "Payable" && item.status !== "Paid"))
+                acct.isCountableOutflow(item, items)
             );
           })
           .map(([purpose]) => {
@@ -1882,10 +1863,10 @@ const MesobFinancial2 = () => {
             const totalAmount = filteredItems.reduce((sum, item) => {
               if (
                 item.transactionPurpose === purpose &&
-                (item.transactionType === "Pay" ||
-                  (item.transactionType === "Payable" && item.status !== "Paid"))
+                item.subType !== "COGS" &&
+                acct.isCountableOutflow(item, items)
               ) {
-                return sum + parseFloat(item.transactionAmount || 0);
+                return sum + acct.outflowAmount(item, items);
               }
               return sum;
             }, 0);
@@ -2060,8 +2041,11 @@ const MesobFinancial2 = () => {
     </>
   );
 
+  // Balances are as of the end of the selected period, whatever came before it.
+  const getBalanceItems = () => acct.itemsThrough(items, selectedTimeRange);
+
   const calculateTotalInventory = () =>
-    acct.calculateTotalInventory(getFilteredItems(), initialvalueableItems);
+    acct.calculateTotalInventory(getBalanceItems(), initialvalueableItems);
 
   // Depreciation expense for the selected period (straight-line / Section 179).
   const calculateDepreciationExpense = () =>
@@ -2072,13 +2056,22 @@ const MesobFinancial2 = () => {
       selectedTimeRange && selectedTimeRange.to ? selectedTimeRange.to : new Date()
     );
 
-  // Fixed assets shown at net book value (cost minus the depreciation taken in
-  // this period), so the balance sheet still ties to the depreciated net income.
+  // Fixed assets at net book value: cost to date minus all depreciation to date,
+  // so the balance sheet ties to retained earnings.
   const calculateTotalFixedAssets = () =>
     (
-      parseFloat(acct.calculateTotalFixedAssets(getFilteredItems())) -
-      parseFloat(calculateDepreciationExpense())
+      parseFloat(acct.calculateTotalFixedAssets(getBalanceItems())) -
+      parseFloat(calculateAccumulatedDepreciation())
     ).toFixed(2);
+
+  // All profit to date (not just this period's), for the balance sheet.
+  const calculateRetainedEarnings = () => {
+    const through = getBalanceItems();
+    return (
+      parseFloat(acct.calculateNetIncome(through, items)) -
+      parseFloat(calculateAccumulatedDepreciation())
+    ).toFixed(2);
+  };
 
   const getFixedAssetBreakdown = () => {
     const filteredItems = getFilteredItems();
@@ -2131,10 +2124,15 @@ const MesobFinancial2 = () => {
       parseFloat(calculateDepreciationExpense())
     ).toFixed(2);
 
-  const calculateTotalCash = () => acct.calculateTotalCash(getFilteredItems(), initialBalance);
+  const calculateTotalCash = () => acct.calculateTotalCash(getBalanceItems(), initialBalance);
 
   const calculateTotalPayable = () =>
-    acct.calculateTotalPayable(getFilteredItems(), items, initialoutstandingDebt);
+    acct.calculateTotalPayable(
+      getBalanceItems(),
+      items,
+      initialoutstandingDebt,
+      selectedTimeRange && selectedTimeRange.to
+    );
 
   // While transactions are still loading, the summary would compute from opening
   // balances alone (e.g. cash $50, payable $5,000) and flash wrong numbers before
@@ -3468,8 +3466,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{
                               color: getNetIncomeColor(
-                                parseFloat(calculateTotalRevenue()) -
-                                  parseFloat(calculateTotalExpenses())
+                                parseFloat(calculateRetainedEarnings())
                               ),
                               textAlign: "right",
                               padding: "8px",
@@ -3478,8 +3475,7 @@ const MesobFinancial2 = () => {
                           >
                             {CUR}
                             {(
-                              parseFloat(calculateTotalRevenue()) -
-                              parseFloat(calculateTotalExpenses())
+                              parseFloat(calculateRetainedEarnings())
                             ).toLocaleString("en-US", {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
@@ -3508,7 +3504,7 @@ const MesobFinancial2 = () => {
                             {(
                               parseFloat(calculateTotalPayable()) +
                               (initialBalance + initialvalueableItems - initialoutstandingDebt) +
-                              (parseFloat(calculateTotalRevenue()) - parseFloat(calculateTotalExpenses()))
+                              (parseFloat(calculateRetainedEarnings()))
                             ).toLocaleString("en-US", {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
@@ -3544,8 +3540,7 @@ const MesobFinancial2 = () => {
                               initialBalance +
                               initialvalueableItems -
                               initialoutstandingDebt +
-                              parseFloat(calculateTotalRevenue()) -
-                              parseFloat(calculateTotalExpenses())
+                              parseFloat(calculateRetainedEarnings())
                             ).toLocaleString("en-US", {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
@@ -3794,9 +3789,7 @@ const MesobFinancial2 = () => {
                               const hasRegularExpense = filteredItems.some(
                                 (item) =>
                                   item.transactionPurpose === purpose &&
-                                  (item.transactionType === "Pay" ||
-                                    (item.transactionType === "Payable" &&
-                                      item.status !== "Paid"))
+                                  acct.isCountableOutflow(item, items)
                               );
                               const hasCOGS = filteredItems.some(
                                 (item) =>
@@ -3813,13 +3806,10 @@ const MesobFinancial2 = () => {
                                 (sum, item) => {
                                   if (
                                     item.transactionPurpose === purpose &&
-                                    (item.transactionType === "Pay" ||
-                                      (item.transactionType === "Payable" &&
-                                        item.status !== "Paid"))
+                                    item.subType !== "COGS" &&
+                                    acct.isCountableOutflow(item, items)
                                   ) {
-                                    return (
-                                      sum + parseFloat(item.transactionAmount || 0)
-                                    );
+                                    return sum + acct.outflowAmount(item, items);
                                   }
                                   return sum;
                                 },
@@ -4166,8 +4156,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{
                               color: getNetIncomeColor(
-                                parseFloat(calculateTotalRevenue()) -
-                                  parseFloat(calculateTotalExpenses())
+                                parseFloat(calculateRetainedEarnings())
                               ),
                               textAlign: "right",
                               padding: "8px",
@@ -4176,8 +4165,7 @@ const MesobFinancial2 = () => {
                           >
                             {CUR}
                             {(
-                              parseFloat(calculateTotalRevenue()) -
-                              parseFloat(calculateTotalExpenses())
+                              parseFloat(calculateRetainedEarnings())
                             ).toLocaleString("en-US", {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
@@ -4206,7 +4194,7 @@ const MesobFinancial2 = () => {
                             {(
                               parseFloat(calculateTotalPayable()) +
                               (initialBalance + initialvalueableItems - initialoutstandingDebt) +
-                              (parseFloat(calculateTotalRevenue()) - parseFloat(calculateTotalExpenses()))
+                              (parseFloat(calculateRetainedEarnings()))
                             ).toLocaleString("en-US", {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,

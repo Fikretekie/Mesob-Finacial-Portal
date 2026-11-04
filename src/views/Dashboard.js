@@ -55,6 +55,7 @@ import {
   calculateDepreciationExpense as engineDepreciation,
   isCountableOutflow,
   outflowAmount,
+  itemsThrough as engineItemsThrough,
   filterItemsByTimeRange as engineFilterByRange,
 } from "utils/accounting";
 import { currencySymbol } from "utils/currency";
@@ -437,8 +438,16 @@ function Dashboard() {
   // Financial Report. (The local ledger math double-counted a partial payment,
   // which could show a negative payable.)
   const accrualPayable = useMemo(
-    () => parseFloat(engineTotalPayable(items, allTransactions, initialoutstandingDebt)) || 0,
-    [items, allTransactions, initialoutstandingDebt]
+    () =>
+      parseFloat(
+        engineTotalPayable(
+          engineItemsThrough(allTransactions, dashboardDateRange),
+          allTransactions,
+          initialoutstandingDebt,
+          dashboardDateRange && dashboardDateRange.to
+        )
+      ) || 0,
+    [allTransactions, dashboardDateRange, initialoutstandingDebt]
   );
 
   // Tax set-aside: 30% of net income (revenue − expenses incl. depreciation),
@@ -864,7 +873,7 @@ function Dashboard() {
       expenses: parseFloat(engineTotalExpenses(prevFiltered, all)) || 0,
       cashOnHand: parseFloat(engineTotalCash(upToPrevEnd, initialBalance)) || 0,
       payable:
-        parseFloat(engineTotalPayable(upToPrevEnd, all, initialoutstandingDebt)) || 0,
+        parseFloat(engineTotalPayable(upToPrevEnd, all, initialoutstandingDebt, prevEnd)) || 0,
     };
   };
 
@@ -1832,7 +1841,7 @@ function Dashboard() {
                       .replace(/\s*\(Expense\)\s*/i, "")
                       .trim() ||
                     t("dashboard.otherExpense", "Other");
-                  groups[key] = (groups[key] || 0) + outflowAmount(tx);
+                  groups[key] = (groups[key] || 0) + outflowAmount(tx, allTransactions);
                 });
                 (items || []).forEach((tx) => {
                   if (
