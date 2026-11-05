@@ -1285,7 +1285,7 @@
     "turnOn": "Activer",
     "notNow": "Plus tard",
     "settingLabel": "Déverrouillage par empreinte / visage",
-    "settingHint": "Demander votre empreinte ou votre visage à l'ouverture de l'app.",
+    "settingHint": "Demande après 4 heures sans conduite et après un redémarrage du téléphone.",
     "planTitle": "Votre forfait n'est pas actif",
     "planBody": "Vos données sont en sécurité et restent consultables. L'ajout et la modification sont suspendus jusqu'à ce que votre forfait Meksova soit de nouveau actif.",
     "planBack": "Retour à l'accueil",
@@ -1377,7 +1377,16 @@
       "stopAskFinished": "Terminé",
       "stopAskKeep": "Continuer",
       "dayReviewTitle": "Vérifiez vos trajets",
-      "dayReviewBody": "{count} en attente, {miles} mi. Seuls les trajets confirmés en camion comptent pour l'IFTA."
+      "dayReviewBody": "{count} en attente, {miles} mi. Seuls les trajets confirmés en camion comptent pour l'IFTA.",
+      "shiftOnTitle": "En service",
+      "shiftOnBody": "Chaque trajet compte comme travail jusqu'à la fin de votre service.",
+      "shiftStart": "Commencer le service",
+      "shiftEnd": "Finir le service",
+      "shiftEndedTitle": "Service terminé",
+      "shiftEndedBody": "Trajets enregistrés : {count}, {miles} mi.",
+      "shiftAutoBody": "Aucune conduite depuis 4 heures, votre service est donc terminé. Trajets enregistrés : {count}, {miles} mi.",
+      "shiftRule": "En service",
+      "dayReviewBodyRideshare": "{count} en attente, {miles} mi. Touchez pour trier travail et personnel."
     },
     "settings": {
       "title": "Trajets et rappels",
@@ -1440,12 +1449,18 @@
       "itWasTruck": "C'était mon camion",
       "recentTitleTrucking": "Usage personnel du camion",
       "joinedFuel": "Arrêt à une station-service, affiché comme un seul trajet",
-      "splitTrip": "Ce sont des trajets séparés"
+      "splitTrip": "Ce sont des trajets séparés",
+      "introRideshare": "Vos trajets, séparés à chaque arrêt. Indiquez ce qui était du travail. Les trajets personnels ne sont pas enregistrés.",
+      "allWork": "Tout travail ({{miles}} mi)",
+      "work": "Travail"
     },
     "banner": {
       "title": "Trajets à classer : {{count}}",
       "sub": "Professionnel ou personnel ?",
-      "subTrucking": "Seuls les trajets confirmés en camion comptent pour l'IFTA"
+      "subTrucking": "Seuls les trajets confirmés en camion comptent pour l'IFTA",
+      "reviewNow": "Vérifier",
+      "later": "Plus tard",
+      "subRideshare": "Travail ou personnel ?"
     },
     "reminders": {
       "estTaxTitle": "Impôt estimé dû dans une semaine",
@@ -1489,6 +1504,15 @@
       "link": "Choisir des appareils Bluetooth",
       "noDevices": "Aucun appareil associé. Associez d'abord votre camion dans les réglages Bluetooth du téléphone.",
       "denied": "Autorisez Appareils à proximité pour Meksova dans les réglages du téléphone pour associer votre camion."
+    },
+    "shift": {
+      "offTitle": "Vous travaillez aujourd'hui ?",
+      "startButton": "Commencer le service",
+      "end": "Finir le service",
+      "onSince": "En service depuis {{time}}",
+      "hintOff": "Chaque trajet compte comme travail jusqu'à la fin, pour toutes vos applis.",
+      "hintOn": "{{miles}} mi pour l'instant. Se termine seul après 4 heures sans conduite.",
+      "needDetection": "Activez d'abord la détection des trajets dans Compte."
     }
   },
   "console": {

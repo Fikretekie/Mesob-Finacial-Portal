@@ -45,6 +45,7 @@
   --accent-ring:   rgba(59, 130, 246, 0.45);
 
   --danger-soft:   rgba(255, 77, 77, 0.12);
+  --alert-fill:    #C81E1E;   /* solid red behind white text, 5.74:1 in both themes */
 
   /* ---- Radius ---- */
   --r-sm: 8px;

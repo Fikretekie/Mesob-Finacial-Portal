@@ -2,7 +2,7 @@ import { Capacitor, registerPlugin } from "@capacitor/core";
 import { saveTrip } from "utils/tripStorage";
 import { haversineMiles } from "utils/geo";
 import { getStateAtPoint } from "utils/geoState";
-import { currentRate, isTrucking } from "utils/mileageRate";
+import { currentRate, isRideshare, isTrucking } from "utils/mileageRate";
 
 // Bridge to the Android drive detector (android/.../drive/DriveMonitorPlugin).
 // Android notices the user got in a car, records the drive in the background
@@ -89,6 +89,7 @@ const NATIVE_STRING_KEYS = [
   "autoTitle", "autoBody", "ruleHours", "alreadyTitle", "alreadyBody",
   "weeklyTitle", "weeklyDeduction", "weeklyWaiting",
   "stopAskTitle", "stopAskBody", "stopAskFinished", "stopAskKeep", "dayReviewTitle", "dayReviewBody",
+  "shiftOnTitle", "shiftOnBody", "shiftStart", "shiftEnd", "shiftEndedTitle", "shiftEndedBody", "shiftAutoBody", "shiftRule",
   "widgetToday", "widgetWeek", "widgetRecording",
 ];
 
@@ -119,8 +120,10 @@ export async function configureDriveMonitor(t, settings) {
     strings.personalTitle = t("drives.native.personalTitleTrucking");
     strings.personalBody = t("drives.native.personalBodyTrucking");
   }
+  const rideshare = isRideshare();
+  if (rideshare) strings.dayReviewBody = t("drives.native.dayReviewBodyRideshare");
   try {
-    return await DriveMonitor.configure({ ...settings, trucking, ratePerMile: trucking ? 0 : currentRate(), strings });
+    return await DriveMonitor.configure({ ...settings, trucking, rideshare, ratePerMile: trucking ? 0 : currentRate(), strings });
   } catch (e) {
     return null;
   }
@@ -143,6 +146,8 @@ export const requestDrivePermissions = () => DriveMonitor.requestDrivePermission
 export const requestBackgroundLocation = () => DriveMonitor.requestBackgroundLocation();
 export const openDriveAppSettings = () => DriveMonitor.openAppSettings();
 export const requestBluetooth = () => DriveMonitor.requestBluetooth();
+export const setShift = (on) => DriveMonitor.setShift({ on });
+export const noteAppSeen = () => DriveMonitor.setLastSeen().catch(() => {});
 
 export async function getPairedDevices() {
   try {
@@ -226,6 +231,8 @@ async function stateBreakdownOf(drive) {
 
 /** Trucking: what a business drive's trip purpose says (both count as business miles). */
 export const LOAD_PURPOSE = { loaded: "Loaded", empty: "Empty (deadhead)" };
+/** Rideshare: what a work drive's trip purpose says, whichever gig app it was for. */
+export const RIDESHARE_PURPOSE = "Rideshare";
 /** Trucking: personal drives are kept as trips of this purpose — IFTA counts every mile the truck drives. */
 export const PERSONAL_PURPOSE = "Personal";
 
@@ -263,12 +270,12 @@ export const isOwnCarDrive = (drive) => !drive.type && drive.vehicle === "car";
 export const isUnconfirmedDrive = (drive) => !drive.type && !isOwnCarDrive(drive);
 
 /**
- * The dashboard's count. Trucking: nothing until the day looks over, so the
- * driver isn't nagged between stops; the review screen itself shows them anytime.
+ * The dashboard's count. Trucking and rideshare: nothing until the day looks over,
+ * so the driver isn't nagged between stops; the review screen shows them anytime.
  */
 export async function driveReviewCount(drives) {
   const waiting = drives.filter(isUnconfirmedDrive);
-  if (!isTrucking() || waiting.length === 0) return waiting.length;
+  if (!(isTrucking() || isRideshare()) || waiting.length === 0) return waiting.length;
   const latest = Math.max(...waiting.map((d) => d.endedAt));
   if (Date.now() - latest < REVIEW_AFTER_MS) return 0;
   const status = await getDriveStatus().catch(() => null);
@@ -299,7 +306,7 @@ export function syncDrives() {
         if (drive.ruleNote && Date.now() - drive.endedAt < RULE_GRACE_MS) continue;
         try {
           // Already counted on the phone when it was marked business.
-          const purpose = LOAD_PURPOSE[drive.load] || "Other";
+          const purpose = LOAD_PURPOSE[drive.load] || (isRideshare() ? RIDESHARE_PURPOSE : "Other");
           await saveDrive(drive, { type: "business", purpose, note: drive.ruleNote || "" });
           window.dispatchEvent(new Event(TRIPS_CHANGED));
         } catch (e) {

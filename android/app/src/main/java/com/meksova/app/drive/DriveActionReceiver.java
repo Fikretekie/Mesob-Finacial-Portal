@@ -20,6 +20,9 @@ public class DriveActionReceiver extends BroadcastReceiver {
     /** Trucking, "Did you finish your trip?" */
     static final String TRIP_FINISHED = "com.meksova.app.drive.TRIP_FINISHED";
     static final String KEEP_RECORDING = "com.meksova.app.drive.KEEP_RECORDING";
+    static final String SHIFT_START = "com.meksova.app.drive.SHIFT_START";
+    static final String SHIFT_END = "com.meksova.app.drive.SHIFT_END";
+    static final String SHIFT_AUTO_END = "com.meksova.app.drive.SHIFT_AUTO_END";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -46,13 +49,20 @@ public class DriveActionReceiver extends BroadcastReceiver {
             if (id == null) return;
             DriveStore.classify(context, id, null);
             org.json.JSONObject drive = DriveStore.get(context, id);
-            if (drive != null && !DrivePrefs.trucking(context)) DriveNotify.classify(context, drive);
+            if (drive != null && !DrivePrefs.dailyReview(context)) DriveNotify.classify(context, drive);
         } else if (DISCARD_RECORDING.equals(action)) {
             DriveRecorderService.discardCurrent(context);
         } else if (DISMISS_ASK.equals(action)) {
             DriveNotify.cancel(context, DriveNotify.ID_ASK);
         } else if (DISMISS_STOP.equals(action)) {
             DriveNotify.cancel(context, DriveNotify.ID_FUEL);
+        } else if (SHIFT_START.equals(action)) {
+            if (DrivePrefs.enabled(context)) DriveShift.start(context);
+        } else if (SHIFT_END.equals(action)) {
+            DriveShift.end(context, false, false);
+        } else if (SHIFT_AUTO_END.equals(action)) {
+            // Still driving: this drive's end sets the next deadline.
+            if (!DriveRecorderService.isRunning()) DriveShift.end(context, true, false);
         } else if (TRIP_FINISHED.equals(action)) {
             DriveNotify.cancel(context, DriveNotify.ID_STOP_ASK);
         } else if (KEEP_RECORDING.equals(action)) {

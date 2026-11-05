@@ -28,6 +28,8 @@ final class DriveNotify {
     static final int ID_FUEL = 4104;
     static final int ID_STOP_ASK = 4122;
     static final int ID_DAY_REVIEW = 4125;
+    static final int ID_SHIFT = 4132;
+    static final int ID_SHIFT_ENDED = 4133;
 
     private static final int BRAND = 0xFF2563EB;
 
@@ -141,6 +143,33 @@ final class DriveNotify {
         }
         n.addAction(0, DrivePrefs.str(c, "personal", "Personal"), broadcast(c, DriveActionReceiver.CLASSIFY_PERSONAL, id, nid + 2));
         post(c, nid, n.build());
+    }
+
+    /** Stays in the notification bar for the whole shift, so ending it is one tap. */
+    static void shiftOn(Context c) {
+        Notification n = base(c, CH_RECORDING)
+            .setContentTitle(DrivePrefs.str(c, "shiftOnTitle", "On shift"))
+            .setContentText(DrivePrefs.str(c, "shiftOnBody", "Every drive counts as work until you end your shift."))
+            .setOngoing(true)
+            .setAutoCancel(false)
+            .setContentIntent(openApp(c, "go/customer/dashboard", ID_SHIFT))
+            .addAction(0, DrivePrefs.str(c, "shiftEnd", "End shift"), broadcast(c, DriveActionReceiver.SHIFT_END, null, ID_SHIFT + 2))
+            .build();
+        post(c, ID_SHIFT, n);
+    }
+
+    static void shiftEnded(Context c, boolean auto, int drives, double totalMiles) {
+        String body = DrivePrefs.str(c, auto ? "shiftAutoBody" : "shiftEndedBody",
+                auto ? "No driving for 4 hours, so your shift ended. Drives logged: {count}, {miles} mi." : "Drives logged: {count}, {miles} mi.")
+            .replace("{count}", String.valueOf(drives))
+            .replace("{miles}", miles(totalMiles));
+        Notification n = base(c, CH_DRIVES)
+            .setContentTitle(DrivePrefs.str(c, "shiftEndedTitle", "Shift ended"))
+            .setContentText(body)
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
+            .setContentIntent(openApp(c, "go/customer/trip-history", ID_SHIFT_ENDED))
+            .build();
+        post(c, ID_SHIFT_ENDED, n);
     }
 
     /** Trucking: parked for a while. Either answer is fine to ignore: the piece is already saved. */

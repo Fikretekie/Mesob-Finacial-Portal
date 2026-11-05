@@ -1285,7 +1285,7 @@
     "turnOn": "Activar",
     "notNow": "Ahora no",
     "settingLabel": "Desbloqueo con huella / rostro",
-    "settingHint": "Pedir tu huella o rostro al abrir la app.",
+    "settingHint": "Lo pide tras 4 horas sin conducir y cuando se reinicia el teléfono.",
     "planTitle": "Tu plan no está activo",
     "planBody": "Tus registros están seguros y puedes seguir viéndolos. Agregar y cambiar registros está en pausa hasta que tu plan de Meksova vuelva a estar activo.",
     "planBack": "Volver al inicio",
@@ -1377,7 +1377,16 @@
       "stopAskFinished": "Terminado",
       "stopAskKeep": "Seguir grabando",
       "dayReviewTitle": "Revisa tus viajes",
-      "dayReviewBody": "{count} pendientes, {miles} mi. Solo los viajes confirmados en el camión cuentan para IFTA."
+      "dayReviewBody": "{count} pendientes, {miles} mi. Solo los viajes confirmados en el camión cuentan para IFTA.",
+      "shiftOnTitle": "En turno",
+      "shiftOnBody": "Cada viaje cuenta como trabajo hasta que termines tu turno.",
+      "shiftStart": "Iniciar turno",
+      "shiftEnd": "Terminar turno",
+      "shiftEndedTitle": "Turno terminado",
+      "shiftEndedBody": "Viajes registrados: {count}, {miles} mi.",
+      "shiftAutoBody": "Sin conducir durante 4 horas, así que tu turno terminó. Viajes registrados: {count}, {miles} mi.",
+      "shiftRule": "En turno",
+      "dayReviewBodyRideshare": "{count} pendientes, {miles} mi. Toca para separar trabajo y personal."
     },
     "settings": {
       "title": "Viajes y recordatorios",
@@ -1440,12 +1449,18 @@
       "itWasTruck": "Era mi camión",
       "recentTitleTrucking": "Uso personal del camión",
       "joinedFuel": "Parada en una gasolinera, se muestra como un solo viaje",
-      "splitTrip": "Son viajes separados"
+      "splitTrip": "Son viajes separados",
+      "introRideshare": "Tus viajes, divididos en cada parada. Marca lo que fue trabajo. Los viajes personales no se guardan.",
+      "allWork": "Todo trabajo ({{miles}} mi)",
+      "work": "Trabajo"
     },
     "banner": {
       "title": "Viajes por revisar: {{count}}",
       "sub": "¿Trabajo o personal?",
-      "subTrucking": "Solo los viajes confirmados en el camión cuentan para IFTA"
+      "subTrucking": "Solo los viajes confirmados en el camión cuentan para IFTA",
+      "reviewNow": "Revisar ahora",
+      "later": "Más tarde",
+      "subRideshare": "¿Trabajo o personal?"
     },
     "reminders": {
       "estTaxTitle": "Impuesto estimado vence en una semana",
@@ -1489,6 +1504,15 @@
       "link": "Elegir dispositivos Bluetooth",
       "noDevices": "No hay dispositivos vinculados. Primero vincula tu camión en los ajustes de Bluetooth del teléfono.",
       "denied": "Permite Dispositivos cercanos para Meksova en los ajustes del teléfono para vincular tu camión."
+    },
+    "shift": {
+      "offTitle": "¿Trabajas hoy?",
+      "startButton": "Iniciar turno",
+      "end": "Terminar turno",
+      "onSince": "En turno desde las {{time}}",
+      "hintOff": "Cada viaje cuenta como trabajo hasta que lo termines, en todas tus apps.",
+      "hintOn": "{{miles}} mi hasta ahora. Termina solo tras 4 horas sin conducir.",
+      "needDetection": "Primero activa la detección de viajes en Cuenta."
     }
   },
   "console": {

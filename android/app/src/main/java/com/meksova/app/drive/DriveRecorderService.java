@@ -173,6 +173,7 @@ public class DriveRecorderService extends Service {
                 checkStationary(loc, now);
                 return;
             }
+            DrivePrefs.prefs(this).edit().putLong("lastMovedAt", now).apply();
             double miles = active.optDouble("miles", 0) + step / METERS_PER_MILE;
             try {
                 active.put("miles", miles);
@@ -206,7 +207,7 @@ public class DriveRecorderService extends Service {
             fuelChecked = true;
             FuelStops.checkAsync(this, loc.getLatitude(), loc.getLongitude(), null);
         }
-        if (parked >= (DrivePrefs.trucking(this) ? DriveDay.STOP_ASK_MS : STATIONARY_END_MS)) {
+        if (parked >= (DrivePrefs.dailyReview(this) ? DriveDay.STOP_ASK_MS : STATIONARY_END_MS)) {
             stoppedFor = parked;
             finish(true);
         }
@@ -263,6 +264,7 @@ public class DriveRecorderService extends Service {
             }
             boolean kept = drive.optDouble("miles", 0) >= MIN_DRIVE_MILES;
             DriveDay.pieceEnded(c, stoppedFor, kept);
+            DriveShift.driveEnded(c);
             if (!kept) return;
             drive.put("miles", Math.round(drive.optDouble("miles") * 100) / 100.0);
             drive.put("endedAt", System.currentTimeMillis());
@@ -280,7 +282,15 @@ public class DriveRecorderService extends Service {
                 if (DriveVehicle.TRUCK.equals(vehicle)) DriveStore.classify(c, drive.getString("id"), "business");
                 return;
             }
-            String rule = DriveRules.match(c, drive);
+            String rule = DriveShift.on(c) ? DrivePrefs.str(c, "shiftRule", "On shift") : DriveRules.match(c, drive);
+            if (DriveShift.on(c)) DriveShift.driveCounted(c, drive.optDouble("miles", 0));
+            if (DrivePrefs.rideshare(c)) {
+                // Several drives an hour on a busy shift, so none of them get an alert.
+                if (rule != null) drive.put("ruleNote", rule);
+                DriveStore.add(c, drive);
+                if (rule != null) DriveStore.classify(c, drive.getString("id"), "business");
+                return;
+            }
             if (rule != null) {
                 // A business rule matched: logged without asking, Personal still one tap away.
                 drive.put("ruleNote", rule);

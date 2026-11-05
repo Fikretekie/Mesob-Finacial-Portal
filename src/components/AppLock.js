@@ -12,12 +12,13 @@ import {
   APP_LOCK_CHANGED,
   getAppLockPref,
   isBiometricAvailable,
+  needsUnlock,
+  noteSeen,
   setAppLockPref,
+  STAY_UNLOCKED_MS,
   verifyBiometric,
 } from "utils/appLock";
 
-// Re-lock when the app comes back after being in the background this long.
-const RELOCK_AFTER_MS = 60 * 1000;
 const PUBLIC_PATHS = ["/login", "/signup", "/forgot-password", "/confirm", "/oauth-redirect", "/complete-profile"];
 
 const FingerprintIcon = () => (
@@ -44,6 +45,8 @@ const AppLock = () => {
   const [locked, setLocked] = useState(
     () => Capacitor.isNativePlatform() && isSignedIn() && getAppLockPref() === "on"
   );
+  // Starts covered so nothing shows, then opens by itself if they've been active lately.
+  const [checking, setChecking] = useState(locked);
   const [verifying, setVerifying] = useState(false);
   const pausedAt = useRef(0);
   const unlockBtn = useRef(null);
@@ -55,29 +58,47 @@ const AppLock = () => {
     return () => window.removeEventListener(APP_LOCK_CHANGED, sync);
   }, []);
 
+  const recheck = useCallback(async () => {
+    setChecking(true);
+    const stillNeeded = await needsUnlock().catch(() => true);
+    if (!stillNeeded) setLocked(false);
+    setChecking(false);
+  }, []);
+
+  useEffect(() => {
+    if (locked) recheck();
+    // eslint-disable-next-line
+  }, []);
+
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return undefined;
     const pause = CapacitorApp.addListener("pause", () => {
       pausedAt.current = Date.now();
+      noteSeen();
     });
     const resume = CapacitorApp.addListener("resume", () => {
       const away = Date.now() - pausedAt.current;
-      if (getAppLockPref() === "on" && isSignedIn() && pausedAt.current && away > RELOCK_AFTER_MS) {
+      // Away for hours: cover the screen straight away, then check if they were driving.
+      if (getAppLockPref() === "on" && isSignedIn() && pausedAt.current && away >= STAY_UNLOCKED_MS) {
         setLocked(true);
+        recheck();
       }
     });
     return () => {
       pause.then((l) => l.remove());
       resume.then((l) => l.remove());
     };
-  }, []);
+  }, [recheck]);
 
   const unlock = useCallback(async () => {
     if (verifying) return;
     setVerifying(true);
     const ok = await verifyBiometric(t);
     setVerifying(false);
-    if (ok) setLocked(false);
+    if (ok) {
+      noteSeen();
+      setLocked(false);
+    }
   }, [t, verifying]);
 
   // Fingerprints removed from the phone since lock was turned on: don't trap the user.
@@ -87,10 +108,11 @@ const AppLock = () => {
 
   // Ask for the fingerprint as soon as the lock screen appears.
   useEffect(() => {
-    if (!locked || !available) return;
+    if (!locked || !available || checking) return;
     unlockBtn.current?.focus();
     unlock();
-  }, [locked, available]);
+    // eslint-disable-next-line
+  }, [locked, available, checking]);
 
   const signInWithPassword = async () => {
     await stopDriveDetection();

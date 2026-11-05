@@ -71,9 +71,11 @@ final class DriveEvents {
     static void onDriveStart(Context c) {
         if (!DrivePrefs.enabled(c)) return;
         DrivePrefs.prefs(c).edit().putLong("lastEnterAt", System.currentTimeMillis()).apply();
-        if (DrivePrefs.trucking(c)) DriveDay.driveStarted(c);
+        if (DrivePrefs.dailyReview(c)) DriveDay.driveStarted(c);
+        DriveShift.driveStarted(c);
         if (DrivePrefs.manualTrip(c)) return;
-        if (DrivePrefs.workdaysOnly(c) && DrivePrefs.isWeekend()) return;
+        // A shift means they're working, whatever the day.
+        if (DrivePrefs.workdaysOnly(c) && DrivePrefs.isWeekend() && !DriveShift.on(c)) return;
         if (DrivePrefs.autoRecord(c) && DrivePrefs.hasBackgroundLocation(c)) {
             if (!DriveRecorderService.isRunning()) DriveRecorderService.start(c);
         } else {

@@ -1285,7 +1285,7 @@
     "turnOn": "ኣበርህ",
     "notNow": "ሕጂ ኣይኮነን",
     "settingLabel": "ብኣሻራ ኣጻብዕ / ብገጽ ምኽፋት",
-    "settingHint": "ነቲ መተግበሪ ክትከፍቱ ከለኹም ኣሻራ ኣጻብዕ ወይ ገጽ ይሕተት።",
+    "settingHint": "ን4 ሰዓት እንተ ዘይዘወርኩምን ተሌፎን ዳግም ክጅምርን ይሓትት።",
     "planTitle": "መደብኩም ንጡፍ ኣይኮነን",
     "planBody": "መዝገባትኩም ውሑሳት እዮም፣ ክትርእይዎም ድማ ትኽእሉ ኢኹም። መደብ Meksova ደጊሙ ንጡፍ ክሳብ ዝኸውን መዝገባት ምውሳኽን ምቕያርን ደው ኢሉ ኣሎ።",
     "planBack": "ናብ መበገሲ ተመለስ",
@@ -1377,7 +1377,16 @@
       "stopAskFinished": "ወዲአ",
       "stopAskKeep": "ምቕዳሕ ቀጽል",
       "dayReviewTitle": "ጉዕዞታትኩም ገምግሙ",
-      "dayReviewBody": "{count} ይጽበዩ ኣለዉ፣ {miles} ማይል። ንIFTA ዝቑጸሩ ዝተረጋገጹ ናይ ጽዕነት መኪና ጉዕዞታት ጥራይ እዮም።"
+      "dayReviewBody": "{count} ይጽበዩ ኣለዉ፣ {miles} ማይል። ንIFTA ዝቑጸሩ ዝተረጋገጹ ናይ ጽዕነት መኪና ጉዕዞታት ጥራይ እዮም።",
+      "shiftOnTitle": "ኣብ ስራሕ",
+      "shiftOnBody": "ፈረቓኹም ክሳብ እትውድኡ ነፍሲ ወከፍ ጉዕዞ ከም ስራሕ ይቑጸር።",
+      "shiftStart": "ፈረቓ ጀምር",
+      "shiftEnd": "ፈረቓ ወድእ",
+      "shiftEndedTitle": "ፈረቓ ተወዲኡ",
+      "shiftEndedBody": "ዝተመዝገቡ ጉዕዞታት፦ {count}፣ {miles} ማይል።",
+      "shiftAutoBody": "ን4 ሰዓት ስለ ዘይዘወርኩም ፈረቓኹም ተወዲኡ። ዝተመዝገቡ ጉዕዞታት፦ {count}፣ {miles} ማይል።",
+      "shiftRule": "ኣብ ስራሕ",
+      "dayReviewBodyRideshare": "{count} ይጽበዩ፣ {miles} ማይል። ስራሕን ውልቅን ንምፍላይ ተንክፉ።"
     },
     "settings": {
       "title": "ጉዕዞታትን መዘኻኸሪታትን",
@@ -1440,12 +1449,18 @@
       "itWasTruck": "ናተይ ጽዕነት መኪና ነይሩ",
       "recentTitleTrucking": "ውልቃዊ ኣጠቓቕማ ናይ ጽዕነት መኪና",
       "joinedFuel": "ኣብ መደበር ነዳዲ ደው ኢሉ፣ ከም ሓደ ጉዕዞ ይርአ",
-      "splitTrip": "እዚኦም ዝተፈላለዩ ጉዕዞታት እዮም"
+      "splitTrip": "እዚኦም ዝተፈላለዩ ጉዕዞታት እዮም",
+      "introRideshare": "ጉዕዞታትኩም፣ ኣብ ነፍሲ ወከፍ ምዕራፍ ዝተመቕሉ። ስራሕ ዝነበረ ምልክት ግበሩ። ውልቃዊ ጉዕዞታት ኣይዕቀቡን።",
+      "allWork": "ኩሉ ስራሕ ({{miles}} ማይል)",
+      "work": "ስራሕ"
     },
     "banner": {
       "title": "ዝምርመሩ ጉዕዞታት፦ {{count}}",
       "sub": "ንግዲ ድዩ ውልቃዊ?",
-      "subTrucking": "ንIFTA ዝቑጸሩ ዝተረጋገጹ ናይ ጽዕነት መኪና ጉዕዞታት ጥራይ እዮም"
+      "subTrucking": "ንIFTA ዝቑጸሩ ዝተረጋገጹ ናይ ጽዕነት መኪና ጉዕዞታት ጥራይ እዮም",
+      "reviewNow": "ሕጂ ገምግሙ",
+      "later": "ደሓር",
+      "subRideshare": "ስራሕ ወይ ውልቂ?"
     },
     "reminders": {
       "estTaxTitle": "ግምታዊ ግብሪ ኣብ ሓደ ሰሙን ይበጽሕ",
@@ -1489,6 +1504,15 @@
       "link": "መሳርሒታት ብሉቱዝ ምረጹ",
       "noDevices": "ዝተጻመዱ መሳርሒታት የለዉን። መጀመርታ መኪናኹም ኣብ ቅጥዕታት ብሉቱዝ ኣጻምዱ።",
       "denied": "ጽዕነት መኪናኹም ንምርኻብ ኣብ ቅጥዕታት ተሌፎን ንMeksova ናይ ቀረባ መሳርሒታት ፍቐዱ።"
+    },
+    "shift": {
+      "offTitle": "ሎሚ ትሰርሑ ዲኹም?",
+      "startButton": "ፈረቓ ጀምር",
+      "end": "ፈረቓ ወድእ",
+      "onSince": "ካብ {{time}} ጀሚሩ ኣብ ስራሕ",
+      "hintOff": "ክሳብ እትውድእዎ ነፍሲ ወከፍ ጉዕዞ ንኹሎም ኣፕታትኩም ከም ስራሕ ይቑጸር።",
+      "hintOn": "ክሳብ ሕጂ {{miles}} ማይል። ን4 ሰዓት እንተ ዘይዘወርኩም ባዕሉ ይውዳእ።",
+      "needDetection": "መጀመርታ ኣብ ሕሳብ ምልላይ ጉዕዞ ወልዑ።"
     }
   },
   "console": {

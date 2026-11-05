@@ -1285,7 +1285,7 @@
     "turnOn": "አብራ",
     "notNow": "አሁን አይደለም",
     "settingLabel": "በጣት አሻራ / በፊት መክፈት",
-    "settingHint": "መተግበሪያውን ሲከፍቱ የጣት አሻራ ወይም ፊት ይጠይቅ።",
+    "settingHint": "ለ4 ሰዓት ካልነዱ እና ስልክዎ እንደገና ሲጀምር ይጠይቃል።",
     "planTitle": "እቅድዎ ንቁ አይደለም",
     "planBody": "መዝገቦችዎ ደህና ናቸው እና አሁንም ማየት ይችላሉ። የMeksova እቅድዎ እንደገና ንቁ እስኪሆን ድረስ መዝገቦችን ማከልና መቀየር ቆሟል።",
     "planBack": "ወደ መነሻ ተመለስ",
@@ -1377,7 +1377,16 @@
       "stopAskFinished": "ጨርሻለሁ",
       "stopAskKeep": "መቅዳት ቀጥል",
       "dayReviewTitle": "ጉዞዎችዎን ይገምግሙ",
-      "dayReviewBody": "{count} በመጠባበቅ ላይ፣ {miles} ማይል። ለIFTA የሚቆጠሩት የተረጋገጡ የጭነት መኪና ጉዞዎች ብቻ ናቸው።"
+      "dayReviewBody": "{count} በመጠባበቅ ላይ፣ {miles} ማይል። ለIFTA የሚቆጠሩት የተረጋገጡ የጭነት መኪና ጉዞዎች ብቻ ናቸው።",
+      "shiftOnTitle": "በሥራ ላይ",
+      "shiftOnBody": "ፈረቃዎን እስኪያበቁ ድረስ እያንዳንዱ ጉዞ እንደ ሥራ ይቆጠራል።",
+      "shiftStart": "ፈረቃ ጀምር",
+      "shiftEnd": "ፈረቃ ጨርስ",
+      "shiftEndedTitle": "ፈረቃው አብቅቷል",
+      "shiftEndedBody": "የተመዘገቡ ጉዞዎች፦ {count}፣ {miles} ማይል።",
+      "shiftAutoBody": "ለ4 ሰዓት መንዳት ስላልነበረ ፈረቃዎ አብቅቷል። የተመዘገቡ ጉዞዎች፦ {count}፣ {miles} ማይል።",
+      "shiftRule": "በሥራ ላይ",
+      "dayReviewBodyRideshare": "{count} በመጠባበቅ ላይ፣ {miles} ማይል። ሥራና የግል ለመለየት ይንኩ።"
     },
     "settings": {
       "title": "ጉዞዎች እና ማሳሰቢያዎች",
@@ -1440,12 +1449,18 @@
       "itWasTruck": "የጭነት መኪናዬ ነበር",
       "recentTitleTrucking": "የጭነት መኪናው የግል አጠቃቀም",
       "joinedFuel": "ነዳጅ ማደያ ላይ ቆሟል፣ እንደ አንድ ጉዞ ይታያል",
-      "splitTrip": "እነዚህ የተለያዩ ጉዞዎች ናቸው"
+      "splitTrip": "እነዚህ የተለያዩ ጉዞዎች ናቸው",
+      "introRideshare": "ጉዞዎችዎ፣ በእያንዳንዱ ማቆሚያ የተከፋፈሉ። ሥራ የነበረውን ይምረጡ። የግል ጉዞዎች አይቀመጡም።",
+      "allWork": "ሁሉም ሥራ ({{miles}} ማይል)",
+      "work": "ሥራ"
     },
     "banner": {
       "title": "የሚገመገሙ ጉዞዎች፦ {{count}}",
       "sub": "ንግድ ወይስ የግል?",
-      "subTrucking": "ለIFTA የሚቆጠሩት የተረጋገጡ የጭነት መኪና ጉዞዎች ብቻ ናቸው"
+      "subTrucking": "ለIFTA የሚቆጠሩት የተረጋገጡ የጭነት መኪና ጉዞዎች ብቻ ናቸው",
+      "reviewNow": "አሁን ይገምግሙ",
+      "later": "በኋላ",
+      "subRideshare": "ሥራ ወይስ የግል?"
     },
     "reminders": {
       "estTaxTitle": "ግምታዊ ግብር በአንድ ሳምንት ውስጥ ይደርሳል",
@@ -1489,6 +1504,15 @@
       "link": "የብሉቱዝ መሣሪያዎችን ይምረጡ",
       "noDevices": "የተጣመሩ መሣሪያዎች የሉም። መጀመሪያ መኪናዎን በስልኩ የብሉቱዝ ቅንብሮች ያጣምሩ።",
       "denied": "የጭነት መኪናዎን ለማገናኘት በስልክ ቅንብሮች ውስጥ ለMeksova በአቅራቢያ ያሉ መሣሪያዎችን ይፍቀዱ።"
+    },
+    "shift": {
+      "offTitle": "ዛሬ ይሠራሉ?",
+      "startButton": "ፈረቃ ጀምር",
+      "end": "ፈረቃ ጨርስ",
+      "onSince": "ከ{{time}} ጀምሮ በሥራ ላይ",
+      "hintOff": "እስኪያበቁ ድረስ እያንዳንዱ ጉዞ ለሁሉም መተግበሪያዎችዎ እንደ ሥራ ይቆጠራል።",
+      "hintOn": "እስካሁን {{miles}} ማይል። ለ4 ሰዓት ካልነዱ በራሱ ያበቃል።",
+      "needDetection": "መጀመሪያ በመለያ ውስጥ የጉዞ ማወቂያን ያብሩ።"
     }
   },
   "console": {

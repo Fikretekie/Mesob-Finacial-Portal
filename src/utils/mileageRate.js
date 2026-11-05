@@ -54,3 +54,6 @@ export function currentRateLabel() {
  * standard mileage rate doesn't apply to semi-trucks, so no deduction is shown.
  */
 export const isTrucking = () => localStorage.getItem("businessType") === "Trucking";
+
+/** Rideshare and gig drivers: one car for every app, so drives are sorted work or personal. */
+export const isRideshare = () => localStorage.getItem("businessType") === "RIDESHARE DRIVERS/PARTNERS";

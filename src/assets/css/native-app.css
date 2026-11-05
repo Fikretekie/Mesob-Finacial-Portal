@@ -1312,20 +1312,35 @@ label.mksv-prefs__row {
   min-height: 64px;
   padding: 10px 14px;
   border-radius: 12px;
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
-  background: var(--surface-2);
-  color: var(--text-2);
+  border: 0;
+  background: var(--alert-fill);
+  color: #fff;
   font-family: var(--font-sans);
   text-align: left;
   cursor: pointer;
 }
+.mksv-drive-banner .mksv-row__title,
+.mksv-drive-banner .mksv-row__sub,
+.mksv-drive-banner .mksv-row__icon {
+  color: #fff;
+}
+.mksv-drive-banner .mksv-row__icon {
+  background: rgba(0, 0, 0, 0.18);
+}
 .mksv-drive-banner:active {
-  background: var(--surface-3);
+  filter: brightness(0.9);
 }
 .mksv-drive-banner:focus-visible {
-  outline: 2px solid var(--accent-ring);
+  outline: 2px solid var(--text-1);
   outline-offset: 2px;
+}
+.mksv-confirm__title--alert {
+  color: var(--red);
+}
+.mksv-app-btn--alert {
+  border-color: var(--alert-fill);
+  background: var(--alert-fill);
+  color: #fff;
 }
 
 /* ── Drives to review ── */
@@ -1418,6 +1433,47 @@ label.mksv-prefs__row {
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
+}
+
+/* Rideshare: Start / End shift on Home. A left edge bar means this row's state. */
+.mksv-shift {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-strong);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+.mksv-shift.is-on {
+  border-left-color: var(--accent);
+}
+.mksv-shift__text {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+.mksv-shift__title {
+  color: var(--text-1);
+  font-size: 15px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.mksv-shift__sub {
+  margin-top: 2px;
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.mksv-drives__all {
+  display: block;
+  width: 100%;
+  margin-bottom: 14px;
 }
 
 /* Removing a saved trip (Trip History, IFTA report). */

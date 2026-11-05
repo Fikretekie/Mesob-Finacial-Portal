@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import AppListSkeleton from "components/AppListSkeleton";
 import { haptic } from "utils/haptics";
-import { isTrucking } from "utils/mileageRate";
+import { isRideshare, isTrucking } from "utils/mileageRate";
 import {
   discardDrive,
   getPlaceName,
@@ -16,6 +16,7 @@ import {
   syncDrives,
   DRIVES_CHANGED,
   LOAD_PURPOSE,
+  RIDESHARE_PURPOSE,
   UNDO_WINDOW_MS,
 } from "utils/driveMonitor";
 
@@ -61,6 +62,8 @@ const DriveReview = () => {
   const navigate = useNavigate();
   // Trucking: Loaded / Empty / Not my truck; personal use of the truck is kept for IFTA.
   const trucking = isTrucking();
+  // Rideshare: one car for every app, so just Work or Personal, with one tap for the whole day.
+  const rideshare = isRideshare();
   const [ownCar, setOwnCar] = useState([]);
   const [places, setPlaces] = useState({});
   // Parts of a joined trip the driver chose to separate (by the earlier part's id).
@@ -122,7 +125,7 @@ const DriveReview = () => {
     setError("");
     try {
       for (const drive of parts) {
-        const purpose = load ? LOAD_PURPOSE[load] : purposes[drive.id] || "Other";
+        const purpose = load ? LOAD_PURPOSE[load] : rideshare ? RIDESHARE_PURPOSE : purposes[drive.id] || "Other";
         const trip = await saveDrive(drive, { type: "business", purpose });
         logBusinessMiles(trip.dateKey, trip.miles);
         removeFromWaiting([drive]);
@@ -161,6 +164,24 @@ const DriveReview = () => {
     }, 6000);
   };
 
+  const saveAll = async () => {
+    const list = [...drives].reverse();
+    setBusyId("all");
+    setError("");
+    try {
+      for (const drive of list) {
+        const trip = await saveDrive(drive, { type: "business", purpose: RIDESHARE_PURPOSE });
+        logBusinessMiles(trip.dateKey, trip.miles);
+        removeFromWaiting([drive]);
+      }
+      haptic("success");
+    } catch (e) {
+      setError(t("drives.review.saveError"));
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const restore = async (parts, notTruck) => {
     if (notTruck) {
       pendingDiscard.current = null;
@@ -190,7 +211,22 @@ const DriveReview = () => {
         <header className="mksv-page__head">
           <h1 className="mksv-page__title">{t("drives.review.title")}</h1>
         </header>
-        <p className="mksv-drives__intro">{t(trucking ? "drives.review.introTrucking" : "drives.review.intro")}</p>
+        <p className="mksv-drives__intro">
+          {t(trucking ? "drives.review.introTrucking" : rideshare ? "drives.review.introRideshare" : "drives.review.intro")}
+        </p>
+
+        {rideshare && drives && drives.length > 1 && (
+          <button
+            type="button"
+            className="mksv-app-btn mksv-app-btn--primary mksv-drives__all"
+            disabled={busyId !== null}
+            onClick={saveAll}
+          >
+            {t("drives.review.allWork", {
+              miles: drives.reduce((sum, d) => sum + Number(d.miles || 0), 0).toFixed(1),
+            })}
+          </button>
+        )}
 
         {error && (
           <div className="login-notice" role="alert">
@@ -239,7 +275,7 @@ const DriveReview = () => {
                 {trucking && drive.continues && <p className="mksv-drive__route">{t("drives.review.continued")}</p>}
                 {joined && <p className="mksv-drive__route">{t("drives.review.joinedFuel")}</p>}
 
-                {!trucking && (
+                {!trucking && !rideshare && (
                 <label className="mksv-drive__purpose">
                   <span>{t("drives.review.purpose")}</span>
                   <span className="mksv-select">
@@ -272,7 +308,7 @@ const DriveReview = () => {
                     </>
                   ) : (
                     <button type="button" className="mksv-app-btn mksv-app-btn--primary" disabled={busyId === drive.id} onClick={() => save(parts)}>
-                      {t("drives.native.business")}
+                      {t(rideshare ? "drives.review.work" : "drives.native.business")}
                     </button>
                   )}
                   {trucking ? (

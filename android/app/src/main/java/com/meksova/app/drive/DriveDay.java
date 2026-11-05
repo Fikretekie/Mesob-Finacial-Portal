@@ -9,11 +9,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * Trucking: a day of driving is a list of pieces, split at each stop. Nothing
- * counts toward IFTA until the driver confirms a piece was the truck, because a
- * phone can't tell the truck from their own car. This asks "Did you finish your
- * trip?" after a long stop, and points them at the list once they've stopped
- * moving for a while.
+ * Trucking and rideshare: a day of driving is a list of pieces, split at each
+ * stop, sorted when the day looks over. For trucking nothing counts toward IFTA
+ * until the driver confirms a piece was the truck, because a phone can't tell the
+ * truck from their own car, and a long stop also asks "Did you finish your trip?"
  */
 public class DriveDay extends BroadcastReceiver {
 
@@ -35,9 +34,9 @@ public class DriveDay extends BroadcastReceiver {
      * @param kept       false when the piece was too short to keep.
      */
     static void pieceEnded(Context c, long stoppedFor, boolean kept) {
-        if (!DrivePrefs.trucking(c)) return;
+        if (!DrivePrefs.dailyReview(c)) return;
         schedule(c, REVIEW, REVIEW_REQUEST, REVIEW_AFTER_MS);
-        if (kept && stoppedFor >= 0) schedule(c, ASK, ASK_REQUEST, Math.max(1000, STOP_ASK_MS - stoppedFor));
+        if (DrivePrefs.trucking(c) && kept && stoppedFor >= 0) schedule(c, ASK, ASK_REQUEST, Math.max(1000, STOP_ASK_MS - stoppedFor));
     }
 
     /** Moving again: there's no finished trip to ask about, and the day isn't over. */
@@ -69,8 +68,8 @@ public class DriveDay extends BroadcastReceiver {
     }
 
     static void fire(Context c, String action) {
-        if (!DrivePrefs.enabled(c) || !DrivePrefs.trucking(c) || DriveRecorderService.isRunning()) return;
-        if (ASK.equals(action)) {
+        if (!DrivePrefs.enabled(c) || !DrivePrefs.dailyReview(c) || DriveRecorderService.isRunning()) return;
+        if (ASK.equals(action) && DrivePrefs.trucking(c)) {
             DriveNotify.stopAsk(c);
         } else if (REVIEW.equals(action)) {
             JSONArray drives = DriveStore.all(c);

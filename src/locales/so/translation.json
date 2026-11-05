@@ -1285,7 +1285,7 @@
     "turnOn": "Shid",
     "notNow": "Hadda maya",
     "settingLabel": "Ku furid faraha / wejiga",
-    "settingHint": "Weydii faraha ama wejiga marka app-ka la furo.",
+    "settingHint": "Wuxuu weydiiyaa 4 saac oo aan la wadin ka dib iyo marka taleefanku dib u bilaabo.",
     "planTitle": "Qorshahaagu ma shaqaynayo",
     "planBody": "Diiwaanadaadu waa ammaan, weli waad arki kartaa. Ku darista iyo beddelka diiwaanada waa la hakiyay ilaa qorshahaaga Meksova uu mar kale shaqeeyo.",
     "planBack": "Ku noqo Bogga Hore",
@@ -1375,7 +1375,16 @@
       "stopAskFinished": "Waan dhammeeyay",
       "stopAskKeep": "Sii wad duubista",
       "dayReviewTitle": "Dib u eeg safarradaada",
-      "dayReviewBody": "{count} sugaya, {miles} mi. Safarrada baabuurka la xaqiijiyay oo keliya ayaa IFTA loo tiriyaa."
+      "dayReviewBody": "{count} sugaya, {miles} mi. Safarrada baabuurka la xaqiijiyay oo keliya ayaa IFTA loo tiriyaa.",
+      "shiftOnTitle": "Shaqo ayaad ku jirtaa",
+      "shiftOnBody": "Safar kasta wuxuu u tirsan yahay shaqo ilaa aad dhammeyso shiftigaaga.",
+      "shiftStart": "Bilow shift",
+      "shiftEnd": "Dhammee shift",
+      "shiftEndedTitle": "Shiftigu wuu dhammaaday",
+      "shiftEndedBody": "Safarrada la diiwaangeliyay: {count}, {miles} mi.",
+      "shiftAutoBody": "4 saac baabuur lama wadin, sidaa darteed shiftigaagu wuu dhammaaday. Safarrada la diiwaangeliyay: {count}, {miles} mi.",
+      "shiftRule": "Shaqo",
+      "dayReviewBodyRideshare": "{count} sugaya, {miles} mi. Taabo si aad u kala saarto shaqo iyo gaar."
     },
     "settings": {
       "title": "Socdaalada & xasuusinta",
@@ -1438,12 +1447,18 @@
       "itWasTruck": "Wuxuu ahaa baabuurkayga",
       "recentTitleTrucking": "Isticmaal gaar ah oo baabuurka",
       "joinedFuel": "Waxaa lagu joogsaday kaalin shidaal, waxaa loo muujiyay hal safar",
-      "splitTrip": "Kuwani waa safarro kala duwan"
+      "splitTrip": "Kuwani waa safarro kala duwan",
+      "introRideshare": "Safarradaada, oo joogsi kasta lagu kala qaybiyay. Calaamadee kuwa shaqada ahaa. Safarrada gaarka ah lama kaydiyo.",
+      "allWork": "Dhammaan shaqo ({{miles}} mi)",
+      "work": "Shaqo"
     },
     "banner": {
       "title": "Socdaalo dib-u-eegis u baahan: {{count}}",
       "sub": "Ganacsi mise gaar?",
-      "subTrucking": "Safarrada baabuurka la xaqiijiyay oo keliya ayaa IFTA loo tiriyaa"
+      "subTrucking": "Safarrada baabuurka la xaqiijiyay oo keliya ayaa IFTA loo tiriyaa",
+      "reviewNow": "Hadda eeg",
+      "later": "Dambe",
+      "subRideshare": "Shaqo mise gaar?"
     },
     "reminders": {
       "estTaxTitle": "Cashuurta qiyaasta ah waxay dhacaysaa toddobaad",
@@ -1487,6 +1502,15 @@
       "link": "Dooro qalabka Bluetooth",
       "noDevices": "Ma jiro qalab la isku xiray. Marka hore baabuurkaaga ku xir dejinta Bluetooth-ka taleefanka.",
       "denied": "Si aad baabuurkaaga u xirto, ku oggolow Meksova Qalabka u dhow dejinta taleefanka."
+    },
+    "shift": {
+      "offTitle": "Ma shaqaynaysaa maanta?",
+      "startButton": "Bilow shift",
+      "end": "Dhammee shift",
+      "onSince": "Shaqo laga bilaabo {{time}}",
+      "hintOff": "Safar kasta wuxuu u tirsan yahay shaqo ilaa aad dhammeyso, dhammaan app-yadaada.",
+      "hintOn": "{{miles}} mi ilaa hadda. Wuxuu iskiis u dhammaanayaa 4 saac oo aan la wadin.",
+      "needDetection": "Marka hore ka shid ogaanshaha safarka Akoonka."
     }
   },
   "console": {

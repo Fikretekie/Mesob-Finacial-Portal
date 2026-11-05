@@ -40,6 +40,12 @@ public class DriveWidget extends AppWidgetProvider {
             : DrivePrefs.str(c, "askStart", "Start trip"));
         v.setOnClickPendingIntent(R.id.widget_root, DriveNotify.openApp(c, "go/customer/trip-history", 4120));
         v.setOnClickPendingIntent(R.id.widget_action, DriveNotify.openApp(c, recording ? "trip" : "trip-start", 4121));
+        if (DrivePrefs.rideshare(c)) {
+            boolean shift = DriveShift.on(c);
+            v.setTextViewText(R.id.widget_action, DrivePrefs.str(c, shift ? "shiftEnd" : "shiftStart", shift ? "End shift" : "Start shift"));
+            v.setOnClickPendingIntent(R.id.widget_action,
+                DriveNotify.broadcast(c, shift ? DriveActionReceiver.SHIFT_END : DriveActionReceiver.SHIFT_START, null, 4134));
+        }
         return v;
     }
 }

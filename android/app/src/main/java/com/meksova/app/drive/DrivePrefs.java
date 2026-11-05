@@ -46,6 +46,16 @@ final class DrivePrefs {
         return prefs(c).getBoolean("trucking", false);
     }
 
+    /** Rideshare / gig accounts: one car for every app, so drives are sorted work or personal in a daily list. */
+    static boolean rideshare(Context c) {
+        return prefs(c).getBoolean("rideshare", false);
+    }
+
+    /** No alert per drive: they wait in a list that's reviewed when the day looks over. */
+    static boolean dailyReview(Context c) {
+        return trucking(c) || rideshare(c);
+    }
+
     /** Any kind of stop worth a receipt lookup. */
     static boolean stopChecks(Context c) {
         return fuelStops(c) || storeStops(c);

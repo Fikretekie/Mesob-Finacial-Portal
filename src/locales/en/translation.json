@@ -1279,7 +1279,7 @@
     "turnOn": "Turn on",
     "notNow": "Not now",
     "settingLabel": "Fingerprint / face unlock",
-    "settingHint": "Ask for your fingerprint or face when opening the app.",
+    "settingHint": "Asks after 4 hours with no driving, and after your phone restarts.",
     "planTitle": "Your plan isn't active",
     "planBody": "Your records are safe and you can still view them. Adding and changing records is paused until your Meksova plan is active again.",
     "planBack": "Back to Home",
@@ -1371,7 +1371,16 @@
       "stopAskFinished": "Finished",
       "stopAskKeep": "Keep recording",
       "dayReviewTitle": "Review your drives",
-      "dayReviewBody": "{count} waiting, {miles} mi. Only confirmed truck drives count for IFTA."
+      "dayReviewBody": "{count} waiting, {miles} mi. Only confirmed truck drives count for IFTA.",
+      "shiftOnTitle": "On shift",
+      "shiftOnBody": "Every drive counts as work until you end your shift.",
+      "shiftStart": "Start shift",
+      "shiftEnd": "End shift",
+      "shiftEndedTitle": "Shift ended",
+      "shiftEndedBody": "Drives logged: {count}, {miles} mi.",
+      "shiftAutoBody": "No driving for 4 hours, so your shift ended. Drives logged: {count}, {miles} mi.",
+      "shiftRule": "On shift",
+      "dayReviewBodyRideshare": "{count} waiting, {miles} mi. Tap to sort work and personal."
     },
     "settings": {
       "title": "Drives & reminders",
@@ -1434,12 +1443,18 @@
       "itWasTruck": "It was my truck",
       "recentTitleTrucking": "Personal use of the truck",
       "joinedFuel": "Stopped at a gas station, shown as one trip",
-      "splitTrip": "These are separate drives"
+      "splitTrip": "These are separate drives",
+      "introRideshare": "Your drives, split at each stop. Mark what was work. Personal drives aren't saved.",
+      "allWork": "All work ({{miles}} mi)",
+      "work": "Work"
     },
     "banner": {
       "title": "Drives to review: {{count}}",
       "sub": "Business or personal?",
-      "subTrucking": "Only confirmed truck drives count for IFTA"
+      "subTrucking": "Only confirmed truck drives count for IFTA",
+      "reviewNow": "Review now",
+      "later": "Later",
+      "subRideshare": "Work or personal?"
     },
     "reminders": {
       "estTaxTitle": "Estimated tax due in a week",
@@ -1483,6 +1498,15 @@
       "link": "Choose Bluetooth devices",
       "noDevices": "No paired devices. Pair your truck in your phone's Bluetooth settings first.",
       "denied": "Allow Nearby devices for Meksova in your phone's settings to link your truck."
+    },
+    "shift": {
+      "offTitle": "Working today?",
+      "startButton": "Start shift",
+      "end": "End shift",
+      "onSince": "On shift since {{time}}",
+      "hintOff": "Every drive counts as work until you end it, for all your apps.",
+      "hintOn": "{{miles}} mi so far. Ends by itself after 4 hours with no driving.",
+      "needDetection": "Turn on drive detection in Account first."
     }
   },
   "console": {

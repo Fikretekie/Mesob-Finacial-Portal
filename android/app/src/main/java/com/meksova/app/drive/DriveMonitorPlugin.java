@@ -14,6 +14,7 @@ import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.provider.Settings;
 import androidx.core.app.NotificationManagerCompat;
 import com.getcapacitor.JSArray;
@@ -55,6 +56,7 @@ public class DriveMonitorPlugin extends Plugin {
             .putBoolean("fuelStops", call.getBoolean("fuelStops", true))
             .putBoolean("storeStops", call.getBoolean("storeStops", true))
             .putBoolean("trucking", call.getBoolean("trucking", false))
+            .putBoolean("rideshare", call.getBoolean("rideshare", false))
             .putBoolean("workdaysOnly", call.getBoolean("workdaysOnly", false))
             .putBoolean("weeklySummary", call.getBoolean("weeklySummary", true))
             .putFloat("ratePerMile", call.getFloat("ratePerMile", 0f))
@@ -63,6 +65,7 @@ public class DriveMonitorPlugin extends Plugin {
             .putString("strings", strings.toString())
             .apply();
         DriveNotify.ensureChannels(c);
+        if (!DrivePrefs.enabled(c) || !DrivePrefs.rideshare(c)) DriveShift.end(c, false, true);
         if (DrivePrefs.enabled(c)) {
             DriveEvents.register(c);
         } else {
@@ -105,11 +108,18 @@ public class DriveMonitorPlugin extends Plugin {
         r.put("location", DrivePrefs.has(c, Manifest.permission.ACCESS_FINE_LOCATION));
         r.put("backgroundLocation", DrivePrefs.hasBackgroundLocation(c));
         r.put("bluetooth", hasBluetooth(c));
+        r.put("manualTrip", DrivePrefs.manualTrip(c));
+        r.put("uptimeMs", SystemClock.elapsedRealtime());
         PowerManager pm = (PowerManager) c.getSystemService(Context.POWER_SERVICE);
         r.put("batteryUnrestricted", pm.isIgnoringBatteryOptimizations(c.getPackageName()));
         // What actually happened on this phone, for the settings screen.
         SharedPreferences p = DrivePrefs.prefs(c);
         r.put("lastDriveAt", p.getLong("lastEnterAt", 0));
+        r.put("lastMovedAt", p.getLong("lastMovedAt", 0));
+        r.put("lastSeenAt", p.getLong("lastSeenAt", 0));
+        r.put("shiftOn", DriveShift.on(c));
+        r.put("shiftAt", p.getLong("shiftAt", 0));
+        r.put("shiftMiles", (double) p.getFloat("shiftMiles", 0f));
         r.put("lastCheckAt", p.getLong("lastCheckAt", 0));
         r.put("lastCheckResult", p.getString("lastCheckResult", ""));
         r.put("lastCheckName", p.getString("lastCheckName", ""));
@@ -119,6 +129,24 @@ public class DriveMonitorPlugin extends Plugin {
             // Corrupt: treated as none.
         }
         return r;
+    }
+
+    /** Rideshare: Start / End shift from the app. */
+    @PluginMethod
+    public void setShift(PluginCall call) {
+        if (call.getBoolean("on", false)) {
+            DriveShift.start(getContext());
+        } else {
+            DriveShift.end(getContext(), false, false);
+        }
+        call.resolve(status());
+    }
+
+    /** The app just went to the background (kept here because the WebView saves its storage lazily). */
+    @PluginMethod
+    public void setLastSeen(PluginCall call) {
+        DrivePrefs.prefs(getContext()).edit().putLong("lastSeenAt", System.currentTimeMillis()).apply();
+        call.resolve();
     }
 
     private static boolean hasBluetooth(Context c) {
@@ -324,6 +352,12 @@ public class DriveMonitorPlugin extends Plugin {
                 call.reject(e.getMessage());
                 return;
             }
+        } else if ("shiftAutoEnd".equals(event)) {
+            DriveShift.end(c, true, false);
+        } else if ("ageActivity".equals(event)) {
+            // As if the app and the car had been idle this many hours.
+            long then = System.currentTimeMillis() - call.getDouble("hours", 5.0).longValue() * 3600000;
+            DrivePrefs.prefs(c).edit().putLong("lastSeenAt", then).putLong("lastMovedAt", then).putLong("lastEnterAt", then).apply();
         } else if ("markFuel".equals(event)) {
             DriveStore.markFuelStop(c, call.getDouble("lat", 0.0), call.getDouble("lng", 0.0));
         } else if ("dayAsk".equals(event)) {
