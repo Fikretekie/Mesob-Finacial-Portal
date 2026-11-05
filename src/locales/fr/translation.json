@@ -1640,5 +1640,36 @@
       "updated": "mis à jour",
       "noMatches": "Aucun résultat pour"
     }
+  },
+  "setup": {
+    "stepOf": "Étape {{at}} sur {{of}}",
+    "allow": "Autoriser",
+    "openSettings": "Ouvrir les réglages",
+    "next": "Suivant",
+    "skip": "Ignorer pour l'instant",
+    "notNow": "Pas maintenant",
+    "finish": "Commencer avec Meksova",
+    "motionTitle": "Autorisez le mouvement et la position",
+    "motionBody": "Android demandera deux fois. Touchez Autoriser et, pour la position, choisissez Pendant l'utilisation de l'appli. L'étape suivante couvre le reste.",
+    "backgroundTitle": "Choisissez Toujours autoriser",
+    "backgroundBody": "Vos trajets commencent quand vous montez dans le véhicule, pas quand vous ouvrez l'appli. Sans cela, ils ne seront pas enregistrés appli fermée.",
+    "optionAlways": "Toujours autoriser",
+    "optionWhileUsing": "Autoriser seulement pendant l'utilisation",
+    "optionDeny": "Ne pas autoriser",
+    "notificationsTitle": "Autorisez les notifications",
+    "notificationsBody": "Pour vous interroger sur vos arrêts et vous rappeler de scanner vos reçus.",
+    "notificationsBodyOther": "Pour vous rappeler les échéances fiscales et les reçus.",
+    "batteryTitle": "Gardez le suivi actif",
+    "batteryBody": "Android peut arrêter les applis en arrière-plan pour économiser la batterie. Dans les réglages, touchez Batterie, puis Sans restriction.",
+    "truckTitle": "Associez votre camion",
+    "truckBody": "Facultatif. Si votre téléphone se connecte au Bluetooth du camion, la plupart des trajets se classent seuls.",
+    "shiftTitle": "Commencez un service quand vous travaillez",
+    "shiftBody": "Touchez Commencer le service sur l'accueil, pour toutes vos applis. Chaque trajet compte comme travail jusqu'à la fin. Nous vous le rappellerons quand vous prendrez le volant.",
+    "doneTitle": "Tout est prêt",
+    "doneBodyTrucking": "Les trajets s'enregistrent seuls. Après 4 heures sans conduite, nous vous demanderons lesquels étaient en camion.",
+    "doneBodyRideshare": "Les trajets s'enregistrent seuls. Commencez un service quand vous travaillez, ou triez vos trajets en fin de journée.",
+    "blocked": "Android ne l'a pas autorisé. Vous pouvez l'activer dans les réglages ou y revenir plus tard.",
+    "cardTitle": "Le suivi des miles n'est pas complet",
+    "cardSub": "Vos miles ne sont peut-être pas enregistrés. Touchez pour terminer."
   }
 }

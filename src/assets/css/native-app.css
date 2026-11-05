@@ -1449,6 +1449,102 @@ label.mksv-prefs__row {
   cursor: pointer;
 }
 
+/* First-run setup. Below the lock screen (2000), above everything else. */
+.mksv-setup {
+  position: fixed;
+  inset: 0;
+  z-index: 1900;
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--app-safe-top, 0px) + 24px) 24px calc(var(--app-safe-bottom, 0px) + 24px);
+  background: var(--bg);
+  overflow-y: auto;
+}
+.mksv-setup__body {
+  flex: 1 0 auto;
+}
+.mksv-setup__step {
+  margin: 0 0 12px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 700;
+}
+.mksv-setup__title {
+  margin: 0 0 12px;
+  color: var(--text-1);
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.2;
+  outline: none;
+}
+.mksv-setup__text {
+  margin: 0 0 18px;
+  color: var(--text-2);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.mksv-setup__points {
+  margin: 0 0 18px;
+  padding-left: 20px;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.mksv-setup__points li {
+  margin-bottom: 8px;
+}
+.mksv-setup__mock {
+  overflow: hidden;
+  margin-bottom: 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+.mksv-setup__mock-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: 15px;
+}
+.mksv-setup__mock-row:first-child {
+  border-top: 0;
+}
+.mksv-setup__mock-row.is-on {
+  color: var(--text-1);
+  font-weight: 700;
+}
+.mksv-setup__radio {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-strong);
+  border-radius: 50%;
+}
+.is-on > .mksv-setup__radio {
+  border: 6px solid var(--accent);
+}
+.mksv-setup__blocked {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--danger-soft);
+  color: var(--text-1);
+  font-size: 14px;
+  line-height: 1.4;
+}
+.mksv-setup__actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 16px;
+}
+
 /* Rideshare: Start / End shift on Home. A left edge bar means this row's state. */
 .mksv-shift {
   display: flex;

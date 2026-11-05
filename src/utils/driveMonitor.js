@@ -146,6 +146,7 @@ export function stopDriveDetection() {
 export const getDriveStatus = () => DriveMonitor.getStatus();
 export const requestDrivePermissions = () => DriveMonitor.requestDrivePermissions();
 export const requestBackgroundLocation = () => DriveMonitor.requestBackgroundLocation();
+export const requestDrivePermission = (alias) => DriveMonitor.requestDrivePermission({ alias });
 export const openDriveAppSettings = () => DriveMonitor.openAppSettings();
 export const requestBluetooth = () => DriveMonitor.requestBluetooth();
 export const setShift = (on) => DriveMonitor.setShift({ on });

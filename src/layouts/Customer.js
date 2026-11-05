@@ -9,6 +9,7 @@ import Sidebar from "components/Sidebar/Sidebar";
 import AppTabBar from "components/AppTabBar";
 import PullToRefresh from "components/PullToRefresh";
 import DriveSync from "components/DriveSync";
+import AppSetup from "components/AppSetup";
 import { isAppShell } from "utils/appShell";
 import SiteGate from "components/SiteGate";
 import PolicyGate from "components/PolicyGate";
@@ -83,6 +84,7 @@ function CustomerLayout(props) {
       </div>
       {appShell && <AppTabBar routes={customerRoutes} />}
       {appShell && <DriveSync />}
+      {appShell && <AppSetup />}
       {appShell && <PullToRefresh panelRef={mainPanelRef} onRefresh={refresh} />}
     </div>
   );

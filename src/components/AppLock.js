@@ -7,6 +7,7 @@ import { App as CapacitorApp } from "@capacitor/app";
 import { signOut } from "aws-amplify/auth";
 import { isSignedIn } from "utils/appShell";
 import { stopDriveDetection } from "utils/driveMonitor";
+import { isSetupDone } from "utils/appSetup";
 import { clearForSignOut } from "utils/authStorage";
 import {
   APP_LOCK_CHANGED,
@@ -133,6 +134,8 @@ const AppLock = () => {
     available === true &&
     !locked &&
     pref === null &&
+    // The setup asks this itself, in order.
+    isSetupDone() &&
     isSignedIn() &&
     !PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 

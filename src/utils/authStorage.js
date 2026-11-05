@@ -17,6 +17,8 @@
  * Logout uses clearForSignOut() (below) + Amplify `signOut()`: everything
  * goes except this phone's preferences and the person's drive settings.
  */
+import { SETUP_DONE_KEY } from "./appSetup";
+
 // This phone's own choices, not account data: kept across sign-ins and
 // sign-outs. "mksv-last-email" is the "remember me" email on the sign-in screen.
 export const LAST_EMAIL_KEY = "mksv-last-email";
@@ -28,7 +30,7 @@ const LAST_USER_KEY = "mksv-last-user";
 // Drive detection settings (and saved work places) belong to the person:
 // kept only when the same account signs back in. Wiping them used to switch
 // background drive detection off after every re-login.
-const SAME_USER_KEYS = ["mksv-drive-settings", "mksv-drive-resume"];
+const SAME_USER_KEYS = ["mksv-drive-settings", "mksv-drive-resume", SETUP_DONE_KEY];
 
 export function clearAppStorageKeepingSession(nextUserId) {
   try {

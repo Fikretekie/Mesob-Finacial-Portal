@@ -227,6 +227,19 @@ public class DriveMonitorPlugin extends Plugin {
         requestPermissionForAliases(aliases.toArray(new String[0]), call, "permissionsDone");
     }
 
+    /** One permission at a time, for the first-run setup. */
+    @PluginMethod
+    public void requestDrivePermission(PluginCall call) {
+        String alias = call.getString("alias", "");
+        boolean notNeeded = ("activity".equals(alias) && Build.VERSION.SDK_INT < 29)
+            || ("notifications".equals(alias) && Build.VERSION.SDK_INT < 33);
+        if (notNeeded) {
+            call.resolve(status());
+            return;
+        }
+        requestPermissionForAlias(alias, call, "permissionsDone");
+    }
+
     /**
      * "Allow all the time". Android 11+ sends the user to the app's location
      * settings for this; it must be asked after foreground location.

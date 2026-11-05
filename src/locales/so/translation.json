@@ -1638,5 +1638,36 @@
       "updated": "la cusbooneysiiyay",
       "noMatches": "Natiijo lama helin:"
     }
+  },
+  "setup": {
+    "stepOf": "Tallaabo {{at}} ee {{of}}",
+    "allow": "Oggolow",
+    "openSettings": "Fur dejinta",
+    "next": "Xiga",
+    "skip": "Hadda ka bood",
+    "notNow": "Hadda maya",
+    "finish": "Bilow isticmaalka Meksova",
+    "motionTitle": "Oggolow dhaqdhaqaaqa iyo goobta",
+    "motionBody": "Android laba jeer ayuu weydiin doonaa. Taabo Oggolow, goobta u dooro Marka app-ka la isticmaalayo. Tallaabada xigta ayaa inta kale daboolaysa.",
+    "backgroundTitle": "Dooro Oggolow had iyo jeer",
+    "backgroundBody": "Safarradaadu waxay bilowdaan marka aad gaariga gasho, ma aha marka aad app-ka furto. La'aanteed safarrada lama duubayo marka app-ku xiran yahay.",
+    "optionAlways": "Oggolow had iyo jeer",
+    "optionWhileUsing": "Oggolow oo keliya marka la isticmaalayo",
+    "optionDeny": "Ha oggolaan",
+    "notificationsTitle": "Oggolow ogeysiisyada",
+    "notificationsBody": "Si aan kuu weydiino joogsiyadaada oo kuu xusuusino iskaanka rasiidada.",
+    "notificationsBodyOther": "Si aan kuu xusuusino taariikhaha cashuurta iyo rasiidada.",
+    "batteryTitle": "Sii wad la socodka",
+    "batteryBody": "Android wuxuu joojin karaa app-yada gadaasha si batariga loo badbaadiyo. Dejinta, taabo Battery, ka dibna dooro Unrestricted.",
+    "truckTitle": "Ku xir baabuurkaaga",
+    "truckBody": "Ikhtiyaari. Haddii taleefanku ku xirmo Bluetooth-ka baabuurka, safarrada badankood iskood bay u kala soocmaan.",
+    "shiftTitle": "Bilow shift marka aad shaqaynayso",
+    "shiftBody": "Taabo Bilow shift bogga hore, dhammaan app-yadaada. Safar kasta wuxuu u tirsan yahay shaqo ilaa aad dhammeyso. Waan ku xusuusin doonaa marka aad wado.",
+    "doneTitle": "Diyaar baad tahay",
+    "doneBodyTrucking": "Safarrada iskood bay u duubmaan. 4 saac oo aan la wadin ka dib, waxaan ku weydiin doonaa inaad xaqiijiso kuwa baabuurkaaga ahaa.",
+    "doneBodyRideshare": "Safarrada iskood bay u duubmaan. Bilow shift marka aad shaqaynayso, ama kala saar safarradaada dhammaadka maalinta.",
+    "blocked": "Android ma oggolaan. Waxaad ka shidi kartaa dejinta ama dib ugu soo noqon kartaa.",
+    "cardTitle": "La socodka mayllada si buuxda uma shidna",
+    "cardSub": "Mayladaadu waxaa laga yaabaa inaan la duubin. Taabo si aad u dhammeyso."
   }
 }

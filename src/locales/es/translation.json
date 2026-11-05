@@ -1640,5 +1640,36 @@
       "updated": "actualizado",
       "noMatches": "Sin resultados para"
     }
+  },
+  "setup": {
+    "stepOf": "Paso {{at}} de {{of}}",
+    "allow": "Permitir",
+    "openSettings": "Abrir ajustes",
+    "next": "Siguiente",
+    "skip": "Omitir por ahora",
+    "notNow": "Ahora no",
+    "finish": "Empezar a usar Meksova",
+    "motionTitle": "Permite movimiento y ubicación",
+    "motionBody": "Android preguntará dos veces. Toca Permitir y, para la ubicación, elige Mientras se usa la app. El siguiente paso cubre el resto.",
+    "backgroundTitle": "Elige Permitir todo el tiempo",
+    "backgroundBody": "Tus viajes empiezan al subir al vehículo, no al abrir la app. Sin esto, no se grabarán con la app cerrada.",
+    "optionAlways": "Permitir todo el tiempo",
+    "optionWhileUsing": "Permitir solo mientras se usa la app",
+    "optionDeny": "No permitir",
+    "notificationsTitle": "Permite las notificaciones",
+    "notificationsBody": "Para preguntarte por tus paradas y recordarte escanear recibos.",
+    "notificationsBodyOther": "Para recordarte fechas de impuestos y recibos.",
+    "batteryTitle": "Mantén el seguimiento activo",
+    "batteryBody": "Android puede detener apps en segundo plano para ahorrar batería. En ajustes, toca Batería y elige Sin restricciones.",
+    "truckTitle": "Vincula tu camión",
+    "truckBody": "Opcional. Si tu teléfono se conecta al Bluetooth del camión, la mayoría de los viajes se clasifican solos.",
+    "shiftTitle": "Inicia un turno cuando trabajes",
+    "shiftBody": "Toca Iniciar turno en Inicio, para cualquiera de tus apps. Cada viaje cuenta como trabajo hasta que lo termines. Te lo recordaremos al empezar a conducir.",
+    "doneTitle": "Todo listo",
+    "doneBodyTrucking": "Los viajes se graban solos. Tras 4 horas sin conducir, te pediremos confirmar cuáles fueron en tu camión.",
+    "doneBodyRideshare": "Los viajes se graban solos. Inicia un turno cuando trabajes o clasifica tus viajes al final del día.",
+    "blocked": "Android no lo permitió. Puedes activarlo en ajustes o volver más tarde.",
+    "cardTitle": "El seguimiento de millas no está completo",
+    "cardSub": "Es posible que tus millas no se graben. Toca para terminar."
   }
 }

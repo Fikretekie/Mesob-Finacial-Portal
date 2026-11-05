@@ -61,6 +61,7 @@ import {
 import { currencySymbol } from "utils/currency";
 import DriveReviewBanner from "components/DriveReviewBanner";
 import ShiftCard from "components/ShiftCard";
+import SetupCard from "components/SetupCard";
 import DeductionCard from "components/DeductionCard";
 
 // User's display-currency symbol (e.g. "$", "Br"). Module-scope so chart option
@@ -1399,6 +1400,7 @@ function Dashboard() {
                   {t("financialReport.downloadReport")}
                 </button>
                 <PendingReviewBanner />
+                <SetupCard />
                 <ShiftCard />
                 <DriveReviewBanner />
                 <DeductionCard />

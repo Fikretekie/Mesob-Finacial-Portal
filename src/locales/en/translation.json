@@ -1634,5 +1634,36 @@
       "updated": "updated",
       "noMatches": "No matches for"
     }
+  },
+  "setup": {
+    "stepOf": "Step {{at}} of {{of}}",
+    "allow": "Allow",
+    "openSettings": "Open settings",
+    "next": "Next",
+    "skip": "Skip for now",
+    "notNow": "Not now",
+    "finish": "Start using Meksova",
+    "motionTitle": "Allow motion and location",
+    "motionBody": "Android will ask twice. Tap Allow, and for location choose While using the app. The next step covers the rest.",
+    "backgroundTitle": "Choose Allow all the time",
+    "backgroundBody": "Your drives start when you get in the car, not when you open the app. Without this, drives won't record while the app is closed.",
+    "optionAlways": "Allow all the time",
+    "optionWhileUsing": "Allow only while using the app",
+    "optionDeny": "Don't allow",
+    "notificationsTitle": "Allow notifications",
+    "notificationsBody": "So we can ask about your stops and remind you to scan receipts.",
+    "notificationsBodyOther": "So we can remind you about tax deadlines and receipts.",
+    "batteryTitle": "Keep tracking running",
+    "batteryBody": "Android may stop apps in the background to save battery. In settings, tap Battery, then choose Unrestricted.",
+    "truckTitle": "Link your truck",
+    "truckBody": "Optional. If your phone connects to your truck's Bluetooth, most drives sort themselves.",
+    "shiftTitle": "Start a shift when you work",
+    "shiftBody": "Tap Start shift on Home, for any of your apps. Every drive counts as work until you end it. We'll remind you when you start driving.",
+    "doneTitle": "You're all set",
+    "doneBodyTrucking": "Drives record by themselves. After 4 hours with no driving, we'll ask you to confirm which ones were your truck.",
+    "doneBodyRideshare": "Drives record by themselves. Start a shift when you work, or sort your drives at the end of the day.",
+    "blocked": "Android didn't allow this. You can turn it on in settings, or come back to it later.",
+    "cardTitle": "Mileage tracking isn't fully on",
+    "cardSub": "Your miles may not be recording. Tap to finish setup."
   }
 }
