@@ -1389,7 +1389,9 @@
       "dayReviewBodyRideshare": "{count} بانتظار المراجعة، {miles} ميل. انقر للفرز بين العمل والشخصي.",
       "shiftAskTitle": "هل تقود للعمل؟",
       "shiftAskBody": "ابدأ ورديتك لتُحتسب هذه الرحلة عملاً. يمكنك النقر على هذا بعد أن تركن.",
-      "shiftNotToday": "ليس اليوم"
+      "shiftNotToday": "ليس اليوم",
+      "stopAskBodyShift": "أنت متوقف منذ 10 دقائق. انتهيت ينهي ورديتك أيضًا.",
+      "stopAskReceipt": "امسح إيصالك أيضًا."
     },
     "settings": {
       "title": "الرحلات والتذكيرات",

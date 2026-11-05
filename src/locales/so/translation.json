@@ -1387,7 +1387,9 @@
       "dayReviewBodyRideshare": "{count} sugaya, {miles} mi. Taabo si aad u kala saarto shaqo iyo gaar.",
       "shiftAskTitle": "Ma shaqo u wadaa?",
       "shiftAskBody": "Bilow shiftigaaga si safarkan loogu tiriyo shaqo. Waad taaban kartaa marka aad baakin gareyso ka dib.",
-      "shiftNotToday": "Maanta maya"
+      "shiftNotToday": "Maanta maya",
+      "stopAskBodyShift": "10 daqiiqo ayaad joogsatay. Waan dhammeeyay waxay sidoo kale dhammaynaysaa shiftigaaga.",
+      "stopAskReceipt": "Sidoo kale iskaan garee rasiidkaaga."
     },
     "settings": {
       "title": "Socdaalada & xasuusinta",

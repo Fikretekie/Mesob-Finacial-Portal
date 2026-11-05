@@ -68,6 +68,8 @@ public class DriveActionReceiver extends BroadcastReceiver {
             if (!DriveRecorderService.isRunning()) DriveShift.end(context, true, false);
         } else if (TRIP_FINISHED.equals(action)) {
             DriveNotify.cancel(context, DriveNotify.ID_STOP_ASK);
+            // Rideshare: done means the drive home doesn't count as work.
+            DriveShift.end(context, false, false);
         } else if (KEEP_RECORDING.equals(action)) {
             DriveNotify.cancel(context, DriveNotify.ID_STOP_ASK);
             DrivePrefs.prefs(context).edit().putBoolean("keepRecording", true).apply();

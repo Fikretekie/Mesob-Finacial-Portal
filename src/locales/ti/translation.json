@@ -1389,7 +1389,9 @@
       "dayReviewBodyRideshare": "{count} ይጽበዩ፣ {miles} ማይል። ስራሕን ውልቅን ንምፍላይ ተንክፉ።",
       "shiftAskTitle": "ንስራሕ ትዝውሩ ዲኹም?",
       "shiftAskBody": "እዚ ጉዕዞ ከም ስራሕ ምእንቲ ክቑጸር ፈረቓኹም ጀምሩ። ድሕሪ ምዕራፍ ክትትንክፍዎ ትኽእሉ።",
-      "shiftNotToday": "ሎሚ ኣይኮነን"
+      "shiftNotToday": "ሎሚ ኣይኮነን",
+      "stopAskBodyShift": "ን10 ደቒቕ ደው ኢልኩም ኣለኹም። ወዲአ ፈረቓኹም እውን ይውድእ።",
+      "stopAskReceipt": "ደረሰኝኩም እውን ስኣሉ።"
     },
     "settings": {
       "title": "ጉዕዞታትን መዘኻኸሪታትን",

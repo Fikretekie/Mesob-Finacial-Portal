@@ -1383,7 +1383,9 @@
       "dayReviewBodyRideshare": "{count} waiting, {miles} mi. Tap to sort work and personal.",
       "shiftAskTitle": "Driving for work?",
       "shiftAskBody": "Start your shift so this drive counts as work. You can tap this after you park.",
-      "shiftNotToday": "Not today"
+      "shiftNotToday": "Not today",
+      "stopAskBodyShift": "You've been stopped for 10 minutes. Finished also ends your shift.",
+      "stopAskReceipt": "Scan your receipt too."
     },
     "settings": {
       "title": "Drives & reminders",

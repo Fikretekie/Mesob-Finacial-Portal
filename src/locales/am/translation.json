@@ -1389,7 +1389,9 @@
       "dayReviewBodyRideshare": "{count} በመጠባበቅ ላይ፣ {miles} ማይል። ሥራና የግል ለመለየት ይንኩ።",
       "shiftAskTitle": "ለሥራ እየነዱ ነው?",
       "shiftAskBody": "ይህ ጉዞ እንደ ሥራ እንዲቆጠር ፈረቃዎን ይጀምሩ። ካቆሙ በኋላ መንካት ይችላሉ።",
-      "shiftNotToday": "ዛሬ አይደለም"
+      "shiftNotToday": "ዛሬ አይደለም",
+      "stopAskBodyShift": "ለ10 ደቂቃ ቆመዋል። ጨርሻለሁ ፈረቃዎንም ያበቃል።",
+      "stopAskReceipt": "ደረሰኝዎንም ይቃኙ።"
     },
     "settings": {
       "title": "ጉዞዎች እና ማሳሰቢያዎች",

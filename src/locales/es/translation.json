@@ -1389,7 +1389,9 @@
       "dayReviewBodyRideshare": "{count} pendientes, {miles} mi. Toca para separar trabajo y personal.",
       "shiftAskTitle": "¿Conduces por trabajo?",
       "shiftAskBody": "Inicia tu turno para que este viaje cuente como trabajo. Puedes tocar esto después de estacionar.",
-      "shiftNotToday": "Hoy no"
+      "shiftNotToday": "Hoy no",
+      "stopAskBodyShift": "Llevas 10 minutos detenido. Terminado también finaliza tu turno.",
+      "stopAskReceipt": "Escanea también tu recibo."
     },
     "settings": {
       "title": "Viajes y recordatorios",

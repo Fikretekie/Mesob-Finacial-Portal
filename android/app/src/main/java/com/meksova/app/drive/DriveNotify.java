@@ -168,6 +168,13 @@ final class DriveNotify {
         post(c, ID_SHIFT_ASK, n);
     }
 
+    private static boolean receiptAlertShowing(Context c) {
+        for (android.service.notification.StatusBarNotification s : c.getSystemService(NotificationManager.class).getActiveNotifications()) {
+            if (s.getId() == ID_FUEL) return true;
+        }
+        return false;
+    }
+
     /** Stays in the notification bar for the whole shift, so ending it is one tap. */
     static void shiftOn(Context c) {
         Notification n = base(c, CH_RECORDING)
@@ -197,15 +204,27 @@ final class DriveNotify {
 
     /** Trucking: parked for a while. Either answer is fine to ignore: the piece is already saved. */
     static void stopAsk(Context c) {
-        Notification n = base(c, CH_DRIVES)
+        String body = DriveShift.on(c)
+            ? DrivePrefs.str(c, "stopAskBodyShift", "You've been stopped for 10 minutes. Finished also ends your shift.")
+            : DrivePrefs.str(c, "stopAskBody", "You've been stopped for 10 minutes.");
+        // Android stacks these and hides their buttons (two taps away at a gas stop),
+        // so a receipt alert still showing is folded into this one notification.
+        String stopAction = receiptAlertShowing(c) ? DrivePrefs.prefs(c).getString("lastStopAction", null) : null;
+        if (stopAction != null) body = body + " " + DrivePrefs.str(c, "stopAskReceipt", "Scan your receipt too.");
+        NotificationCompat.Builder n = base(c, CH_DRIVES)
             .setContentTitle(DrivePrefs.str(c, "stopAskTitle", "Did you finish your trip?"))
-            .setContentText(DrivePrefs.str(c, "stopAskBody", "You've been stopped for 10 minutes."))
-            .setStyle(new NotificationCompat.BigTextStyle().bigText(DrivePrefs.str(c, "stopAskBody", "You've been stopped for 10 minutes.")))
-            .setContentIntent(openApp(c, "drives", ID_STOP_ASK))
+            .setContentText(body)
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
+            .setContentIntent(openApp(c, stopAction != null ? stopAction : "drives", ID_STOP_ASK))
             .addAction(0, DrivePrefs.str(c, "stopAskFinished", "Finished"), broadcast(c, DriveActionReceiver.TRIP_FINISHED, null, ID_STOP_ASK + 1))
-            .addAction(0, DrivePrefs.str(c, "stopAskKeep", "Keep recording"), broadcast(c, DriveActionReceiver.KEEP_RECORDING, null, ID_STOP_ASK + 2))
-            .build();
-        post(c, ID_STOP_ASK, n);
+            .addAction(0, DrivePrefs.str(c, "stopAskKeep", "Keep recording"), broadcast(c, DriveActionReceiver.KEEP_RECORDING, null, ID_STOP_ASK + 2));
+        if (stopAction != null) {
+            n.addAction(0, DrivePrefs.str(c, "fuelScan", "Scan"), openApp(c, stopAction + "&mode=camera", ID_STOP_ASK + 3));
+            cancel(c, ID_FUEL);
+        }
+        // Old news by now; left up, it would stack with this.
+        cancel(c, ID_SHIFT_ENDED);
+        post(c, ID_STOP_ASK, n.build());
     }
 
     /** Trucking: no movement for hours, so the day's drives are ready to confirm. */
@@ -295,6 +314,7 @@ final class DriveNotify {
             ? DrivePrefs.str(c, "fuelTitleGeneric", "Fuel stop")
             : DrivePrefs.str(c, "fuelTitle", "Fuel stop at {station}").replace("{station}", station);
         String action = fuelAction(station, lat, lng);
+        DrivePrefs.prefs(c).edit().putString("lastStopAction", action).apply();
         NotificationCompat.Builder n = base(c, CH_DRIVES)
             .setContentTitle("\u26FD " + title)
             .setContentText(DrivePrefs.str(c, "fuelBody", "Scan your receipt now so it's in your IFTA records."))
@@ -318,6 +338,7 @@ final class DriveNotify {
             ? DrivePrefs.str(c, repair ? "repairTitleGeneric" : "storeTitleGeneric", repair ? "Repair shop stop" : "Store stop")
             : DrivePrefs.str(c, "storeTitle", "At {station}?").replace("{station}", store);
         String action = storeAction(store, kind, lat, lng);
+        DrivePrefs.prefs(c).edit().putString("lastStopAction", action).apply();
         NotificationCompat.Builder n = base(c, CH_DRIVES)
             .setContentTitle((repair ? "\uD83D\uDD27 " : "\uD83D\uDED2 ") + title)
             .setContentText(DrivePrefs.str(c, repair ? "repairBody" : "storeBody",

@@ -1389,7 +1389,9 @@
       "dayReviewBodyRideshare": "{count} en attente, {miles} mi. Touchez pour trier travail et personnel.",
       "shiftAskTitle": "Vous conduisez pour le travail ?",
       "shiftAskBody": "Commencez votre service pour que ce trajet compte comme travail. Vous pouvez toucher ceci une fois garé.",
-      "shiftNotToday": "Pas aujourd'hui"
+      "shiftNotToday": "Pas aujourd'hui",
+      "stopAskBodyShift": "Vous êtes arrêté depuis 10 minutes. Terminé met aussi fin à votre service.",
+      "stopAskReceipt": "Scannez aussi votre reçu."
     },
     "settings": {
       "title": "Trajets et rappels",

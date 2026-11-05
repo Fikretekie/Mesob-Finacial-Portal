@@ -90,7 +90,7 @@ const NATIVE_STRING_KEYS = [
   "personalTitle", "personalBody", "undo",
   "autoTitle", "autoBody", "ruleHours", "alreadyTitle", "alreadyBody",
   "weeklyTitle", "weeklyDeduction", "weeklyWaiting",
-  "stopAskTitle", "stopAskBody", "stopAskFinished", "stopAskKeep", "dayReviewTitle", "dayReviewBody",
+  "stopAskTitle", "stopAskBody", "stopAskBodyShift", "stopAskReceipt", "stopAskFinished", "stopAskKeep", "dayReviewTitle", "dayReviewBody",
   "shiftAskTitle", "shiftAskBody", "shiftNotToday", "shiftOnTitle", "shiftOnBody", "shiftStart", "shiftEnd", "shiftEndedTitle", "shiftEndedBody", "shiftAutoBody", "shiftRule",
   "widgetToday", "widgetWeek", "widgetRecording",
 ];
