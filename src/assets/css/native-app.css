@@ -1324,6 +1324,20 @@ label.mksv-prefs__row {
 .mksv-drive-banner .mksv-row__icon {
   color: #fff;
 }
+/* Long messages wrap; without this they push all of Home wider than the screen. */
+.mksv-drive-banner {
+  min-width: 0;
+  max-width: 100%;
+}
+.mksv-drive-banner .mksv-row__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.mksv-drive-banner .mksv-row__title,
+.mksv-drive-banner .mksv-row__sub {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .mksv-drive-banner .mksv-row__icon {
   background: rgba(0, 0, 0, 0.18);
 }
