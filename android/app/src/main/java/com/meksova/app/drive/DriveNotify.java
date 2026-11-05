@@ -30,6 +30,7 @@ final class DriveNotify {
     static final int ID_DAY_REVIEW = 4125;
     static final int ID_SHIFT = 4132;
     static final int ID_SHIFT_ENDED = 4133;
+    static final int ID_SHIFT_ASK = 4137;
 
     private static final int BRAND = 0xFF2563EB;
 
@@ -109,14 +110,21 @@ final class DriveNotify {
     static Notification recording(Context c, double milesSoFar) {
         String title = DrivePrefs.str(c, "recordingTitle", "Recording your drive");
         String body = DrivePrefs.str(c, "recordingBody", "{miles} mi so far").replace("{miles}", miles(milesSoFar));
-        return base(c, CH_RECORDING)
+        boolean askShift = DriveShift.askingOnRecording(c);
+        if (askShift) body = body + " · " + DrivePrefs.str(c, "shiftAskTitle", "Driving for work?");
+        NotificationCompat.Builder n = base(c, CH_RECORDING)
             .setContentTitle(title)
             .setContentText(body)
             .setOngoing(true)
             .setAutoCancel(false)
             .setOnlyAlertOnce(true)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
-            .setContentIntent(openApp(c, "drives", ID_RECORDING))
+            .setContentIntent(openApp(c, "drives", ID_RECORDING));
+        if (askShift) {
+            n.addAction(0, DrivePrefs.str(c, "shiftStart", "Start shift"), broadcast(c, DriveActionReceiver.SHIFT_START, null, ID_SHIFT_ASK + 1))
+                .addAction(0, DrivePrefs.str(c, "shiftNotToday", "Not today"), broadcast(c, DriveActionReceiver.SHIFT_NOT_TODAY, null, ID_SHIFT_ASK + 2));
+        }
+        return n
             .addAction(0, DrivePrefs.str(c, "recordingPersonal", "Personal, don't log"), broadcast(c, DriveActionReceiver.DISCARD_RECORDING, null, ID_RECORDING + 1))
             .build();
     }
@@ -143,6 +151,21 @@ final class DriveNotify {
         }
         n.addAction(0, DrivePrefs.str(c, "personal", "Personal"), broadcast(c, DriveActionReceiver.CLASSIFY_PERSONAL, id, nid + 2));
         post(c, nid, n.build());
+    }
+
+    /** Nothing's recording, so there's no notification to put the buttons on. Silent: they may be driving. */
+    static void shiftAsk(Context c) {
+        String body = DrivePrefs.str(c, "shiftAskBody", "Start your shift so this drive counts as work. You can tap this after you park.");
+        Notification n = base(c, CH_RECORDING)
+            .setContentTitle(DrivePrefs.str(c, "shiftAskTitle", "Driving for work?"))
+            .setContentText(body)
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
+            .setContentIntent(openApp(c, "go/customer/dashboard", ID_SHIFT_ASK))
+            .addAction(0, DrivePrefs.str(c, "shiftStart", "Start shift"), broadcast(c, DriveActionReceiver.SHIFT_START, null, ID_SHIFT_ASK + 1))
+            .addAction(0, DrivePrefs.str(c, "shiftNotToday", "Not today"), broadcast(c, DriveActionReceiver.SHIFT_NOT_TODAY, null, ID_SHIFT_ASK + 2))
+            .setTimeoutAfter(2 * 60 * 60 * 1000)
+            .build();
+        post(c, ID_SHIFT_ASK, n);
     }
 
     /** Stays in the notification bar for the whole shift, so ending it is one tap. */

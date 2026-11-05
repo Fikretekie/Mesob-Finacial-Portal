@@ -23,6 +23,7 @@ public class DriveActionReceiver extends BroadcastReceiver {
     static final String SHIFT_START = "com.meksova.app.drive.SHIFT_START";
     static final String SHIFT_END = "com.meksova.app.drive.SHIFT_END";
     static final String SHIFT_AUTO_END = "com.meksova.app.drive.SHIFT_AUTO_END";
+    static final String SHIFT_NOT_TODAY = "com.meksova.app.drive.SHIFT_NOT_TODAY";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -58,6 +59,8 @@ public class DriveActionReceiver extends BroadcastReceiver {
             DriveNotify.cancel(context, DriveNotify.ID_FUEL);
         } else if (SHIFT_START.equals(action)) {
             if (DrivePrefs.enabled(context)) DriveShift.start(context);
+        } else if (SHIFT_NOT_TODAY.equals(action)) {
+            DriveShift.muteToday(context);
         } else if (SHIFT_END.equals(action)) {
             DriveShift.end(context, false, false);
         } else if (SHIFT_AUTO_END.equals(action)) {

@@ -1386,7 +1386,10 @@
       "shiftEndedBody": "የተመዘገቡ ጉዞዎች፦ {count}፣ {miles} ማይል።",
       "shiftAutoBody": "ለ4 ሰዓት መንዳት ስላልነበረ ፈረቃዎ አብቅቷል። የተመዘገቡ ጉዞዎች፦ {count}፣ {miles} ማይል።",
       "shiftRule": "በሥራ ላይ",
-      "dayReviewBodyRideshare": "{count} በመጠባበቅ ላይ፣ {miles} ማይል። ሥራና የግል ለመለየት ይንኩ።"
+      "dayReviewBodyRideshare": "{count} በመጠባበቅ ላይ፣ {miles} ማይል። ሥራና የግል ለመለየት ይንኩ።",
+      "shiftAskTitle": "ለሥራ እየነዱ ነው?",
+      "shiftAskBody": "ይህ ጉዞ እንደ ሥራ እንዲቆጠር ፈረቃዎን ይጀምሩ። ካቆሙ በኋላ መንካት ይችላሉ።",
+      "shiftNotToday": "ዛሬ አይደለም"
     },
     "settings": {
       "title": "ጉዞዎች እና ማሳሰቢያዎች",
@@ -1414,7 +1417,9 @@
       "never": "እስካሁን ምንም የለም",
       "stopNone": "በአቅራቢያ ነዳጅ ማደያ ወይም መደብር የለም",
       "stopFailed": "ፍለጋው አልተሳካም፣ ግንኙነትዎን ያረጋግጡ",
-      "stopFound": "ቦታ ተገኝቷል"
+      "stopFound": "ቦታ ተገኝቷል",
+      "shiftReminder": "የፈረቃ ማስታወሻ",
+      "shiftReminderHint": "መንዳት ሲጀምሩ ፈረቃዎን እንዲጀምሩ ጸጥ ያለ ማስታወሻ።"
     },
     "disclosure": {
       "title": "የንግድ ማይሎችን በራስ-ሰር ይመዝግቡ",

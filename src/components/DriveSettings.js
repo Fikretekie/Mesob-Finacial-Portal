@@ -16,7 +16,7 @@ import {
 import { scheduleTaxReminders } from "utils/taxReminders";
 import BusinessRules from "components/BusinessRules";
 import TruckBluetooth from "components/TruckBluetooth";
-import { isTrucking } from "utils/mileageRate";
+import { isRideshare, isTrucking } from "utils/mileageRate";
 
 const Switch = ({ id, on, onChange, disabled }) => (
   <button
@@ -136,6 +136,15 @@ const DriveSettings = () => {
               on={settings.storeStops}
               onChange={(on) => apply({ ...settings, storeStops: on })}
             />
+            {isRideshare() && (
+              <Row
+                id="mksv-drive-shift-reminder"
+                label={t("drives.settings.shiftReminder")}
+                hint={t("drives.settings.shiftReminderHint")}
+                on={settings.shiftReminder}
+                onChange={(on) => apply({ ...settings, shiftReminder: on })}
+              />
+            )}
             <Row
               id="mksv-drive-workdays"
               label={t("drives.settings.workdays")}

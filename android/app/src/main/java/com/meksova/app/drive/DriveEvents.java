@@ -76,6 +76,7 @@ final class DriveEvents {
         if (DrivePrefs.manualTrip(c)) return;
         // A shift means they're working, whatever the day.
         if (DrivePrefs.workdaysOnly(c) && DrivePrefs.isWeekend() && !DriveShift.on(c)) return;
+        DriveShift.maybeRemind(c);
         if (DrivePrefs.autoRecord(c) && DrivePrefs.hasBackgroundLocation(c)) {
             if (!DriveRecorderService.isRunning()) DriveRecorderService.start(c);
         } else {

@@ -1380,7 +1380,10 @@
       "shiftEndedBody": "Drives logged: {count}, {miles} mi.",
       "shiftAutoBody": "No driving for 4 hours, so your shift ended. Drives logged: {count}, {miles} mi.",
       "shiftRule": "On shift",
-      "dayReviewBodyRideshare": "{count} waiting, {miles} mi. Tap to sort work and personal."
+      "dayReviewBodyRideshare": "{count} waiting, {miles} mi. Tap to sort work and personal.",
+      "shiftAskTitle": "Driving for work?",
+      "shiftAskBody": "Start your shift so this drive counts as work. You can tap this after you park.",
+      "shiftNotToday": "Not today"
     },
     "settings": {
       "title": "Drives & reminders",
@@ -1408,7 +1411,9 @@
       "never": "Nothing yet",
       "stopNone": "no gas station or store nearby",
       "stopFailed": "lookup failed, check your connection",
-      "stopFound": "place found"
+      "stopFound": "place found",
+      "shiftReminder": "Shift reminder",
+      "shiftReminderHint": "A quiet reminder to start your shift when you start driving."
     },
     "disclosure": {
       "title": "Log business miles automatically",

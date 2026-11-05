@@ -1386,7 +1386,10 @@
       "shiftEndedBody": "ዝተመዝገቡ ጉዕዞታት፦ {count}፣ {miles} ማይል።",
       "shiftAutoBody": "ን4 ሰዓት ስለ ዘይዘወርኩም ፈረቓኹም ተወዲኡ። ዝተመዝገቡ ጉዕዞታት፦ {count}፣ {miles} ማይል።",
       "shiftRule": "ኣብ ስራሕ",
-      "dayReviewBodyRideshare": "{count} ይጽበዩ፣ {miles} ማይል። ስራሕን ውልቅን ንምፍላይ ተንክፉ።"
+      "dayReviewBodyRideshare": "{count} ይጽበዩ፣ {miles} ማይል። ስራሕን ውልቅን ንምፍላይ ተንክፉ።",
+      "shiftAskTitle": "ንስራሕ ትዝውሩ ዲኹም?",
+      "shiftAskBody": "እዚ ጉዕዞ ከም ስራሕ ምእንቲ ክቑጸር ፈረቓኹም ጀምሩ። ድሕሪ ምዕራፍ ክትትንክፍዎ ትኽእሉ።",
+      "shiftNotToday": "ሎሚ ኣይኮነን"
     },
     "settings": {
       "title": "ጉዕዞታትን መዘኻኸሪታትን",
@@ -1414,7 +1417,9 @@
       "never": "ክሳብ ሕጂ ዋላ ሓደ የለን",
       "stopNone": "ኣብ ጥቓ መደበር ነዳዲ ወይ ድኳን የለን",
       "stopFailed": "ምድላይ ኣይተዓወተን፣ ርክብኩም ኣረጋግጹ",
-      "stopFound": "ቦታ ተረኺቡ"
+      "stopFound": "ቦታ ተረኺቡ",
+      "shiftReminder": "መዘኻኸሪ ፈረቓ",
+      "shiftReminderHint": "ምዝዋር ክትጅምሩ ከለኹም ፈረቓኹም ንምጅማር ስቕ ዝበለ መዘኻኸሪ።"
     },
     "disclosure": {
       "title": "ናይ ንግዲ ማይላት ብኣውቶማቲክ መዝግቡ",

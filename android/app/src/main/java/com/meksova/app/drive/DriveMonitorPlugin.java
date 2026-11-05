@@ -57,6 +57,7 @@ public class DriveMonitorPlugin extends Plugin {
             .putBoolean("storeStops", call.getBoolean("storeStops", true))
             .putBoolean("trucking", call.getBoolean("trucking", false))
             .putBoolean("rideshare", call.getBoolean("rideshare", false))
+            .putBoolean("shiftReminder", call.getBoolean("shiftReminder", true))
             .putBoolean("workdaysOnly", call.getBoolean("workdaysOnly", false))
             .putBoolean("weeklySummary", call.getBoolean("weeklySummary", true))
             .putFloat("ratePerMile", call.getFloat("ratePerMile", 0f))
@@ -352,6 +353,12 @@ public class DriveMonitorPlugin extends Plugin {
                 call.reject(e.getMessage());
                 return;
             }
+        } else if ("shiftReminderAge".equals(event)) {
+            // As if the last reminder had been this many hours ago.
+            DrivePrefs.prefs(c).edit().putLong("shiftReminderAt", System.currentTimeMillis() - call.getDouble("hours", 4.0).longValue() * 3600000).apply();
+        } else if ("shiftReminderReset".equals(event)) {
+            DrivePrefs.prefs(c).edit().remove("shiftReminderDay").remove("shiftReminderCount").remove("shiftReminderAt").remove("shiftMutedDay").apply();
+            DriveNotify.cancel(c, DriveNotify.ID_SHIFT_ASK);
         } else if ("shiftAutoEnd".equals(event)) {
             DriveShift.end(c, true, false);
         } else if ("ageDrives".equals(event)) {

@@ -1386,7 +1386,10 @@
       "shiftEndedBody": "الرحلات المسجلة: {count}، {miles} ميل.",
       "shiftAutoBody": "لا قيادة منذ 4 ساعات، لذا انتهت ورديتك. الرحلات المسجلة: {count}، {miles} ميل.",
       "shiftRule": "في الوردية",
-      "dayReviewBodyRideshare": "{count} بانتظار المراجعة، {miles} ميل. انقر للفرز بين العمل والشخصي."
+      "dayReviewBodyRideshare": "{count} بانتظار المراجعة، {miles} ميل. انقر للفرز بين العمل والشخصي.",
+      "shiftAskTitle": "هل تقود للعمل؟",
+      "shiftAskBody": "ابدأ ورديتك لتُحتسب هذه الرحلة عملاً. يمكنك النقر على هذا بعد أن تركن.",
+      "shiftNotToday": "ليس اليوم"
     },
     "settings": {
       "title": "الرحلات والتذكيرات",
@@ -1414,7 +1417,9 @@
       "never": "لا شيء بعد",
       "stopNone": "لا توجد محطة وقود أو متجر قريب",
       "stopFailed": "فشل البحث، تحقق من اتصالك",
-      "stopFound": "تم العثور على مكان"
+      "stopFound": "تم العثور على مكان",
+      "shiftReminder": "تذكير الوردية",
+      "shiftReminderHint": "تذكير هادئ لبدء ورديتك عند بدء القيادة."
     },
     "disclosure": {
       "title": "سجّل أميال العمل تلقائيًا",

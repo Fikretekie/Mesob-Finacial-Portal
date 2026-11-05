@@ -28,6 +28,8 @@ const DEFAULTS = {
   rules: { hours: { on: false, start: 8, end: 18 }, places: [] },
   // Trucking: Bluetooth devices linked as the truck and the driver's own car.
   vehicles: { truck: [], car: [] },
+  // Rideshare: the quiet "Driving for work?" notification.
+  shiftReminder: true,
 };
 
 export const driveDetectionAvailable = () => Capacitor.getPlatform() === "android";
@@ -89,7 +91,7 @@ const NATIVE_STRING_KEYS = [
   "autoTitle", "autoBody", "ruleHours", "alreadyTitle", "alreadyBody",
   "weeklyTitle", "weeklyDeduction", "weeklyWaiting",
   "stopAskTitle", "stopAskBody", "stopAskFinished", "stopAskKeep", "dayReviewTitle", "dayReviewBody",
-  "shiftOnTitle", "shiftOnBody", "shiftStart", "shiftEnd", "shiftEndedTitle", "shiftEndedBody", "shiftAutoBody", "shiftRule",
+  "shiftAskTitle", "shiftAskBody", "shiftNotToday", "shiftOnTitle", "shiftOnBody", "shiftStart", "shiftEnd", "shiftEndedTitle", "shiftEndedBody", "shiftAutoBody", "shiftRule",
   "widgetToday", "widgetWeek", "widgetRecording",
 ];
 

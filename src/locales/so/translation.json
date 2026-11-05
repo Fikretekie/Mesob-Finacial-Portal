@@ -1384,7 +1384,10 @@
       "shiftEndedBody": "Safarrada la diiwaangeliyay: {count}, {miles} mi.",
       "shiftAutoBody": "4 saac baabuur lama wadin, sidaa darteed shiftigaagu wuu dhammaaday. Safarrada la diiwaangeliyay: {count}, {miles} mi.",
       "shiftRule": "Shaqo",
-      "dayReviewBodyRideshare": "{count} sugaya, {miles} mi. Taabo si aad u kala saarto shaqo iyo gaar."
+      "dayReviewBodyRideshare": "{count} sugaya, {miles} mi. Taabo si aad u kala saarto shaqo iyo gaar.",
+      "shiftAskTitle": "Ma shaqo u wadaa?",
+      "shiftAskBody": "Bilow shiftigaaga si safarkan loogu tiriyo shaqo. Waad taaban kartaa marka aad baakin gareyso ka dib.",
+      "shiftNotToday": "Maanta maya"
     },
     "settings": {
       "title": "Socdaalada & xasuusinta",
@@ -1412,7 +1415,9 @@
       "never": "Weli waxba",
       "stopNone": "kaalin shidaal ama dukaan agtaada kuma jiro",
       "stopFailed": "raadintu way fashilantay, hubi xiriirkaaga",
-      "stopFound": "meel ayaa la helay"
+      "stopFound": "meel ayaa la helay",
+      "shiftReminder": "Xusuusin shift",
+      "shiftReminderHint": "Xusuusin aamusan oo aad ku bilowdo shiftigaaga marka aad wadid."
     },
     "disclosure": {
       "title": "Si toos ah u diiwaangeli mayllada ganacsiga",

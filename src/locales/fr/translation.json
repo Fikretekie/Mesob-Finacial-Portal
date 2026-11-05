@@ -1386,7 +1386,10 @@
       "shiftEndedBody": "Trajets enregistrés : {count}, {miles} mi.",
       "shiftAutoBody": "Aucune conduite depuis 4 heures, votre service est donc terminé. Trajets enregistrés : {count}, {miles} mi.",
       "shiftRule": "En service",
-      "dayReviewBodyRideshare": "{count} en attente, {miles} mi. Touchez pour trier travail et personnel."
+      "dayReviewBodyRideshare": "{count} en attente, {miles} mi. Touchez pour trier travail et personnel.",
+      "shiftAskTitle": "Vous conduisez pour le travail ?",
+      "shiftAskBody": "Commencez votre service pour que ce trajet compte comme travail. Vous pouvez toucher ceci une fois garé.",
+      "shiftNotToday": "Pas aujourd'hui"
     },
     "settings": {
       "title": "Trajets et rappels",
@@ -1414,7 +1417,9 @@
       "never": "Rien pour l'instant",
       "stopNone": "aucune station ni magasin à proximité",
       "stopFailed": "échec de la recherche, vérifiez votre connexion",
-      "stopFound": "lieu trouvé"
+      "stopFound": "lieu trouvé",
+      "shiftReminder": "Rappel de service",
+      "shiftReminderHint": "Un rappel discret pour commencer votre service quand vous prenez le volant."
     },
     "disclosure": {
       "title": "Enregistrez vos miles professionnels automatiquement",

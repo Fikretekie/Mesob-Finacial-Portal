@@ -93,6 +93,13 @@ public class DriveRecorderService extends Service {
         DriveNotify.post(this, DriveNotify.ID_RECORDING, DriveNotify.recording(this, 0));
     }
 
+    /** Its buttons changed (rideshare: the shift was started or declined). */
+    static void refreshNotification(Context c) {
+        if (instance != null && instance.active != null) {
+            DriveNotify.post(c, DriveNotify.ID_RECORDING, DriveNotify.recording(c, instance.active.optDouble("miles", 0)));
+        }
+    }
+
     /** "Personal, don't log" or a hand-started trip took over. */
     static void discardCurrent(Context c) {
         if (instance != null) {
