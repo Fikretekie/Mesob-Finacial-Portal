@@ -6,8 +6,9 @@ import { DRIVES_CHANGED, driveDetectionAvailable, driveReviewCount, getRecordedD
 import { isRideshare, isTrucking } from "utils/mileageRate";
 
 // The pop-up is for opening the app, not for every refresh while it's in use.
+// Home can mount more than once as it loads, so this counts from when they answer.
 const ASK_AGAIN_AFTER_MS = 30 * 60 * 1000;
-let lastAskedAt = 0;
+let answeredAt = 0;
 
 // Home: "3 drives to review" — a state row (left edge bar), not decoration.
 // When drives are waiting, opening the app also asks with a pop-up.
@@ -23,11 +24,13 @@ const DriveReviewBanner = () => {
     const ready = await driveReviewCount(drives);
     setCount(ready);
     setMiles(drives.filter(isUnconfirmedDrive).reduce((sum, d) => sum + Number(d.miles || 0), 0));
-    if (ready > 0 && Date.now() - lastAskedAt >= ASK_AGAIN_AFTER_MS) {
-      lastAskedAt = Date.now();
-      setAsking(true);
-    }
+    if (ready > 0 && Date.now() - answeredAt >= ASK_AGAIN_AFTER_MS) setAsking(true);
   }, []);
+
+  const closePopup = () => {
+    answeredAt = Date.now();
+    setAsking(false);
+  };
 
   useEffect(() => {
     if (!driveDetectionAvailable()) return undefined;
@@ -59,7 +62,7 @@ const DriveReviewBanner = () => {
         </svg>
       </button>
 
-      <Modal isOpen={asking} toggle={() => setAsking(false)} labelledBy="mksv-drive-popup-title" className="mksv-confirm-sheet">
+      <Modal isOpen={asking} toggle={closePopup} labelledBy="mksv-drive-popup-title" className="mksv-confirm-sheet">
         <div className="mksv-confirm">
           <h2 id="mksv-drive-popup-title" className="mksv-sheet__title mksv-confirm__title--alert">{t("drives.banner.title", { count })}</h2>
           <p className="mksv-confirm__body">{summary}</p>
@@ -67,13 +70,13 @@ const DriveReviewBanner = () => {
             type="button"
             className="mksv-app-btn mksv-app-btn--alert"
             onClick={() => {
-              setAsking(false);
+              closePopup();
               navigate("/customer/drives");
             }}
           >
             {t("drives.banner.reviewNow")}
           </button>
-          <button type="button" className="mksv-app-btn mksv-app-btn--ghost" onClick={() => setAsking(false)}>
+          <button type="button" className="mksv-app-btn mksv-app-btn--ghost" onClick={closePopup}>
             {t("drives.banner.later")}
           </button>
         </div>

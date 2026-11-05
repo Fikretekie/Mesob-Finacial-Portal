@@ -114,6 +114,22 @@ final class DriveStore {
         }
     }
 
+    /** Debug builds: as if every waiting drive had happened this long ago. */
+    static synchronized void ageAll(Context c, long byMs) {
+        JSONArray drives = all(c);
+        for (int i = 0; i < drives.length(); i++) {
+            JSONObject d = drives.optJSONObject(i);
+            if (d == null) continue;
+            try {
+                d.put("startedAt", d.optLong("startedAt") - byMs);
+                d.put("endedAt", d.optLong("endedAt") - byMs);
+            } catch (Exception ignored) {
+                // Debug only.
+            }
+        }
+        save(c, drives);
+    }
+
     static synchronized void remove(Context c, String id) {
         JSONArray drives = all(c);
         JSONArray kept = new JSONArray();

@@ -354,6 +354,8 @@ public class DriveMonitorPlugin extends Plugin {
             }
         } else if ("shiftAutoEnd".equals(event)) {
             DriveShift.end(c, true, false);
+        } else if ("ageDrives".equals(event)) {
+            DriveStore.ageAll(c, call.getDouble("hours", 5.0).longValue() * 3600000);
         } else if ("ageActivity".equals(event)) {
             // As if the app and the car had been idle this many hours.
             long then = System.currentTimeMillis() - call.getDouble("hours", 5.0).longValue() * 3600000;
