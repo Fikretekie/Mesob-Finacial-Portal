@@ -979,7 +979,10 @@
     "total": "Total",
     "noFuel": "No hay compras de combustible este trimestre, así que aún no se pueden calcular el MPG de la flota ni los galones gravables.",
     "unassigned_one": "1 viaje ({{miles}} mi) no tiene desglose por estado y no está en la tabla. Agrega sus millas al estado correcto antes de declarar.",
-    "unassigned_other": "{{count}} viajes ({{miles}} mi) no tienen desglose por estado y no están en la tabla. Agrega sus millas a los estados correctos antes de declarar."
+    "unassigned_other": "{{count}} viajes ({{miles}} mi) no tienen desglose por estado y no están en la tabla. Agrega sus millas a los estados correctos antes de declarar.",
+    "unconfirmed": "Viajes sin confirmar: {{count}} ({{miles}} mi). Estas millas no están incluidas.",
+    "reviewDrives": "Revisar viajes",
+    "unassigned": "Viajes sin estado: {{count}} ({{miles}} mi). Estas millas no están incluidas."
   },
   "quickScan": {
     "scanReceipt": "Escanear recibo",
@@ -1358,7 +1361,13 @@
       "classifyBodyTrucking": "{time} · ¿Cargado, vacío o personal?",
       "personalTitleTrucking": "Millas personales",
       "personalBodyTrucking": "Se guardan solo para las millas IFTA, no como negocio. Toca Deshacer si fue un error.",
-      "fuelUpload": "Subir"
+      "fuelUpload": "Subir",
+      "stopAskTitle": "¿Terminaste tu viaje?",
+      "stopAskBody": "Llevas 10 minutos detenido.",
+      "stopAskFinished": "Terminado",
+      "stopAskKeep": "Seguir grabando",
+      "dayReviewTitle": "Revisa tus viajes",
+      "dayReviewBody": "{count} pendientes, {miles} mi. Solo los viajes confirmados en el camión cuentan para IFTA."
     },
     "settings": {
       "title": "Viajes y recordatorios",
@@ -1410,12 +1419,23 @@
       "recentTitle": "Marcados como personales",
       "recentHint": "No se guardan. Restáuralos dentro de 24 horas si tocaste Personal por error.",
       "restore": "Restaurar",
-      "introTrucking": "Los viajes cargados y vacíos son millas de negocio. Los personales solo cuentan para las millas IFTA.",
-      "recentHintTrucking": "Se guardan para las millas IFTA después de 24 horas. Restaura uno antes si tocaste Personal por error."
+      "introTrucking": "Los viajes de hoy, divididos en cada parada. Solo los que confirmes como tu camión cuentan para IFTA.",
+      "recentHintTrucking": "Se suma a tus millas de IFTA después de 24 horas, no como negocio. Restáuralo antes si lo tocaste por error.",
+      "notTruck": "No es mi camión",
+      "personalTruck": "Uso personal del camión",
+      "notTruckToast": "Eliminado, no cuenta",
+      "continued": "Mismo viaje que el anterior",
+      "carTitle": "No cuentan: tu auto",
+      "carHint": "Bluetooth detectó tu auto. Se eliminan después de 24 horas.",
+      "itWasTruck": "Era mi camión",
+      "recentTitleTrucking": "Uso personal del camión",
+      "joinedFuel": "Parada en una gasolinera, se muestra como un solo viaje",
+      "splitTrip": "Son viajes separados"
     },
     "banner": {
       "title": "Viajes por revisar: {{count}}",
-      "sub": "¿Trabajo o personal?"
+      "sub": "¿Trabajo o personal?",
+      "subTrucking": "Solo los viajes confirmados en el camión cuentan para IFTA"
     },
     "reminders": {
       "estTaxTitle": "Impuesto estimado vence en una semana",
@@ -1449,6 +1469,16 @@
       "sub": "Estados: {{count}} · abrir informe IFTA",
       "statesLabel": "Estados IFTA",
       "statesSub": "T{{quarter}} {{year}}"
+    },
+    "vehicles": {
+      "title": "Mi camión",
+      "hint": "Vincula el Bluetooth de tu camión para que la mayoría de los viajes se clasifiquen solos. Esto queda en este teléfono.",
+      "truck": "Camión",
+      "car": "Mi auto",
+      "none": "sin vincular",
+      "link": "Elegir dispositivos Bluetooth",
+      "noDevices": "No hay dispositivos vinculados. Primero vincula tu camión en los ajustes de Bluetooth del teléfono.",
+      "denied": "Permite Dispositivos cercanos para Meksova en los ajustes del teléfono para vincular tu camión."
     }
   },
   "console": {

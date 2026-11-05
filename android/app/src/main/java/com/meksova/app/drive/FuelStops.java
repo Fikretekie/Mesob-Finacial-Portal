@@ -103,7 +103,9 @@ final class FuelStops {
                             .putLong("fuelAt", System.currentTimeMillis())
                             .putString("fuelLat", String.valueOf(lat))
                             .putString("fuelLng", String.valueOf(lng))
+                            .putString("fuelKind", stop.kind)
                             .apply();
+                        if (FUEL.equals(stop.kind)) DriveStore.markFuelStop(app, lat, lng);
                         if (FUEL.equals(stop.kind)) DriveNotify.fuel(app, stop.name, lat, lng);
                         else DriveNotify.store(app, stop.name, stop.kind, lat, lng);
                     }
@@ -112,6 +114,11 @@ final class FuelStops {
                 if (done != null) done.run();
             }
         });
+    }
+
+    /** Was a gas station found at this spot in the last while? (The lookup can run before the piece ends.) */
+    static boolean recentFuelStopNear(Context c, double lat, double lng) {
+        return FUEL.equals(DrivePrefs.prefs(c).getString("fuelKind", "")) && recentlyNotifiedNear(c, lat, lng);
     }
 
     private static boolean recentlyNotifiedNear(Context c, double lat, double lng) {

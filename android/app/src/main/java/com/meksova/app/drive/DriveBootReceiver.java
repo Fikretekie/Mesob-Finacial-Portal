@@ -11,6 +11,7 @@ public class DriveBootReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String a = intent.getAction();
         if (!Intent.ACTION_BOOT_COMPLETED.equals(a) && !Intent.ACTION_MY_PACKAGE_REPLACED.equals(a)) return;
+        if (Intent.ACTION_BOOT_COMPLETED.equals(a)) DriveVehicle.clearConnections(context);
         if (DrivePrefs.enabled(context)) DriveEvents.register(context);
         WeeklySummary.schedule(context);
     }

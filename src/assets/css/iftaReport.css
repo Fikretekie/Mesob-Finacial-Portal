@@ -177,3 +177,15 @@
   font-size: 11px;
   color: var(--text-3);
 }
+
+.ifta-warn__link {
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}

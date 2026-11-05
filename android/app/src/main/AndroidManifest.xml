@@ -61,6 +61,14 @@
         <receiver android:name=".drive.DriveTransitionReceiver" android:exported="false" />
         <receiver android:name=".drive.DriveActionReceiver" android:exported="false" />
         <receiver android:name=".drive.FuelCheckReceiver" android:exported="false" />
+        <receiver android:name=".drive.DriveDay" android:exported="false" />
+        <!-- Exported because the Bluetooth stack sends these; both are protected system broadcasts. -->
+        <receiver android:name=".drive.DriveVehicle" android:exported="true">
+            <intent-filter>
+                <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
+                <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" />
+            </intent-filter>
+        </receiver>
         <receiver android:name=".drive.WeeklySummary" android:exported="false" />
         <receiver android:name=".drive.DriveWidget" android:exported="false" android:label="@string/app_name">
             <intent-filter>
@@ -88,6 +96,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
     <!-- Scan opens the camera app. Android 11+ hides other apps unless declared,
          and Capacitor's file chooser falls back to the photo picker without it. -->

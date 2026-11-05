@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardBody, Button } from "reactstrap";
+import { useNavigate } from "react-router-dom";
 import { saveFile } from "utils/saveFile";
+import { getRecordedDrives, isUnconfirmedDrive } from "utils/driveMonitor";
 
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import { fetchTrips, getTripsForQuarter } from "utils/tripStorage";
@@ -39,6 +41,8 @@ const fmt = (n) => (n === null || n === undefined ? "—" : Math.round(n).toLoca
 
 function IftaReport() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [recorded, setRecorded] = useState([]);
 
   const [year, setYear] = useState(new Date().getFullYear());
   const [quarter, setQuarter] = useState(currentQuarter());
@@ -69,6 +73,19 @@ function IftaReport() {
       cancelled = true;
     };
   }, []);
+
+  // Recorded drives nobody has confirmed yet aren't in these miles.
+  useEffect(() => {
+    getRecordedDrives().then((drives) => setRecorded(drives.filter(isUnconfirmedDrive)));
+  }, []);
+  const unconfirmed = useMemo(
+    () =>
+      recorded.filter((d) => {
+        const ended = new Date(d.endedAt);
+        return ended.getFullYear() === year && Math.floor(ended.getMonth() / 3) + 1 === quarter;
+      }),
+    [recorded, year, quarter]
+  );
 
   const quarterTrips = useMemo(() => getTripsForQuarter(trips, year, quarter), [trips, year, quarter]);
   const quarterFuel = useMemo(() => getFuelPurchasesForQuarter(fuelPurchases, year, quarter), [fuelPurchases, year, quarter]);
@@ -191,6 +208,17 @@ function IftaReport() {
                   </div>
                 </div>
 
+                {unconfirmed.length > 0 && (
+                  <p className="ifta-warn" role="status">
+                    {t("iftaReport.unconfirmed", {
+                      count: unconfirmed.length,
+                      miles: unconfirmed.reduce((s, d) => s + Number(d.miles || 0), 0).toFixed(1),
+                    })}{" "}
+                    <button type="button" className="ifta-warn__link" onClick={() => navigate("/customer/drives")}>
+                      {t("iftaReport.reviewDrives")}
+                    </button>
+                  </p>
+                )}
                 {report.mpg === null && <p className="ifta-warn">{t("iftaReport.noFuel")}</p>}
                 {report.unassignedTrips > 0 && (
                   <p className="ifta-warn">

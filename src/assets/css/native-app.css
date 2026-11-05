@@ -1397,6 +1397,53 @@ label.mksv-prefs__row {
   opacity: 0.55;
 }
 
+/* Trucking: where a piece of the day went, and the less common answer. */
+.mksv-drive__route {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+.mksv-drive__alt {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 6px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Trucking: link a paired Bluetooth device as the truck or the car. */
+.mksv-vehicle-pick {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+}
+.mksv-vehicle-pick__btn {
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mksv-vehicle-pick__btn.is-on {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
 /* Drives marked personal: restorable for a day. */
 .mksv-drives__recent {
   margin-top: 24px;

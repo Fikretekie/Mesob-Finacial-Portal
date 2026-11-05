@@ -70,6 +70,8 @@ final class DriveStore {
                 }
                 try {
                     d.put("type", type == null ? JSONObject.NULL : type);
+                    // Back up for review: the driver's answer beats the Bluetooth guess.
+                    if (type == null) d.remove("vehicle");
                     if ("personal".equals(type)) {
                         d.put("personalAt", System.currentTimeMillis());
                     } else {
@@ -88,6 +90,28 @@ final class DriveStore {
             }
         }
         return false;
+    }
+
+    /** A gas station was found where the latest drive ended, so what follows may be the same trip. */
+    static synchronized void markFuelStop(Context c, double lat, double lng) {
+        JSONArray drives = all(c);
+        for (int i = drives.length() - 1; i >= 0; i--) {
+            JSONObject d = drives.optJSONObject(i);
+            JSONArray points = d == null ? null : d.optJSONArray("points");
+            if (points == null || points.length() == 0) continue;
+            JSONArray end = points.optJSONArray(points.length() - 1);
+            float[] m = new float[1];
+            if (end != null) android.location.Location.distanceBetween(lat, lng, end.optDouble(0), end.optDouble(1), m);
+            if (end != null && m[0] < 300) {
+                try {
+                    d.put("endedAtFuel", true);
+                    save(c, drives);
+                } catch (Exception ignored) {
+                    // Then it just shows as two drives.
+                }
+            }
+            return;
+        }
     }
 
     static synchronized void remove(Context c, String id) {

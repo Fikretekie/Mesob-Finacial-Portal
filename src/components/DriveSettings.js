@@ -15,6 +15,8 @@ import {
 } from "utils/driveMonitor";
 import { scheduleTaxReminders } from "utils/taxReminders";
 import BusinessRules from "components/BusinessRules";
+import TruckBluetooth from "components/TruckBluetooth";
+import { isTrucking } from "utils/mileageRate";
 
 const Switch = ({ id, on, onChange, disabled }) => (
   <button
@@ -159,8 +161,12 @@ const DriveSettings = () => {
         />
       </div>
 
-      {settings.enabled && settings.autoRecord && (
+      {/* Trucking: no "always business" rules, because the car can leave the same yard. */}
+      {settings.enabled && settings.autoRecord && !isTrucking() && (
         <BusinessRules rules={settings.rules} onChange={(rules) => apply({ ...settings, rules })} />
+      )}
+      {settings.enabled && settings.autoRecord && isTrucking() && (
+        <TruckBluetooth vehicles={settings.vehicles} onChange={(vehicles) => apply({ ...settings, vehicles })} />
       )}
 
       {settings.enabled && status && (

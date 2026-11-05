@@ -1,10 +1,16 @@
 package com.meksova.app.drive;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.PowerManager;
@@ -20,6 +26,8 @@ import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -31,6 +39,7 @@ import org.json.JSONObject;
         @Permission(alias = "notifications", strings = { Manifest.permission.POST_NOTIFICATIONS }),
         @Permission(alias = "location", strings = { Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION }),
         @Permission(alias = "backgroundLocation", strings = { Manifest.permission.ACCESS_BACKGROUND_LOCATION }),
+        @Permission(alias = "bluetooth", strings = { Manifest.permission.BLUETOOTH_CONNECT }),
     }
 )
 public class DriveMonitorPlugin extends Plugin {
@@ -50,6 +59,7 @@ public class DriveMonitorPlugin extends Plugin {
             .putBoolean("weeklySummary", call.getBoolean("weeklySummary", true))
             .putFloat("ratePerMile", call.getFloat("ratePerMile", 0f))
             .putString("rules", call.getObject("rules", new JSObject()).toString())
+            .putString("vehicles", call.getObject("vehicles", new JSObject()).toString())
             .putString("strings", strings.toString())
             .apply();
         DriveNotify.ensureChannels(c);
@@ -94,6 +104,7 @@ public class DriveMonitorPlugin extends Plugin {
         r.put("notifications", NotificationManagerCompat.from(c).areNotificationsEnabled());
         r.put("location", DrivePrefs.has(c, Manifest.permission.ACCESS_FINE_LOCATION));
         r.put("backgroundLocation", DrivePrefs.hasBackgroundLocation(c));
+        r.put("bluetooth", hasBluetooth(c));
         PowerManager pm = (PowerManager) c.getSystemService(Context.POWER_SERVICE);
         r.put("batteryUnrestricted", pm.isIgnoringBatteryOptimizations(c.getPackageName()));
         // What actually happened on this phone, for the settings screen.
@@ -103,6 +114,64 @@ public class DriveMonitorPlugin extends Plugin {
         r.put("lastCheckResult", p.getString("lastCheckResult", ""));
         r.put("lastCheckName", p.getString("lastCheckName", ""));
         return r;
+    }
+
+    private static boolean hasBluetooth(Context c) {
+        return Build.VERSION.SDK_INT < 31 || DrivePrefs.has(c, Manifest.permission.BLUETOOTH_CONNECT);
+    }
+
+    /** "Nearby devices", needed to see the phone's paired devices and when they connect. */
+    @PluginMethod
+    public void requestBluetooth(PluginCall call) {
+        if (Build.VERSION.SDK_INT < 31) {
+            call.resolve(status());
+            return;
+        }
+        requestPermissionForAlias("bluetooth", call, "permissionsDone");
+    }
+
+    /** What the driver can link as their truck or car. */
+    @SuppressLint("MissingPermission")
+    @PluginMethod
+    public void getPairedDevices(PluginCall call) {
+        JSArray devices = new JSArray();
+        BluetoothManager manager = (BluetoothManager) getContext().getSystemService(Context.BLUETOOTH_SERVICE);
+        BluetoothAdapter adapter = manager == null ? null : manager.getAdapter();
+        if (adapter != null && hasBluetooth(getContext())) {
+            for (BluetoothDevice d : adapter.getBondedDevices()) {
+                JSObject o = new JSObject();
+                o.put("address", d.getAddress());
+                o.put("name", d.getName() == null ? d.getAddress() : d.getName());
+                devices.put(o);
+            }
+        }
+        JSObject r = new JSObject();
+        r.put("devices", devices);
+        call.resolve(r);
+    }
+
+    /** "Columbus, OH" for a point on a drive; blank when the phone can't tell. */
+    @PluginMethod
+    public void getPlaceName(PluginCall call) {
+        double lat = call.getDouble("lat", 0.0);
+        double lng = call.getDouble("lng", 0.0);
+        new Thread(() -> {
+            String name = "";
+            try {
+                List<Address> found = new Geocoder(getContext(), Locale.getDefault()).getFromLocation(lat, lng, 1);
+                if (found != null && !found.isEmpty()) {
+                    Address a = found.get(0);
+                    String town = a.getLocality() != null ? a.getLocality() : a.getSubAdminArea();
+                    String area = a.getAdminArea();
+                    name = town != null && area != null ? town + ", " + area : town != null ? town : area != null ? area : "";
+                }
+            } catch (Exception ignored) {
+                // No network or no geocoder on this phone: the time alone identifies it.
+            }
+            JSObject r = new JSObject();
+            r.put("name", name);
+            call.resolve(r);
+        }).start();
     }
 
     /** This app's Android settings page, where Battery can be set to Unrestricted. */
@@ -233,6 +302,32 @@ public class DriveMonitorPlugin extends Plugin {
             DriveNotify.store(c, call.getString("station", ""), call.getString("kind", FuelStops.STORE), call.getDouble("lat", 0.0), call.getDouble("lng", 0.0));
         } else if ("fuelDelayed".equals(event)) {
             FuelStops.scheduleCheck(c, call.getDouble("lat", 0.0), call.getDouble("lng", 0.0));
+        } else if ("piece".equals(event)) {
+            // A finished drive, as if the recorder had just saved it.
+            try {
+                double lat = call.getDouble("lat", 39.95);
+                double lng = call.getDouble("lng", -82.8);
+                JSONObject a = new JSONObject();
+                a.put("id", UUID.randomUUID().toString());
+                a.put("startedAt", System.currentTimeMillis() - call.getDouble("minutes", 30.0).longValue() * 60000);
+                a.put("miles", call.getDouble("miles", 10.0));
+                a.put("points", new JSONArray("[[" + lat + "," + lng + "],[" + (lat + 0.1) + "," + lng + "]]"));
+                DrivePrefs.prefs(c).edit().putString("active", a.toString()).apply();
+                DriveRecorderService.finishCurrent(c);
+            } catch (Exception e) {
+                call.reject(e.getMessage());
+                return;
+            }
+        } else if ("markFuel".equals(event)) {
+            DriveStore.markFuelStop(c, call.getDouble("lat", 0.0), call.getDouble("lng", 0.0));
+        } else if ("dayAsk".equals(event)) {
+            DriveDay.fire(c, DriveDay.ASK);
+        } else if ("dayReview".equals(event)) {
+            DriveDay.fire(c, DriveDay.REVIEW);
+        } else if ("walking".equals(event)) {
+            DriveEvents.onWalking(c);
+        } else if ("btOn".equals(event) || "btOff".equals(event)) {
+            DriveVehicle.connectionChanged(c, call.getString("address", ""), "btOn".equals(event));
         }
         call.resolve(status());
     }

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { DRIVES_CHANGED, driveDetectionAvailable, getRecordedDrives } from "utils/driveMonitor";
+import { DRIVES_CHANGED, driveDetectionAvailable, driveReviewCount, getRecordedDrives } from "utils/driveMonitor";
+import { isTrucking } from "utils/mileageRate";
 
 // Home: "3 drives to review" — a state row (left edge bar), not decoration.
 const DriveReviewBanner = () => {
@@ -11,7 +12,7 @@ const DriveReviewBanner = () => {
 
   useEffect(() => {
     if (!driveDetectionAvailable()) return undefined;
-    getRecordedDrives().then((d) => setCount(d.filter((x) => !x.type).length));
+    getRecordedDrives().then(driveReviewCount).then(setCount);
     const onChange = (e) => setCount(e.detail || 0);
     window.addEventListener(DRIVES_CHANGED, onChange);
     return () => window.removeEventListener(DRIVES_CHANGED, onChange);
@@ -28,7 +29,7 @@ const DriveReviewBanner = () => {
       </span>
       <span className="mksv-row__body">
         <span className="mksv-row__title">{t("drives.banner.title", { count })}</span>
-        <span className="mksv-row__sub">{t("drives.banner.sub")}</span>
+        <span className="mksv-row__sub">{t(isTrucking() ? "drives.banner.subTrucking" : "drives.banner.sub")}</span>
       </span>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="m9 6 6 6-6 6" />

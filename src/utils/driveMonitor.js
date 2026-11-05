@@ -26,6 +26,8 @@ const DEFAULTS = {
   weeklySummary: true,
   // "Always business": drives from/to a saved place, or starting in work hours on a weekday.
   rules: { hours: { on: false, start: 8, end: 18 }, places: [] },
+  // Trucking: Bluetooth devices linked as the truck and the driver's own car.
+  vehicles: { truck: [], car: [] },
 };
 
 export const driveDetectionAvailable = () => Capacitor.getPlatform() === "android";
@@ -86,11 +88,15 @@ const NATIVE_STRING_KEYS = [
   "personalTitle", "personalBody", "undo",
   "autoTitle", "autoBody", "ruleHours", "alreadyTitle", "alreadyBody",
   "weeklyTitle", "weeklyDeduction", "weeklyWaiting",
+  "stopAskTitle", "stopAskBody", "stopAskFinished", "stopAskKeep", "dayReviewTitle", "dayReviewBody",
   "widgetToday", "widgetWeek", "widgetRecording",
 ];
 
 /** Drives marked personal stay undoable this long, then are dropped (never saved). */
 export const UNDO_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+/** Trucking: no movement this long and the day's drives go up on the dashboard (DriveDay.java). */
+const REVIEW_AFTER_MS = 4 * 60 * 60 * 1000;
 
 /** Drives a business rule marked are held this long, so "Personal" on the notification still works. */
 const RULE_GRACE_MS = 15 * 60 * 1000;
@@ -136,6 +142,25 @@ export const getDriveStatus = () => DriveMonitor.getStatus();
 export const requestDrivePermissions = () => DriveMonitor.requestDrivePermissions();
 export const requestBackgroundLocation = () => DriveMonitor.requestBackgroundLocation();
 export const openDriveAppSettings = () => DriveMonitor.openAppSettings();
+export const requestBluetooth = () => DriveMonitor.requestBluetooth();
+
+export async function getPairedDevices() {
+  try {
+    const { devices } = await DriveMonitor.getPairedDevices();
+    return Array.isArray(devices) ? devices : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+export async function getPlaceName(lat, lng) {
+  try {
+    const { name } = await DriveMonitor.getPlaceName({ lat, lng });
+    return name || "";
+  } catch (e) {
+    return "";
+  }
+}
 
 /** Tells Android a hand-started trip is running, so it doesn't record the same drive twice. */
 export function setManualTrip(active) {
@@ -231,6 +256,25 @@ export async function discardDrive(drive) {
   await DriveMonitor.removeDrive({ id: drive.id });
 }
 
+/** Trucking: Bluetooth says this was the driver's own car, so it needs no answer. */
+export const isOwnCarDrive = (drive) => !drive.type && drive.vehicle === "car";
+
+/** Drives still waiting for an answer, as far as IFTA is concerned. */
+export const isUnconfirmedDrive = (drive) => !drive.type && !isOwnCarDrive(drive);
+
+/**
+ * The dashboard's count. Trucking: nothing until the day looks over, so the
+ * driver isn't nagged between stops; the review screen itself shows them anytime.
+ */
+export async function driveReviewCount(drives) {
+  const waiting = drives.filter(isUnconfirmedDrive);
+  if (!isTrucking() || waiting.length === 0) return waiting.length;
+  const latest = Math.max(...waiting.map((d) => d.endedAt));
+  if (Date.now() - latest < REVIEW_AFTER_MS) return 0;
+  const status = await getDriveStatus().catch(() => null);
+  return status && status.recording ? 0 : waiting.length;
+}
+
 /** Personal: kept on the phone for UNDO_WINDOW_MS in case it was a slip, then dropped (trucking: saved for IFTA). */
 export const markPersonal = (drive) => DriveMonitor.classifyDrive({ id: drive.id, type: "personal" });
 export const restoreDrive = (drive) => DriveMonitor.restoreDrive({ id: drive.id });
@@ -273,11 +317,14 @@ export function syncDrives() {
         } else {
           await discardDrive(drive).catch(() => {});
         }
+      } else if (isOwnCarDrive(drive)) {
+        // Kept a day so a wrong Bluetooth guess can be corrected, then dropped.
+        if (Date.now() - drive.endedAt > UNDO_WINDOW_MS) await discardDrive(drive).catch(() => {});
       } else {
         waiting.push(drive);
       }
     }
-    window.dispatchEvent(new CustomEvent(DRIVES_CHANGED, { detail: waiting.length }));
+    window.dispatchEvent(new CustomEvent(DRIVES_CHANGED, { detail: await driveReviewCount(waiting) }));
     return waiting;
   })().finally(() => {
     syncing = null;

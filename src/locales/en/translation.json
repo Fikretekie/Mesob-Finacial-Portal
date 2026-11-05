@@ -735,7 +735,10 @@
     "total": "Total",
     "noFuel": "No fuel purchases recorded this quarter, so fleet MPG and taxable gallons can't be worked out yet.",
     "unassigned_one": "1 trip ({{miles}} mi) has no state breakdown and isn't in the table. Add its miles to the right state before filing.",
-    "unassigned_other": "{{count}} trips ({{miles}} mi) have no state breakdown and aren't in the table. Add their miles to the right states before filing."
+    "unassigned_other": "{{count}} trips ({{miles}} mi) have no state breakdown and aren't in the table. Add their miles to the right states before filing.",
+    "unconfirmed": "Unconfirmed drives: {{count}} ({{miles}} mi). These miles aren't included.",
+    "reviewDrives": "Review drives",
+    "unassigned": "Trips with no state: {{count}} ({{miles}} mi). These miles aren't included."
   },
   "auth": {
     "login": {
@@ -1352,7 +1355,13 @@
       "classifyBodyTrucking": "{time} · Loaded, empty or personal?",
       "personalTitleTrucking": "Personal miles",
       "personalBodyTrucking": "Kept for IFTA miles only, not business. Tap Undo if that was a mistake.",
-      "fuelUpload": "Upload"
+      "fuelUpload": "Upload",
+      "stopAskTitle": "Did you finish your trip?",
+      "stopAskBody": "You've been stopped for 10 minutes.",
+      "stopAskFinished": "Finished",
+      "stopAskKeep": "Keep recording",
+      "dayReviewTitle": "Review your drives",
+      "dayReviewBody": "{count} waiting, {miles} mi. Only confirmed truck drives count for IFTA."
     },
     "settings": {
       "title": "Drives & reminders",
@@ -1404,12 +1413,23 @@
       "recentTitle": "Marked personal",
       "recentHint": "Not saved. Restore one within 24 hours if you tapped Personal by mistake.",
       "restore": "Restore",
-      "introTrucking": "Loaded and empty drives are business miles. Personal drives count toward IFTA miles only.",
-      "recentHintTrucking": "Saved for IFTA miles after 24 hours. Restore one before then if you tapped Personal by mistake."
+      "introTrucking": "Today's drives, split at each stop. Only the ones you confirm as your truck count toward IFTA.",
+      "recentHintTrucking": "Added to your IFTA miles after 24 hours, not as business. Restore one before then if you tapped it by mistake.",
+      "notTruck": "Not my truck",
+      "personalTruck": "Personal use of the truck",
+      "notTruckToast": "Removed, not counted",
+      "continued": "Same trip as the drive before it",
+      "carTitle": "Not counted: your car",
+      "carHint": "Bluetooth showed your car. These are removed after 24 hours.",
+      "itWasTruck": "It was my truck",
+      "recentTitleTrucking": "Personal use of the truck",
+      "joinedFuel": "Stopped at a gas station, shown as one trip",
+      "splitTrip": "These are separate drives"
     },
     "banner": {
       "title": "Drives to review: {{count}}",
-      "sub": "Business or personal?"
+      "sub": "Business or personal?",
+      "subTrucking": "Only confirmed truck drives count for IFTA"
     },
     "reminders": {
       "estTaxTitle": "Estimated tax due in a week",
@@ -1443,6 +1463,16 @@
       "sub": "States: {{count}} · open IFTA report",
       "statesLabel": "IFTA states",
       "statesSub": "Q{{quarter}} {{year}}"
+    },
+    "vehicles": {
+      "title": "My truck",
+      "hint": "Link your truck's Bluetooth so most drives sort themselves. These stay on this phone.",
+      "truck": "Truck",
+      "car": "My car",
+      "none": "not linked",
+      "link": "Choose Bluetooth devices",
+      "noDevices": "No paired devices. Pair your truck in your phone's Bluetooth settings first.",
+      "denied": "Allow Nearby devices for Meksova in your phone's settings to link your truck."
     }
   },
   "console": {

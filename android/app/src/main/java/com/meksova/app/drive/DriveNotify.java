@@ -26,6 +26,8 @@ final class DriveNotify {
     static final int ID_RECORDING = 4102;
     static final int ID_FORGOT = 4103;
     static final int ID_FUEL = 4104;
+    static final int ID_STOP_ASK = 4122;
+    static final int ID_DAY_REVIEW = 4125;
 
     private static final int BRAND = 0xFF2563EB;
 
@@ -139,6 +141,30 @@ final class DriveNotify {
         }
         n.addAction(0, DrivePrefs.str(c, "personal", "Personal"), broadcast(c, DriveActionReceiver.CLASSIFY_PERSONAL, id, nid + 2));
         post(c, nid, n.build());
+    }
+
+    /** Trucking: parked for a while. Either answer is fine to ignore: the piece is already saved. */
+    static void stopAsk(Context c) {
+        Notification n = base(c, CH_DRIVES)
+            .setContentTitle(DrivePrefs.str(c, "stopAskTitle", "Did you finish your trip?"))
+            .setContentText(DrivePrefs.str(c, "stopAskBody", "You've been stopped for 10 minutes."))
+            .setContentIntent(openApp(c, "drives", ID_STOP_ASK))
+            .addAction(0, DrivePrefs.str(c, "stopAskFinished", "Finished"), broadcast(c, DriveActionReceiver.TRIP_FINISHED, null, ID_STOP_ASK + 1))
+            .addAction(0, DrivePrefs.str(c, "stopAskKeep", "Keep recording"), broadcast(c, DriveActionReceiver.KEEP_RECORDING, null, ID_STOP_ASK + 2))
+            .build();
+        post(c, ID_STOP_ASK, n);
+    }
+
+    /** Trucking: no movement for hours, so the day's drives are ready to confirm. */
+    static void dayReview(Context c, int count, double totalMiles) {
+        Notification n = base(c, CH_DRIVES)
+            .setContentTitle(DrivePrefs.str(c, "dayReviewTitle", "Review your drives"))
+            .setContentText(DrivePrefs.str(c, "dayReviewBody", "{count} waiting, {miles} mi. Only confirmed truck drives count for IFTA.")
+                .replace("{count}", String.valueOf(count))
+                .replace("{miles}", miles(totalMiles)))
+            .setContentIntent(openApp(c, "drives", ID_DAY_REVIEW))
+            .build();
+        post(c, ID_DAY_REVIEW, n);
     }
 
     /** Replaces the drive's notification after "Personal": nothing saved, with Undo. */

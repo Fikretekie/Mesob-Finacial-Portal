@@ -979,7 +979,10 @@
     "total": "Total",
     "noFuel": "Aucun achat de carburant ce trimestre : le MPG de la flotte et les gallons imposables ne peuvent pas encore être calculés.",
     "unassigned_one": "1 trajet ({{miles}} mi) n'a pas de répartition par État et n'est pas dans le tableau. Ajoutez ses miles au bon État avant de déclarer.",
-    "unassigned_other": "{{count}} trajets ({{miles}} mi) n'ont pas de répartition par État et ne sont pas dans le tableau. Ajoutez leurs miles aux bons États avant de déclarer."
+    "unassigned_other": "{{count}} trajets ({{miles}} mi) n'ont pas de répartition par État et ne sont pas dans le tableau. Ajoutez leurs miles aux bons États avant de déclarer.",
+    "unconfirmed": "Trajets non confirmés : {{count}} ({{miles}} mi). Ces miles ne sont pas inclus.",
+    "reviewDrives": "Vérifier les trajets",
+    "unassigned": "Trajets sans État : {{count}} ({{miles}} mi). Ces miles ne sont pas inclus."
   },
   "quickScan": {
     "scanReceipt": "Scanner le reçu",
@@ -1358,7 +1361,13 @@
       "classifyBodyTrucking": "{time} · Chargé, à vide ou personnel ?",
       "personalTitleTrucking": "Miles personnels",
       "personalBodyTrucking": "Gardés pour les miles IFTA uniquement, pas comme professionnels. Touchez Annuler si c'était une erreur.",
-      "fuelUpload": "Importer"
+      "fuelUpload": "Importer",
+      "stopAskTitle": "Avez-vous terminé votre trajet ?",
+      "stopAskBody": "Vous êtes arrêté depuis 10 minutes.",
+      "stopAskFinished": "Terminé",
+      "stopAskKeep": "Continuer",
+      "dayReviewTitle": "Vérifiez vos trajets",
+      "dayReviewBody": "{count} en attente, {miles} mi. Seuls les trajets confirmés en camion comptent pour l'IFTA."
     },
     "settings": {
       "title": "Trajets et rappels",
@@ -1410,12 +1419,23 @@
       "recentTitle": "Marqués personnels",
       "recentHint": "Non enregistrés. Restaurez-les sous 24 heures si vous avez touché Personnel par erreur.",
       "restore": "Restaurer",
-      "introTrucking": "Les trajets chargés et à vide sont des miles professionnels. Les trajets personnels ne comptent que pour les miles IFTA.",
-      "recentHintTrucking": "Enregistrés pour les miles IFTA après 24 heures. Restaurez-en un avant si vous avez touché Personnel par erreur."
+      "introTrucking": "Les trajets du jour, séparés à chaque arrêt. Seuls ceux que vous confirmez en camion comptent pour l'IFTA.",
+      "recentHintTrucking": "Ajouté à vos miles IFTA après 24 heures, pas comme activité professionnelle. Restaurez-le avant si c'était une erreur.",
+      "notTruck": "Pas mon camion",
+      "personalTruck": "Usage personnel du camion",
+      "notTruckToast": "Retiré, non compté",
+      "continued": "Même trajet que le précédent",
+      "carTitle": "Non comptés : votre voiture",
+      "carHint": "Le Bluetooth a détecté votre voiture. Ils sont supprimés après 24 heures.",
+      "itWasTruck": "C'était mon camion",
+      "recentTitleTrucking": "Usage personnel du camion",
+      "joinedFuel": "Arrêt à une station-service, affiché comme un seul trajet",
+      "splitTrip": "Ce sont des trajets séparés"
     },
     "banner": {
       "title": "Trajets à classer : {{count}}",
-      "sub": "Professionnel ou personnel ?"
+      "sub": "Professionnel ou personnel ?",
+      "subTrucking": "Seuls les trajets confirmés en camion comptent pour l'IFTA"
     },
     "reminders": {
       "estTaxTitle": "Impôt estimé dû dans une semaine",
@@ -1449,6 +1469,16 @@
       "sub": "États : {{count}} · ouvrir le rapport IFTA",
       "statesLabel": "États IFTA",
       "statesSub": "T{{quarter}} {{year}}"
+    },
+    "vehicles": {
+      "title": "Mon camion",
+      "hint": "Associez le Bluetooth de votre camion pour que la plupart des trajets se classent seuls. Ces données restent sur ce téléphone.",
+      "truck": "Camion",
+      "car": "Ma voiture",
+      "none": "non associé",
+      "link": "Choisir des appareils Bluetooth",
+      "noDevices": "Aucun appareil associé. Associez d'abord votre camion dans les réglages Bluetooth du téléphone.",
+      "denied": "Autorisez Appareils à proximité pour Meksova dans les réglages du téléphone pour associer votre camion."
     }
   },
   "console": {

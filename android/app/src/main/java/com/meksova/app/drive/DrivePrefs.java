@@ -41,7 +41,7 @@ final class DrivePrefs {
         return prefs(c).getBoolean("storeStops", true);
     }
 
-    /** Trucking accounts: drives are Loaded / Empty / Personal, and personal miles still count for IFTA. */
+    /** Trucking accounts: drives are reviewed in a daily list, and only confirmed truck drives count for IFTA. */
     static boolean trucking(Context c) {
         return prefs(c).getBoolean("trucking", false);
     }

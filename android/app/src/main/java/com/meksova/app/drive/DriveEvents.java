@@ -12,7 +12,9 @@ import com.google.android.gms.location.ActivityTransitionRequest;
 import com.google.android.gms.location.DetectedActivity;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * What happens when Android says the user started or stopped driving.
@@ -26,7 +28,7 @@ final class DriveEvents {
     @SuppressLint("MissingPermission")
     static void register(Context c) {
         if (!DrivePrefs.hasActivity(c)) return;
-        ActivityTransitionRequest req = new ActivityTransitionRequest(Arrays.asList(
+        List<ActivityTransition> transitions = new ArrayList<>(Arrays.asList(
             new ActivityTransition.Builder()
                 .setActivityType(DetectedActivity.IN_VEHICLE)
                 .setActivityTransition(ActivityTransition.ACTIVITY_TRANSITION_ENTER)
@@ -36,6 +38,13 @@ final class DriveEvents {
                 .setActivityTransition(ActivityTransition.ACTIVITY_TRANSITION_EXIT)
                 .build()
         ));
+        if (DrivePrefs.trucking(c)) {
+            transitions.add(new ActivityTransition.Builder()
+                .setActivityType(DetectedActivity.WALKING)
+                .setActivityTransition(ActivityTransition.ACTIVITY_TRANSITION_ENTER)
+                .build());
+        }
+        ActivityTransitionRequest req = new ActivityTransitionRequest(transitions);
         try {
             ActivityRecognition.getClient(c).requestActivityTransitionUpdates(req, transitionIntent(c));
         } catch (SecurityException ignored) {
@@ -61,6 +70,7 @@ final class DriveEvents {
     static void onDriveStart(Context c) {
         if (!DrivePrefs.enabled(c)) return;
         DrivePrefs.prefs(c).edit().putLong("lastEnterAt", System.currentTimeMillis()).apply();
+        if (DrivePrefs.trucking(c)) DriveDay.driveStarted(c);
         if (DrivePrefs.manualTrip(c)) return;
         if (DrivePrefs.workdaysOnly(c) && DrivePrefs.isWeekend()) return;
         if (DrivePrefs.autoRecord(c) && DrivePrefs.hasBackgroundLocation(c)) {
@@ -68,6 +78,11 @@ final class DriveEvents {
         } else {
             DriveNotify.ask(c);
         }
+    }
+
+    /** Trucking: got out on foot, so a quick swap to another vehicle becomes a new piece. */
+    static void onWalking(Context c) {
+        if (DrivePrefs.enabled(c) && DrivePrefs.trucking(c)) DriveRecorderService.splitIfStopped(c);
     }
 
     /** May finish asynchronously; calls pending.finish() when done (null = not from a receiver). */

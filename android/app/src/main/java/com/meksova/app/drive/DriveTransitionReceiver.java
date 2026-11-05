@@ -19,6 +19,7 @@ public class DriveTransitionReceiver extends BroadcastReceiver {
         ActivityTransitionEvent latest = null;
         for (ActivityTransitionEvent e : result.getTransitionEvents()) {
             if (e.getActivityType() == DetectedActivity.IN_VEHICLE) latest = e;
+            else if (e.getActivityType() == DetectedActivity.WALKING) DriveEvents.onWalking(context);
         }
         if (latest == null) return;
         if (latest.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {

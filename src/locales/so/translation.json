@@ -979,7 +979,10 @@
     "total": "Wadarta",
     "noFuel": "Rubucan lama diiwaangelin iibsasho shidaal, sidaas darteed MPG iyo galaanka cashuurta leh weli lama xisaabin karo.",
     "unassigned_one": "1 safar ({{miles}} mi) ma laha qaybinta gobollada, kuma jiro shaxda. Ku dar mayladiisa gobolka saxda ah ka hor intaadan gudbin.",
-    "unassigned_other": "{{count}} safar ({{miles}} mi) ma laha qaybinta gobollada, kuma jiraan shaxda. Ku dar mayladooda gobollada saxda ah ka hor intaadan gudbin."
+    "unassigned_other": "{{count}} safar ({{miles}} mi) ma laha qaybinta gobollada, kuma jiraan shaxda. Ku dar mayladooda gobollada saxda ah ka hor intaadan gudbin.",
+    "unconfirmed": "Safarro aan la xaqiijin: {{count}} ({{miles}} mi). Mayladan kuma jiraan.",
+    "reviewDrives": "Dib u eeg safarrada",
+    "unassigned": "Safarro aan gobol lahayn: {{count}} ({{miles}} mi). Mayladan kuma jiraan."
   },
   "quickScan": {
     "scanReceipt": "Sawir rasiidka",
@@ -1356,7 +1359,13 @@
       "classifyBodyTrucking": "{time} · Rarran, madhan mise gaar ah?",
       "personalTitleTrucking": "Mayl gaar ah",
       "personalBodyTrucking": "Waxaa loo hayaa mayllada IFTA oo kaliya, ma aha ganacsi. Taabo Ka noqo haddii ay khalad ahayd.",
-      "fuelUpload": "Soo geli"
+      "fuelUpload": "Soo geli",
+      "stopAskTitle": "Ma dhammeysay safarkaagii?",
+      "stopAskBody": "10 daqiiqo ayaad joogsatay.",
+      "stopAskFinished": "Waan dhammeeyay",
+      "stopAskKeep": "Sii wad duubista",
+      "dayReviewTitle": "Dib u eeg safarradaada",
+      "dayReviewBody": "{count} sugaya, {miles} mi. Safarrada baabuurka la xaqiijiyay oo keliya ayaa IFTA loo tiriyaa."
     },
     "settings": {
       "title": "Socdaalada & xasuusinta",
@@ -1408,12 +1417,23 @@
       "recentTitle": "Loo calaamadeeyey gaar",
       "recentHint": "Lama kaydin. Soo celi 24 saacadood gudahood haddii aad si khalad ah u taabatay Gaar.",
       "restore": "Soo celi",
-      "introTrucking": "Socdaalada rarran iyo kuwa madhan waa mayl ganacsi. Socdaalada gaarka ah waxay u xisaabmaan mayllada IFTA oo kaliya.",
-      "recentHintTrucking": "Waxaa loo kaydiyaa mayllada IFTA 24 saacadood kadib. Soo celi mid ka hor haddii aad si khalad ah u taabatay Gaar ah."
+      "introTrucking": "Safarrada maanta, oo joogsi kasta lagu kala qaybiyay. Kuwa aad xaqiijiso inay yihiin baabuurkaaga oo keliya ayaa IFTA loo tiriyaa.",
+      "recentHintTrucking": "Waxaa lagu daraa mayllada IFTA 24 saac ka dib, ganacsi ahaan maaha. Soo celi ka hor haddii aad qalad ku taabatay.",
+      "notTruck": "Ma aha baabuurkayga",
+      "personalTruck": "Isticmaal gaar ah oo baabuurka",
+      "notTruckToast": "Waa la saaray, lama tirin",
+      "continued": "Isla safarkii ka horreeyay",
+      "carTitle": "Lama tirin: gaarigaaga",
+      "carHint": "Bluetooth wuxuu muujiyay gaarigaaga. Waxaa la saarayaa 24 saac ka dib.",
+      "itWasTruck": "Wuxuu ahaa baabuurkayga",
+      "recentTitleTrucking": "Isticmaal gaar ah oo baabuurka",
+      "joinedFuel": "Waxaa lagu joogsaday kaalin shidaal, waxaa loo muujiyay hal safar",
+      "splitTrip": "Kuwani waa safarro kala duwan"
     },
     "banner": {
       "title": "Socdaalo dib-u-eegis u baahan: {{count}}",
-      "sub": "Ganacsi mise gaar?"
+      "sub": "Ganacsi mise gaar?",
+      "subTrucking": "Safarrada baabuurka la xaqiijiyay oo keliya ayaa IFTA loo tiriyaa"
     },
     "reminders": {
       "estTaxTitle": "Cashuurta qiyaasta ah waxay dhacaysaa toddobaad",
@@ -1447,6 +1467,16 @@
       "sub": "Gobollada: {{count}} · fur warbixinta IFTA",
       "statesLabel": "Gobollada IFTA",
       "statesSub": "R{{quarter}} {{year}}"
+    },
+    "vehicles": {
+      "title": "Baabuurkayga",
+      "hint": "Ku xir Bluetooth-ka baabuurkaaga si safarrada badankood ay iskood u kala soocmaan. Tani waxay ku jirtaa taleefankan.",
+      "truck": "Baabuur",
+      "car": "Gaarigayga",
+      "none": "lama xirin",
+      "link": "Dooro qalabka Bluetooth",
+      "noDevices": "Ma jiro qalab la isku xiray. Marka hore baabuurkaaga ku xir dejinta Bluetooth-ka taleefanka.",
+      "denied": "Si aad baabuurkaaga u xirto, ku oggolow Meksova Qalabka u dhow dejinta taleefanka."
     }
   },
   "console": {

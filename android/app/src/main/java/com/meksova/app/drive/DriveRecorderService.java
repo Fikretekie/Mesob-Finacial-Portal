@@ -38,6 +38,8 @@ public class DriveRecorderService extends Service {
     private static final long STATIONARY_END_MS = 12 * 60 * 1000;
     private static final double MIN_DRIVE_MILES = 0.5;
     private static final double METERS_PER_MILE = 1609.344;
+    /** Slower than this (about 7 mph) counts as stopped when deciding to split a drive. */
+    private static final float STOPPED_SPEED_MPS = 3f;
 
     private static DriveRecorderService instance;
 
@@ -49,6 +51,8 @@ public class DriveRecorderService extends Service {
     private long anchorAt;
     private boolean fuelChecked;
     private double notifiedMiles;
+    private float lastSpeed;
+    private long stoppedFor;
 
     static void start(Context c) {
         ContextCompat.startForegroundService(c, new Intent(c, DriveRecorderService.class));
@@ -65,6 +69,28 @@ public class DriveRecorderService extends Service {
         } else {
             finalizeStored(c);
         }
+    }
+
+    /**
+     * Trucking: end this piece and start the next without stopping the recorder.
+     * Android may not report a new drive when they pull away again (from a fuel
+     * stop, say), so stopping here could lose real truck miles.
+     */
+    static void splitIfStopped(Context c) {
+        if (instance != null) instance.split();
+    }
+
+    private void split() {
+        if (active == null || lastSpeed > STOPPED_SPEED_MPS || active.optDouble("miles", 0) < MIN_DRIVE_MILES) return;
+        if (last != null && (lastSample == null || lastSample.distanceTo(last) > 0)) addPoint(last);
+        persist();
+        last = null;
+        lastSample = null;
+        anchor = null;
+        fuelChecked = false;
+        notifiedMiles = 0;
+        begin();
+        DriveNotify.post(this, DriveNotify.ID_RECORDING, DriveNotify.recording(this, 0));
     }
 
     /** "Personal, don't log" or a hand-started trip took over. */
@@ -104,13 +130,16 @@ public class DriveRecorderService extends Service {
 
     @SuppressLint("MissingPermission")
     private void begin() {
-        finalizeStored(this);
+        finalizeStored(this, -1);
+        boolean continues = DrivePrefs.prefs(this).getBoolean("keepRecording", false);
+        DrivePrefs.prefs(this).edit().remove("keepRecording").apply();
         active = new JSONObject();
         try {
             active.put("id", UUID.randomUUID().toString());
             active.put("startedAt", System.currentTimeMillis());
             active.put("miles", 0);
             active.put("points", new JSONArray());
+            if (continues) active.put("continues", true);
         } catch (Exception ignored) {
             // put() on fresh keys can't fail.
         }
@@ -136,6 +165,7 @@ public class DriveRecorderService extends Service {
     private void onLocation(Location loc) {
         if (active == null || !loc.hasAccuracy() || loc.getAccuracy() > MAX_ACCURACY_M) return;
         long now = System.currentTimeMillis();
+        lastSpeed = loc.hasSpeed() ? loc.getSpeed() : 0;
 
         if (last != null) {
             float step = last.distanceTo(loc);
@@ -176,7 +206,10 @@ public class DriveRecorderService extends Service {
             fuelChecked = true;
             FuelStops.checkAsync(this, loc.getLatitude(), loc.getLongitude(), null);
         }
-        if (parked >= STATIONARY_END_MS) finish(true);
+        if (parked >= (DrivePrefs.trucking(this) ? DriveDay.STOP_ASK_MS : STATIONARY_END_MS)) {
+            stoppedFor = parked;
+            finish(true);
+        }
     }
 
     private void addPoint(Location loc) {
@@ -201,7 +234,7 @@ public class DriveRecorderService extends Service {
         if (active != null && last != null && (lastSample == null || lastSample.distanceTo(last) > 0)) addPoint(last);
         if (save) {
             persist();
-            finalizeStored(this);
+            finalizeStored(this, stoppedFor);
         } else {
             DrivePrefs.prefs(this).edit().remove("active").apply();
         }
@@ -212,6 +245,11 @@ public class DriveRecorderService extends Service {
 
     /** Moves the stored in-progress drive to the review list (or drops it if too short). */
     private static void finalizeStored(Context c) {
+        finalizeStored(c, 0);
+    }
+
+    /** stoppedFor: see DriveDay.pieceEnded. */
+    private static void finalizeStored(Context c, long stoppedFor) {
         String raw = DrivePrefs.prefs(c).getString("active", null);
         DrivePrefs.prefs(c).edit().remove("active").apply();
         if (raw == null) return;
@@ -223,10 +261,25 @@ public class DriveRecorderService extends Service {
                 JSONArray end = points.getJSONArray(points.length() - 1);
                 FuelStops.scheduleCheck(c, end.getDouble(0), end.getDouble(1));
             }
-            if (drive.optDouble("miles", 0) < MIN_DRIVE_MILES) return;
+            boolean kept = drive.optDouble("miles", 0) >= MIN_DRIVE_MILES;
+            DriveDay.pieceEnded(c, stoppedFor, kept);
+            if (!kept) return;
             drive.put("miles", Math.round(drive.optDouble("miles") * 100) / 100.0);
             drive.put("endedAt", System.currentTimeMillis());
             drive.put("type", JSONObject.NULL);
+            if (DrivePrefs.trucking(c)) {
+                // No alert per piece and no "always business" rules: the car can leave the
+                // same yard. It waits for the daily list unless Bluetooth says which vehicle.
+                String vehicle = DriveVehicle.during(c, drive.optLong("startedAt"), drive.optLong("endedAt"));
+                if (vehicle != null) drive.put("vehicle", vehicle);
+                if (points != null && points.length() > 0) {
+                    JSONArray stop = points.getJSONArray(points.length() - 1);
+                    if (FuelStops.recentFuelStopNear(c, stop.getDouble(0), stop.getDouble(1))) drive.put("endedAtFuel", true);
+                }
+                DriveStore.add(c, drive);
+                if (DriveVehicle.TRUCK.equals(vehicle)) DriveStore.classify(c, drive.getString("id"), "business");
+                return;
+            }
             String rule = DriveRules.match(c, drive);
             if (rule != null) {
                 // A business rule matched: logged without asking, Personal still one tap away.

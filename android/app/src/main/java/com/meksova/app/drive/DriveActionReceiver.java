@@ -17,6 +17,9 @@ public class DriveActionReceiver extends BroadcastReceiver {
     static final String UNDO_PERSONAL = "com.meksova.app.drive.UNDO_PERSONAL";
     /** "Not now" on a fuel / store / repair stop reminder. */
     static final String DISMISS_STOP = "com.meksova.app.drive.DISMISS_STOP";
+    /** Trucking, "Did you finish your trip?" */
+    static final String TRIP_FINISHED = "com.meksova.app.drive.TRIP_FINISHED";
+    static final String KEEP_RECORDING = "com.meksova.app.drive.KEEP_RECORDING";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -43,13 +46,23 @@ public class DriveActionReceiver extends BroadcastReceiver {
             if (id == null) return;
             DriveStore.classify(context, id, null);
             org.json.JSONObject drive = DriveStore.get(context, id);
-            if (drive != null) DriveNotify.classify(context, drive);
+            if (drive != null && !DrivePrefs.trucking(context)) DriveNotify.classify(context, drive);
         } else if (DISCARD_RECORDING.equals(action)) {
             DriveRecorderService.discardCurrent(context);
         } else if (DISMISS_ASK.equals(action)) {
             DriveNotify.cancel(context, DriveNotify.ID_ASK);
         } else if (DISMISS_STOP.equals(action)) {
             DriveNotify.cancel(context, DriveNotify.ID_FUEL);
+        } else if (TRIP_FINISHED.equals(action)) {
+            DriveNotify.cancel(context, DriveNotify.ID_STOP_ASK);
+        } else if (KEEP_RECORDING.equals(action)) {
+            DriveNotify.cancel(context, DriveNotify.ID_STOP_ASK);
+            DrivePrefs.prefs(context).edit().putBoolean("keepRecording", true).apply();
+            try {
+                if (!DriveRecorderService.isRunning()) DriveRecorderService.start(context);
+            } catch (Exception e) {
+                // Android refused: the next drive it detects still gets recorded.
+            }
         }
     }
 }
