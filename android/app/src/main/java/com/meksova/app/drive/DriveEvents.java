@@ -15,6 +15,7 @@ import com.google.android.gms.location.Priority;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.json.JSONArray;
 
 /**
  * What happens when Android says the user started or stopped driving.
@@ -80,8 +81,20 @@ final class DriveEvents {
         }
     }
 
+    /** A hand-started trip is running and they left the vehicle: a time the trip may really have ended. */
+    private static void recordManualExit(Context c) {
+        try {
+            JSONArray exits = new JSONArray(DrivePrefs.prefs(c).getString("manualExits", "[]"));
+            exits.put(System.currentTimeMillis());
+            DrivePrefs.prefs(c).edit().putString("manualExits", exits.toString()).apply();
+        } catch (Exception ignored) {
+            // The Mileage Tracker still offers the long stops it noticed itself.
+        }
+    }
+
     /** Trucking: got out on foot, so a quick swap to another vehicle becomes a new piece. */
     static void onWalking(Context c) {
+        if (DrivePrefs.enabled(c) && DrivePrefs.manualTrip(c)) recordManualExit(c);
         if (DrivePrefs.enabled(c) && DrivePrefs.trucking(c)) DriveRecorderService.splitIfStopped(c);
     }
 
@@ -93,7 +106,10 @@ final class DriveEvents {
             done(pending);
             return;
         }
-        if (DrivePrefs.manualTrip(c)) DriveNotify.forgotTrip(c);
+        if (DrivePrefs.manualTrip(c)) {
+            recordManualExit(c);
+            DriveNotify.forgotTrip(c);
+        }
 
         boolean recorded = DriveRecorderService.isRunning() || DrivePrefs.prefs(c).contains("active");
         if (recorded) {

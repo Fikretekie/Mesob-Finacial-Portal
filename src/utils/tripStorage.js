@@ -6,13 +6,24 @@ function currentUserId() {
   return localStorage.getItem("userId") || "anonymous";
 }
 
+// The backend has no way to delete or edit a trip, so a removal is a 0-mile entry
+// that cancels the original: the record stays, and every screen leaves both out.
+const VOID_PREFIX = "void:";
+const isVoidEntry = (trip) => Number(trip.miles) === 0 && String(trip.note || "").startsWith(VOID_PREFIX);
+
+/** Drops void entries and the trips they cancel. */
+export function applyVoids(trips) {
+  const voided = new Set(trips.filter(isVoidEntry).map((t) => String(t.note).slice(VOID_PREFIX.length)));
+  return trips.filter((t) => !isVoidEntry(t) && !voided.has(String(t.tripId)));
+}
+
 /** Fetches all trips for the current user + active business from the backend. */
 export async function fetchTrips() {
   const userId = currentUserId();
   const businessId = getCurrentBusinessId();
   const params = businessId ? { userId, businessId } : { userId };
   const res = await axios.get(apiUrl(ROUTES.MILEAGE_TRIP), { params });
-  return Array.isArray(res.data) ? res.data : [];
+  return Array.isArray(res.data) ? applyVoids(res.data) : [];
 }
 
 let cache = null;
@@ -37,6 +48,21 @@ export async function saveTrip(trip) {
   const res = await axios.post(apiUrl(ROUTES.MILEAGE_TRIP), { userId, trip: taggedTrip });
   cache = null;
   return res.data;
+}
+
+/** Takes a saved trip out of every total. */
+export async function removeTrip(trip) {
+  await saveTrip({
+    dateKey: trip.dateKey,
+    date: trip.date,
+    time: trip.time,
+    miles: 0,
+    durationSeconds: 0,
+    type: "personal",
+    purpose: "Removed",
+    note: `${VOID_PREFIX}${trip.tripId}`,
+    stateBreakdown: [],
+  });
 }
 
 /** Trips for one calendar day (dateKey format: YYYY-MM-DD), from an already-fetched list. */

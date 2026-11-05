@@ -681,7 +681,10 @@
     "signalUnavailable": "señal no disponible temporalmente, reintentando…",
     "noGpsSupport": "Este navegador no admite la ubicación GPS.",
     "saveError": "No se pudo guardar el viaje. Verifica tu conexión e inténtalo de nuevo.",
-    "saveForIfta": "Guardar para millas IFTA"
+    "saveForIfta": "Guardar para millas IFTA",
+    "endedEarlierHint": "Te detuviste antes. Si olvidaste pulsar Detener, elige cuándo terminó realmente este viaje.",
+    "endedNow": "Ahora mismo, {{miles}} mi",
+    "endedAt": "{{time}}, {{miles}} mi"
   },
   "tripHistory": {
     "loading": "Cargando viajes…",
@@ -695,7 +698,12 @@
     "allTime": "Todo el tiempo",
     "noTrips": "No hay viajes registrados este día",
     "miTotal": "mi. en total",
-    "min": "min"
+    "min": "min",
+    "remove": "Eliminar",
+    "removeConfirm": "¿Eliminar este viaje?",
+    "removeYes": "Sí, eliminar",
+    "removeKeep": "Conservar",
+    "removeError": "No se pudo eliminar. Revisa tu conexión e inténtalo de nuevo."
   },
   "auth": {
     "login": {
@@ -982,7 +990,9 @@
     "unassigned_other": "{{count}} viajes ({{miles}} mi) no tienen desglose por estado y no están en la tabla. Agrega sus millas a los estados correctos antes de declarar.",
     "unconfirmed": "Viajes sin confirmar: {{count}} ({{miles}} mi). Estas millas no están incluidas.",
     "reviewDrives": "Revisar viajes",
-    "unassigned": "Viajes sin estado: {{count}} ({{miles}} mi). Estas millas no están incluidas."
+    "unassigned": "Viajes sin estado: {{count}} ({{miles}} mi). Estas millas no están incluidas.",
+    "tripsInReport": "Ver los viajes de este informe: {{count}}",
+    "tripFallback": "Viaje"
   },
   "quickScan": {
     "scanReceipt": "Escanear recibo",

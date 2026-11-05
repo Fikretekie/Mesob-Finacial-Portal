@@ -9,7 +9,7 @@ import { haversineMiles } from "utils/geo";
 import { saveTrip } from "utils/tripStorage";
 import { getStateAtPoint } from "utils/geoState";
 import { haptic } from "utils/haptics";
-import { logBusinessMiles, setManualTrip, LOAD_PURPOSE, PERSONAL_PURPOSE } from "utils/driveMonitor";
+import { driveDetectionAvailable, getDriveStatus, logBusinessMiles, setManualTrip, LOAD_PURPOSE, PERSONAL_PURPOSE } from "utils/driveMonitor";
 import { isTrucking } from "utils/mileageRate";
 
 const BackgroundGeolocation = registerPlugin("BackgroundGeolocation");
@@ -17,6 +17,9 @@ const BackgroundGeolocation = registerPlugin("BackgroundGeolocation");
 const MAX_ACCEPTABLE_ACCURACY_METERS = 50;
 const MIN_MOVEMENT_MILES = 0.005; // ~8 meters
 const STATE_CHECK_INTERVAL_MILES = 1; // how often to re-check which state we're in
+const CHECKPOINT_EVERY_MS = 30 * 1000; // how finely a forgotten trip can be cut back
+const STOP_RADIUS_MILES = 0.025; // ~40 meters
+const LONG_STOP_MS = 10 * 60 * 1000;
 
 // Trucking: loaded vs empty (deadhead) miles instead of trip purposes.
 const purposeOptions = () =>
@@ -50,7 +53,13 @@ function MileageTracker() {
   const [note, setNote] = useState("");
   const [purposeIndex, setPurposeIndex] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
+  // Forgot to press Stop: which earlier stop the trip really ended at (-1 = just now).
+  const [endChoice, setEndChoice] = useState(-1);
 
+  const milesRef = useRef(0);
+  const checkpointsRef = useRef([]); // { at, miles, stateBreakdown }
+  const stopAnchorRef = useRef(null); // { lat, lng, at }
+  const longStopsRef = useRef([]); // times long stops began
   const watchIdRef = useRef(null);
   const lastPointRef = useRef(null);
   const startTimeRef = useRef(null);
@@ -119,6 +128,38 @@ function MileageTracker() {
       });
   };
 
+  /** Miles per state so far, including the stretch since the last state check. */
+  const stateBreakdownNow = () => {
+    const totals = { ...stateMilesRef.current };
+    if (currentStateRef.current && milesSinceStateCheckRef.current > 0) {
+      totals[currentStateRef.current] = (totals[currentStateRef.current] || 0) + milesSinceStateCheckRef.current;
+    }
+    return Object.entries(totals).map(([state, miles]) => ({ state, miles: Number(miles.toFixed(2)) }));
+  };
+
+  const addCheckpoint = () => {
+    checkpointsRef.current.push({ at: Date.now(), miles: milesRef.current, stateBreakdown: stateBreakdownNow() });
+  };
+
+  /** Times this trip may really have ended, as the miles and states at each one. */
+  const earlierEnds = async () => {
+    let exits = [];
+    if (driveDetectionAvailable()) {
+      const status = await getDriveStatus().catch(() => null);
+      if (status && Array.isArray(status.manualExits)) exits = status.manualExits;
+    }
+    const ends = [];
+    [...longStopsRef.current, ...exits]
+      .sort((a, b) => a - b)
+      .forEach((time) => {
+        const before = checkpointsRef.current.filter((c) => c.at <= time).pop();
+        if (!before || before.miles < 0.05 || milesRef.current - before.miles < 0.05) return;
+        if (ends.some((e) => Math.abs(e.miles - before.miles) < 0.05)) return;
+        ends.push(before);
+      });
+    return ends;
+  };
+
   const handlePosition = (position) => {
     setError("");
     const { latitude, longitude, accuracy } = position.coords;
@@ -126,11 +167,18 @@ function MileageTracker() {
 
     if (accuracy > MAX_ACCEPTABLE_ACCURACY_METERS) return;
 
+    const anchor = stopAnchorRef.current;
+    if (!anchor || haversineMiles(anchor.lat, anchor.lng, latitude, longitude) > STOP_RADIUS_MILES) {
+      if (anchor && Date.now() - anchor.at >= LONG_STOP_MS) longStopsRef.current.push(anchor.at);
+      stopAnchorRef.current = { lat: latitude, lng: longitude, at: Date.now() };
+    }
+
     const prev = lastPointRef.current;
     if (prev) {
       const delta = haversineMiles(prev.lat, prev.lng, latitude, longitude);
       if (delta >= MIN_MOVEMENT_MILES) {
         setDistanceMiles((d) => d + delta);
+        milesRef.current += delta;
         milesSinceStateCheckRef.current += delta;
         lastPointRef.current = { lat: latitude, lng: longitude };
       }
@@ -161,6 +209,11 @@ function MileageTracker() {
     stateMilesRef.current = {};
     currentStateRef.current = null;
     milesSinceStateCheckRef.current = 0;
+    milesRef.current = 0;
+    checkpointsRef.current = [];
+    stopAnchorRef.current = null;
+    longStopsRef.current = [];
+    addCheckpoint();
 
     if (Capacitor.isNativePlatform()) {
       try {
@@ -192,6 +245,8 @@ function MileageTracker() {
 
     timerIdRef.current = setInterval(() => {
       setElapsedSeconds((Date.now() - startTimeRef.current) / 1000);
+      const latest = checkpointsRef.current[checkpointsRef.current.length - 1];
+      if (Date.now() - latest.at >= CHECKPOINT_EVERY_MS) addCheckpoint();
     }, 1000);
 
     setIsTracking(true);
@@ -212,12 +267,14 @@ function MileageTracker() {
       clearInterval(timerIdRef.current);
       timerIdRef.current = null;
     }
+    const endOptions = await earlierEnds();
     flushMilesToCurrentState();
     const stateBreakdown = Object.entries(stateMilesRef.current).map(([state, miles]) => ({
       state,
       miles: Number(miles.toFixed(2)),
     }));
 
+    setEndChoice(-1);
     setIsTracking(false);
     setManualTrip(false);
     setTripType("business");
@@ -229,8 +286,22 @@ function MileageTracker() {
       durationSeconds: elapsedSeconds,
       endedAt: new Date(),
       stateBreakdown,
+      startedAt: startTimeRef.current,
+      endOptions,
     });
   };
+
+  // What gets saved: the whole trip, or up to the stop the driver picked.
+  const chosenEnd = pendingTrip && endChoice >= 0 ? pendingTrip.endOptions[endChoice] : null;
+  const finalTrip = pendingTrip && chosenEnd
+    ? {
+        ...pendingTrip,
+        miles: chosenEnd.miles,
+        stateBreakdown: chosenEnd.stateBreakdown,
+        endedAt: new Date(chosenEnd.at),
+        durationSeconds: (chosenEnd.at - pendingTrip.startedAt) / 1000,
+      }
+    : pendingTrip;
 
   const discardTrip = () => {
     setPendingTrip(null);
@@ -246,20 +317,20 @@ function MileageTracker() {
       return;
     }
     setIsSaving(true);
-    const now = pendingTrip.endedAt;
+    const now = finalTrip.endedAt;
     try {
       await saveTrip({
         dateKey: dateKeyOf(now),
         date: now.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
         time: now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-        miles: Number(pendingTrip.miles.toFixed(2)),
-        durationSeconds: Math.round(pendingTrip.durationSeconds),
+        miles: Number(finalTrip.miles.toFixed(2)),
+        durationSeconds: Math.round(finalTrip.durationSeconds),
         type: tripType,
         purpose: truckingPersonal ? PERSONAL_PURPOSE : purposeOptions()[purposeIndex],
         note: note.trim(),
-        stateBreakdown: pendingTrip.stateBreakdown,
+        stateBreakdown: finalTrip.stateBreakdown,
       });
-      if (!truckingPersonal) logBusinessMiles(dateKeyOf(now), Number(pendingTrip.miles.toFixed(2)));
+      if (!truckingPersonal) logBusinessMiles(dateKeyOf(now), Number(finalTrip.miles.toFixed(2)));
       setPendingTrip(null);
       navigate("/customer/trip-history");
     } catch (err) {
@@ -401,12 +472,36 @@ function MileageTracker() {
 
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: "8px" }}>
               <span style={{ fontSize: "26px", fontWeight: 700, color: "var(--green)" }}>
-                {pendingTrip.miles.toFixed(2)} mi
+                {finalTrip.miles.toFixed(2)} mi
               </span>
               <span style={{ fontSize: "13px", color: "#9A9A9A" }}>
-                · {formatElapsed(pendingTrip.durationSeconds)}
+                · {formatElapsed(finalTrip.durationSeconds)}
               </span>
             </div>
+
+            {pendingTrip.endOptions.length > 0 && (
+              <label className="mksv-trip-end">
+                <span>{t("mileageTracker.endedEarlierHint")}</span>
+                <select
+                  className="form-control"
+                  value={endChoice}
+                  onChange={(e) => setEndChoice(Number(e.target.value))}
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-1)" }}
+                >
+                  <option value={-1}>
+                    {t("mileageTracker.endedNow", { miles: pendingTrip.miles.toFixed(1) })}
+                  </option>
+                  {pendingTrip.endOptions.map((end, i) => (
+                    <option key={end.at} value={i}>
+                      {t("mileageTracker.endedAt", {
+                        time: new Date(end.at).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }),
+                        miles: end.miles.toFixed(1),
+                      })}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
               <div

@@ -681,7 +681,10 @@
     "signalUnavailable": "signal temporairement indisponible, nouvelle tentative…",
     "noGpsSupport": "Ce navigateur ne prend pas en charge la localisation GPS.",
     "saveError": "Impossible d'enregistrer le trajet. Vérifiez votre connexion et réessayez.",
-    "saveForIfta": "Enregistrer pour les miles IFTA"
+    "saveForIfta": "Enregistrer pour les miles IFTA",
+    "endedEarlierHint": "Vous vous êtes arrêté plus tôt. Si vous avez oublié d'appuyer sur Arrêter, choisissez quand ce trajet s'est vraiment terminé.",
+    "endedNow": "À l'instant, {{miles}} mi",
+    "endedAt": "{{time}}, {{miles}} mi"
   },
   "tripHistory": {
     "loading": "Chargement des trajets…",
@@ -695,7 +698,12 @@
     "allTime": "Depuis le début",
     "noTrips": "Aucun trajet enregistré ce jour",
     "miTotal": "mi au total",
-    "min": "min"
+    "min": "min",
+    "remove": "Retirer",
+    "removeConfirm": "Retirer ce trajet ?",
+    "removeYes": "Oui, retirer",
+    "removeKeep": "Conserver",
+    "removeError": "Impossible de le retirer. Vérifiez votre connexion et réessayez."
   },
   "auth": {
     "login": {
@@ -982,7 +990,9 @@
     "unassigned_other": "{{count}} trajets ({{miles}} mi) n'ont pas de répartition par État et ne sont pas dans le tableau. Ajoutez leurs miles aux bons États avant de déclarer.",
     "unconfirmed": "Trajets non confirmés : {{count}} ({{miles}} mi). Ces miles ne sont pas inclus.",
     "reviewDrives": "Vérifier les trajets",
-    "unassigned": "Trajets sans État : {{count}} ({{miles}} mi). Ces miles ne sont pas inclus."
+    "unassigned": "Trajets sans État : {{count}} ({{miles}} mi). Ces miles ne sont pas inclus.",
+    "tripsInReport": "Voir les trajets de ce rapport : {{count}}",
+    "tripFallback": "Trajet"
   },
   "quickScan": {
     "scanReceipt": "Scanner le reçu",

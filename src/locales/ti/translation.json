@@ -681,7 +681,10 @@
     "signalUnavailable": "ምልክት ግዝያዊ ኣይርከብን፣ ዳግም ይፍትን ኣሎ…",
     "noGpsSupport": "እዚ መሳርሒ ድሌት ጂፒኤስ ኣይድግፍን እዩ።",
     "saveError": "ጉዕዞ ክዕቀብ ኣይተኻእለን። ርክብካ ኣረጋግጽ ከምኡውን ደጊምካ ፈትን።",
-    "saveForIfta": "ንማይላት IFTA ዓቅብ"
+    "saveForIfta": "ንማይላት IFTA ዓቅብ",
+    "endedEarlierHint": "ቀደም ኢልኩም ደው ኢልኩም ነይርኩም። ምቁራጽ ምጥዋቕ እንተ ረሲዕኩም፣ እዚ ጉዕዞ ብሓቂ መዓስ ከም ዝተወድአ ምረጹ።",
+    "endedNow": "ሕጂ፣ {{miles}} ማይል",
+    "endedAt": "{{time}}፣ {{miles}} ማይል"
   },
   "tripHistory": {
     "loading": "ጉዕዞታት ኣብ ምጽናን…",
@@ -695,7 +698,12 @@
     "allTime": "ጠቕላላ ግዜ",
     "noTrips": "ንዚ መዓልቲ ዝተመዝገበ ጉዞ የለን",
     "miTotal": "ማይል ብድምር",
-    "min": "ደቒቕ"
+    "min": "ደቒቕ",
+    "remove": "ኣልግስ",
+    "removeConfirm": "እዚ ጉዕዞ ይእለ?",
+    "removeYes": "እወ፣ ኣልግስ",
+    "removeKeep": "ይጽናሕ",
+    "removeError": "ክእለ ኣይከኣለን። ርክብኩም ኣረጋግጹ እሞ ደጊምኩም ፈትኑ።"
   },
   "auth": {
     "login": {
@@ -982,7 +990,9 @@
     "unassigned_other": "{{count}} ጉዕዞታት ({{miles}} ማይል) ምምቓል ግዝኣት የብሎምን፣ ኣብ ሰንጠረዥ የለዉን። ቅድሚ ምእታው ማይላቶም ናብ ትኽክለኛ ግዝኣታት ወስኹ።",
     "unconfirmed": "ዘይተረጋገጹ ጉዕዞታት፦ {{count}} ({{miles}} ማይል)። እዞም ማይላት ኣይተኻተቱን።",
     "reviewDrives": "ጉዕዞታት ገምግሙ",
-    "unassigned": "ክፍለ ሃገር ዘይብሎም ጉዕዞታት፦ {{count}} ({{miles}} ማይል)። እዞም ማይላት ኣይተኻተቱን።"
+    "unassigned": "ክፍለ ሃገር ዘይብሎም ጉዕዞታት፦ {{count}} ({{miles}} ማይል)። እዞም ማይላት ኣይተኻተቱን።",
+    "tripsInReport": "ኣብዚ ጸብጻብ ዘለዉ ጉዕዞታት ርኣዩ፦ {{count}}",
+    "tripFallback": "ጉዕዞ"
   },
   "quickScan": {
     "scanReceipt": "ቅብሊት ኣንብቡ",

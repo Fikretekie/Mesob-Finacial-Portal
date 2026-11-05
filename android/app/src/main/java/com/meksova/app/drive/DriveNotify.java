@@ -148,6 +148,7 @@ final class DriveNotify {
         Notification n = base(c, CH_DRIVES)
             .setContentTitle(DrivePrefs.str(c, "stopAskTitle", "Did you finish your trip?"))
             .setContentText(DrivePrefs.str(c, "stopAskBody", "You've been stopped for 10 minutes."))
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(DrivePrefs.str(c, "stopAskBody", "You've been stopped for 10 minutes.")))
             .setContentIntent(openApp(c, "drives", ID_STOP_ASK))
             .addAction(0, DrivePrefs.str(c, "stopAskFinished", "Finished"), broadcast(c, DriveActionReceiver.TRIP_FINISHED, null, ID_STOP_ASK + 1))
             .addAction(0, DrivePrefs.str(c, "stopAskKeep", "Keep recording"), broadcast(c, DriveActionReceiver.KEEP_RECORDING, null, ID_STOP_ASK + 2))
@@ -157,11 +158,13 @@ final class DriveNotify {
 
     /** Trucking: no movement for hours, so the day's drives are ready to confirm. */
     static void dayReview(Context c, int count, double totalMiles) {
+        String body = DrivePrefs.str(c, "dayReviewBody", "{count} waiting, {miles} mi. Only confirmed truck drives count for IFTA.")
+            .replace("{count}", String.valueOf(count))
+            .replace("{miles}", miles(totalMiles));
         Notification n = base(c, CH_DRIVES)
             .setContentTitle(DrivePrefs.str(c, "dayReviewTitle", "Review your drives"))
-            .setContentText(DrivePrefs.str(c, "dayReviewBody", "{count} waiting, {miles} mi. Only confirmed truck drives count for IFTA.")
-                .replace("{count}", String.valueOf(count))
-                .replace("{miles}", miles(totalMiles)))
+            .setContentText(body)
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
             .setContentIntent(openApp(c, "drives", ID_DAY_REVIEW))
             .build();
         post(c, ID_DAY_REVIEW, n);

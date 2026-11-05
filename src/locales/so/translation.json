@@ -681,7 +681,10 @@
     "signalUnavailable": "calaamaddu waxay ku mahtay ku maqan, isku dayaya mar kale…",
     "noGpsSupport": "Biraawsarkani ma taageerayo goobta GPS.",
     "saveError": "Safarka lama kaydin karin. Hubi xiriirkaaga oo isku day mar kale.",
-    "saveForIfta": "U kaydi mayllada IFTA"
+    "saveForIfta": "U kaydi mayllada IFTA",
+    "endedEarlierHint": "Waad joogsatay hore. Haddii aad illowday inaad riixdo Jooji, dooro goorta safarkani dhab ahaan dhammaaday.",
+    "endedNow": "Hadda, {{miles}} mi",
+    "endedAt": "{{time}}, {{miles}} mi"
   },
   "tripHistory": {
     "loading": "Safarada waa la soo dejinayaa…",
@@ -695,7 +698,12 @@
     "allTime": "Wakhtiga oo dhan",
     "noTrips": "Maalintan safar looma diiwaan gelin",
     "miTotal": "mayl wadarta",
-    "min": "daq"
+    "min": "daq",
+    "remove": "Ka saar",
+    "removeConfirm": "Ma la saaraa safarkan?",
+    "removeYes": "Haa, ka saar",
+    "removeKeep": "Hay",
+    "removeError": "Lama saari karin. Hubi xiriirkaaga oo isku day mar kale."
   },
   "auth": {
     "login": {
@@ -982,7 +990,9 @@
     "unassigned_other": "{{count}} safar ({{miles}} mi) ma laha qaybinta gobollada, kuma jiraan shaxda. Ku dar mayladooda gobollada saxda ah ka hor intaadan gudbin.",
     "unconfirmed": "Safarro aan la xaqiijin: {{count}} ({{miles}} mi). Mayladan kuma jiraan.",
     "reviewDrives": "Dib u eeg safarrada",
-    "unassigned": "Safarro aan gobol lahayn: {{count}} ({{miles}} mi). Mayladan kuma jiraan."
+    "unassigned": "Safarro aan gobol lahayn: {{count}} ({{miles}} mi). Mayladan kuma jiraan.",
+    "tripsInReport": "Arag safarrada warbixintan: {{count}}",
+    "tripFallback": "Safar"
   },
   "quickScan": {
     "scanReceipt": "Sawir rasiidka",

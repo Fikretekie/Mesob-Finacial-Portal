@@ -189,3 +189,42 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* Trips counted in the report, each removable. */
+.ifta-trips {
+  margin: 0 0 14px;
+}
+.ifta-trips > summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--accent);
+  font-weight: 700;
+  cursor: pointer;
+}
+.ifta-trips__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ifta-trips__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+.ifta-trips__info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+  font-size: 13px;
+}
+.ifta-trips__info strong {
+  color: var(--text-1);
+  font-size: 15px;
+}

@@ -673,7 +673,10 @@
     "signalUnavailable": "signal temporarily unavailable, retrying…",
     "noGpsSupport": "This browser does not support GPS location.",
     "saveError": "Could not save trip. Check your connection and try again.",
-    "saveForIfta": "Save for IFTA miles"
+    "saveForIfta": "Save for IFTA miles",
+    "endedEarlierHint": "You stopped earlier. If you forgot to press Stop, choose when this trip really ended.",
+    "endedNow": "Just now, {{miles}} mi",
+    "endedAt": "{{time}}, {{miles}} mi"
   },
   "tripHistory": {
     "loading": "Loading trips…",
@@ -687,7 +690,12 @@
     "allTime": "All Time",
     "noTrips": "No trips recorded for this day",
     "miTotal": "mi total",
-    "min": "min"
+    "min": "min",
+    "remove": "Remove",
+    "removeConfirm": "Remove this trip?",
+    "removeYes": "Yes, remove",
+    "removeKeep": "Keep it",
+    "removeError": "Couldn't remove it. Check your connection and try again."
   },
   "fuelPurchase": {
     "title": "Log Fuel Purchase",
@@ -738,7 +746,9 @@
     "unassigned_other": "{{count}} trips ({{miles}} mi) have no state breakdown and aren't in the table. Add their miles to the right states before filing.",
     "unconfirmed": "Unconfirmed drives: {{count}} ({{miles}} mi). These miles aren't included.",
     "reviewDrives": "Review drives",
-    "unassigned": "Trips with no state: {{count}} ({{miles}} mi). These miles aren't included."
+    "unassigned": "Trips with no state: {{count}} ({{miles}} mi). These miles aren't included.",
+    "tripsInReport": "See the trips in this report: {{count}}",
+    "tripFallback": "Trip"
   },
   "auth": {
     "login": {

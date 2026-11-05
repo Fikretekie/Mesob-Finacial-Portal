@@ -113,6 +113,11 @@ public class DriveMonitorPlugin extends Plugin {
         r.put("lastCheckAt", p.getLong("lastCheckAt", 0));
         r.put("lastCheckResult", p.getString("lastCheckResult", ""));
         r.put("lastCheckName", p.getString("lastCheckName", ""));
+        try {
+            r.put("manualExits", new JSONArray(p.getString("manualExits", "[]")));
+        } catch (Exception ignored) {
+            // Corrupt: treated as none.
+        }
         return r;
     }
 
@@ -264,6 +269,7 @@ public class DriveMonitorPlugin extends Plugin {
     public void setManualTrip(PluginCall call) {
         boolean active = call.getBoolean("active", false);
         DrivePrefs.prefs(getContext()).edit().putBoolean("manualTrip", active).apply();
+        if (active) DrivePrefs.prefs(getContext()).edit().remove("manualExits").apply();
         if (active) {
             DriveRecorderService.discardCurrent(getContext());
             DriveNotify.cancel(getContext(), DriveNotify.ID_ASK);

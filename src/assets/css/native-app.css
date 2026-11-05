@@ -1420,6 +1420,42 @@ label.mksv-prefs__row {
   cursor: pointer;
 }
 
+/* Removing a saved trip (Trip History, IFTA report). */
+.mksv-trip-remove {
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mksv-trip-remove--danger {
+  color: var(--red);
+}
+.mksv-trip-remove__ask {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+/* Mileage Tracker: when a forgotten trip really ended. */
+.mksv-trip-end {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
 /* Trucking: link a paired Bluetooth device as the truck or the car. */
 .mksv-vehicle-pick {
   display: flex;

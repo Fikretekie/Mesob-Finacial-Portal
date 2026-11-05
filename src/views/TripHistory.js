@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Card, CardBody } from "reactstrap";
 
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
+import RemoveTripButton from "components/RemoveTripButton";
 import { fetchTrips, getTripsForDay, getMonthSummary, getYearBusinessMiles, getTripsForQuarter, getMilesByState } from "utils/tripStorage";
 import { currentRateLabel, isTrucking, yearDeduction } from "utils/mileageRate";
 
@@ -221,6 +222,7 @@ function TripHistory() {
                   >
                     {trip.type === "business" ? t("mileageTracker.business") : t("mileageTracker.personal")}
                   </span>
+                  <RemoveTripButton trip={trip} onRemoved={(gone) => setTrips((list) => list.filter((x) => x.tripId !== gone.tripId))} />
                 </div>
               </CardBody>
             </Card>

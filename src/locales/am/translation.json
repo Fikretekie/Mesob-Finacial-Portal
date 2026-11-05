@@ -681,7 +681,10 @@
     "signalUnavailable": "ምልክቱ ለጊዜው አይገኝም፣ በድጋሚ በመሞከር ላይ…",
     "noGpsSupport": "ይህ አሳሽ የጂፒኤስ አካባቢን አይደግፍም።",
     "saveError": "ጉዞውን ማስቀመጥ አልተቻለም። ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ።",
-    "saveForIfta": "ለIFTA ማይሎች አስቀምጥ"
+    "saveForIfta": "ለIFTA ማይሎች አስቀምጥ",
+    "endedEarlierHint": "ቀደም ብለው ቆመው ነበር። ማቆምን መጫን ከረሱ ይህ ጉዞ በእርግጥ መቼ እንዳበቃ ይምረጡ።",
+    "endedNow": "አሁን፣ {{miles}} ማይል",
+    "endedAt": "{{time}}፣ {{miles}} ማይል"
   },
   "tripHistory": {
     "loading": "ጉዞዎች በመጫን ላይ…",
@@ -695,7 +698,12 @@
     "allTime": "ጠቅላላ ጊዜ",
     "noTrips": "ለዚህ ቀን የተመዘገበ ጉዞ የለም",
     "miTotal": "ማይል በጠቅላላ",
-    "min": "ደቂቃ"
+    "min": "ደቂቃ",
+    "remove": "አስወግድ",
+    "removeConfirm": "ይህን ጉዞ ይወገድ?",
+    "removeYes": "አዎ፣ አስወግድ",
+    "removeKeep": "ይቆይ",
+    "removeError": "ማስወገድ አልተቻለም። ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ።"
   },
   "auth": {
     "login": {
@@ -982,7 +990,9 @@
     "unassigned_other": "{{count}} ጉዞዎች ({{miles}} ማይል) የግዛት ክፍፍል የላቸውም፣ በሰንጠረዡ ውስጥ የሉም። ከማስገባትዎ በፊት ማይሎቹን ወደ ትክክለኛዎቹ ግዛቶች ይጨምሩ።",
     "unconfirmed": "ያልተረጋገጡ ጉዞዎች፦ {{count}} ({{miles}} ማይል)። እነዚህ ማይሎች አልተካተቱም።",
     "reviewDrives": "ጉዞዎችን ይገምግሙ",
-    "unassigned": "ግዛት የሌላቸው ጉዞዎች፦ {{count}} ({{miles}} ማይል)። እነዚህ ማይሎች አልተካተቱም።"
+    "unassigned": "ግዛት የሌላቸው ጉዞዎች፦ {{count}} ({{miles}} ማይል)። እነዚህ ማይሎች አልተካተቱም።",
+    "tripsInReport": "በዚህ ሪፖርት ውስጥ ያሉ ጉዞዎችን ይመልከቱ፦ {{count}}",
+    "tripFallback": "ጉዞ"
   },
   "quickScan": {
     "scanReceipt": "ደረሰኝ ይቃኙ",

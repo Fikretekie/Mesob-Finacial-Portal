@@ -4,6 +4,7 @@ import { Card, CardBody, Button } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import { saveFile } from "utils/saveFile";
 import { getRecordedDrives, isUnconfirmedDrive } from "utils/driveMonitor";
+import RemoveTripButton from "components/RemoveTripButton";
 
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import { fetchTrips, getTripsForQuarter } from "utils/tripStorage";
@@ -224,6 +225,31 @@ function IftaReport() {
                   <p className="ifta-warn">
                     {t("iftaReport.unassigned", { count: report.unassignedTrips, miles: report.unassignedMiles.toFixed(1) })}
                   </p>
+                )}
+
+                {/* Everything counted above, so a wrong trip of any age can be taken out. */}
+                {quarterTrips.length > 0 && (
+                  <details className="ifta-trips">
+                    <summary>{t("iftaReport.tripsInReport", { count: quarterTrips.length })}</summary>
+                    <ul className="ifta-trips__list">
+                      {[...quarterTrips]
+                        .sort((a, b) => String(b.dateKey).localeCompare(String(a.dateKey)))
+                        .map((trip) => (
+                          <li key={trip.tripId || `${trip.dateKey}-${trip.time}-${trip.miles}`} className="ifta-trips__row">
+                            <span className="ifta-trips__info">
+                              <strong>{Number(trip.miles || 0).toFixed(1)} mi</strong>
+                              <span>
+                                {trip.date} {trip.time} · {trip.purpose || t("iftaReport.tripFallback")}
+                              </span>
+                            </span>
+                            <RemoveTripButton
+                              trip={trip}
+                              onRemoved={(gone) => setTrips((list) => list.filter((x) => x.tripId !== gone.tripId))}
+                            />
+                          </li>
+                        ))}
+                    </ul>
+                  </details>
                 )}
 
                 <div className="ifta-table-wrap">
