@@ -1387,11 +1387,17 @@
       "shiftAutoBody": "ን4 ሰዓት ስለ ዘይዘወርኩም ፈረቓኹም ተወዲኡ። ዝተመዝገቡ ጉዕዞታት፦ {count}፣ {miles} ማይል።",
       "shiftRule": "ኣብ ስራሕ",
       "dayReviewBodyRideshare": "{count} ይጽበዩ፣ {miles} ማይል። ስራሕን ውልቅን ንምፍላይ ተንክፉ።",
-      "shiftAskTitle": "ንስራሕ ትዝውሩ ዲኹም?",
-      "shiftAskBody": "እዚ ጉዕዞ ከም ስራሕ ምእንቲ ክቑጸር ፈረቓኹም ጀምሩ። ድሕሪ ምዕራፍ ክትትንክፍዎ ትኽእሉ።",
-      "shiftNotToday": "ሎሚ ኣይኮነን",
       "stopAskBodyShift": "ን10 ደቒቕ ደው ኢልኩም ኣለኹም። ወዲአ ፈረቓኹም እውን ይውድእ።",
-      "stopAskReceipt": "ደረሰኝኩም እውን ስኣሉ።"
+      "stopAskReceipt": "ደረሰኝኩም እውን ስኣሉ።",
+      "driveAskTitle": "ማይላትኩም ይቅረጹ ኣለዉ",
+      "driveAskBody": "እዚ ጉዕዞ ንስራሕ ድዩ ወይስ ውልቂ?",
+      "work": "ስራሕ",
+      "driveLoggedTitle": "ጉዕዞ ተመዝጊቡ፦ {miles} ማይል",
+      "driveLoggedBody": "ጉዕዞኹም ወዲእኩም ዲኹም?",
+      "driveLoggedBodyShift": "ወዲእኩም ዲኹም? ወዲአ ፈረቓኹም እውን ይውድእ።",
+      "driveEndTitle": "{miles} ማይል ጉዕዞ",
+      "driveEndBody": "እዚ ጉዕዞ ንስራሕ ነይሩ ወይስ ውልቂ?",
+      "personalTitleRideshare": "ውልቃዊ ጉዕዞ፣ ኣይተመዝገበን"
     },
     "settings": {
       "title": "ጉዕዞታትን መዘኻኸሪታትን",
@@ -1421,7 +1427,7 @@
       "stopFailed": "ምድላይ ኣይተዓወተን፣ ርክብኩም ኣረጋግጹ",
       "stopFound": "ቦታ ተረኺቡ",
       "shiftReminder": "መዘኻኸሪ ፈረቓ",
-      "shiftReminderHint": "ምዝዋር ክትጅምሩ ከለኹም ፈረቓኹም ንምጅማር ስቕ ዝበለ መዘኻኸሪ።"
+      "shiftReminderHint": "ምዝዋር ክትጅምሩ ከለኹም ስራሕ ወይስ ውልቂ ይሓትት።"
     },
     "disclosure": {
       "title": "ናይ ንግዲ ማይላት ብኣውቶማቲክ መዝግቡ",
@@ -1670,6 +1676,8 @@
     "doneBodyRideshare": "ጉዕዞታት ባዕሎም ይቅረጹ። ክትሰርሑ ከለኹም ፈረቓ ጀምሩ፣ ወይ ኣብ መወዳእታ መዓልቲ ጉዕዞታትኩም ፈልዩ።",
     "blocked": "Android ኣይፈቐደን። ኣብ ቅጥዕታት ክትውልዕዎ ወይ ደሓር ክትምለሱ ትኽእሉ።",
     "cardTitle": "ክትትል ማይል ምሉእ ብምሉእ ኣይወልዐን",
-    "cardSub": "ማይላትኩም ይቅረጹ ከይኮኑ ይኽእሉ። ንምውዳእ ተንክፉ።"
+    "cardSub": "ማይላትኩም ይቅረጹ ከይኮኑ ይኽእሉ። ንምውዳእ ተንክፉ።",
+    "staleTitle": "ን ሓደ ሰሙን ጉዕዞ ኣይተፈልጠን",
+    "staleSub": "እንተ ዘዊርኩም ቅጥዕታት ተሌፎንኩም ንምርግጋጽ ተንክፉ።"
   }
 }

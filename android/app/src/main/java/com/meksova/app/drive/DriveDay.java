@@ -71,7 +71,8 @@ public class DriveDay extends BroadcastReceiver {
     static void fire(Context c, String action) {
         if (!DrivePrefs.enabled(c) || !DrivePrefs.dailyReview(c) || DriveRecorderService.isRunning()) return;
         if (ASK.equals(action)) {
-            DriveNotify.stopAsk(c);
+            if (DrivePrefs.rideshare(c)) DriveNotify.driveFinal(c);
+            else DriveNotify.stopAsk(c);
         } else if (REVIEW.equals(action)) {
             JSONArray drives = DriveStore.all(c);
             int count = 0;

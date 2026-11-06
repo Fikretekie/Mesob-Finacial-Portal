@@ -1387,11 +1387,17 @@
       "shiftAutoBody": "Aucune conduite depuis 4 heures, votre service est donc terminé. Trajets enregistrés : {count}, {miles} mi.",
       "shiftRule": "En service",
       "dayReviewBodyRideshare": "{count} en attente, {miles} mi. Touchez pour trier travail et personnel.",
-      "shiftAskTitle": "Vous conduisez pour le travail ?",
-      "shiftAskBody": "Commencez votre service pour que ce trajet compte comme travail. Vous pouvez toucher ceci une fois garé.",
-      "shiftNotToday": "Pas aujourd'hui",
       "stopAskBodyShift": "Vous êtes arrêté depuis 10 minutes. Terminé met aussi fin à votre service.",
-      "stopAskReceipt": "Scannez aussi votre reçu."
+      "stopAskReceipt": "Scannez aussi votre reçu.",
+      "driveAskTitle": "Enregistrement de vos miles",
+      "driveAskBody": "Ce trajet est-il professionnel ou personnel ?",
+      "work": "Travail",
+      "driveLoggedTitle": "Trajet enregistré : {miles} mi",
+      "driveLoggedBody": "Avez-vous terminé votre trajet ?",
+      "driveLoggedBodyShift": "Terminé ? Terminé met aussi fin à votre service.",
+      "driveEndTitle": "Trajet de {miles} mi",
+      "driveEndBody": "Ce trajet était-il professionnel ou personnel ?",
+      "personalTitleRideshare": "Trajet personnel, non enregistré"
     },
     "settings": {
       "title": "Trajets et rappels",
@@ -1421,7 +1427,7 @@
       "stopFailed": "échec de la recherche, vérifiez votre connexion",
       "stopFound": "lieu trouvé",
       "shiftReminder": "Rappel de service",
-      "shiftReminderHint": "Un rappel discret pour commencer votre service quand vous prenez le volant."
+      "shiftReminderHint": "Demande travail ou personnel quand vous prenez le volant."
     },
     "disclosure": {
       "title": "Enregistrez vos miles professionnels automatiquement",
@@ -1670,6 +1676,8 @@
     "doneBodyRideshare": "Les trajets s'enregistrent seuls. Commencez un service quand vous travaillez, ou triez vos trajets en fin de journée.",
     "blocked": "Android ne l'a pas autorisé. Vous pouvez l'activer dans les réglages ou y revenir plus tard.",
     "cardTitle": "Le suivi des miles n'est pas complet",
-    "cardSub": "Vos miles ne sont peut-être pas enregistrés. Touchez pour terminer."
+    "cardSub": "Vos miles ne sont peut-être pas enregistrés. Touchez pour terminer.",
+    "staleTitle": "Aucun trajet détecté depuis une semaine",
+    "staleSub": "Si vous avez conduit, touchez pour vérifier les réglages du téléphone."
   }
 }

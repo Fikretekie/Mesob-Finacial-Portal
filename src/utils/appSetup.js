@@ -21,6 +21,14 @@ export const markSetupDone = () => {
   }
 };
 
+/** No drive noticed for this long may mean Android stopped telling us. */
+export const DETECTION_STALE_MS = 7 * 24 * 60 * 60 * 1000;
+
+export const detectionLooksStale = (status) =>
+  !!status.enabled &&
+  !!status.detectionSince &&
+  Date.now() - Math.max(status.detectionSince, status.lastDriveAt || 0) >= DETECTION_STALE_MS;
+
 /** What tracking still needs. Battery isn't here: drives usually still record without it. */
 export const trackingIncomplete = (status, settings) =>
   !settings.enabled || !status.activity || !status.location || !status.backgroundLocation || !status.notifications;

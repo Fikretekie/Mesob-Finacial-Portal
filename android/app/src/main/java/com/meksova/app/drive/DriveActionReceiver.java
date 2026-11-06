@@ -23,7 +23,14 @@ public class DriveActionReceiver extends BroadcastReceiver {
     static final String SHIFT_START = "com.meksova.app.drive.SHIFT_START";
     static final String SHIFT_END = "com.meksova.app.drive.SHIFT_END";
     static final String SHIFT_AUTO_END = "com.meksova.app.drive.SHIFT_AUTO_END";
-    static final String SHIFT_NOT_TODAY = "com.meksova.app.drive.SHIFT_NOT_TODAY";
+    /** Rideshare, on the notification as a drive starts. */
+    static final String DRIVE_WORK = "com.meksova.app.drive.DRIVE_WORK";
+    static final String DRIVE_PERSONAL = "com.meksova.app.drive.DRIVE_PERSONAL";
+    /** Rideshare, on the notification after they've stopped. */
+    static final String FINAL_WORK = "com.meksova.app.drive.FINAL_WORK";
+    static final String FINAL_PERSONAL = "com.meksova.app.drive.FINAL_PERSONAL";
+    /** Periodic: Android can drop driving detection, so ask for it again. */
+    static final String RE_REGISTER = "com.meksova.app.drive.RE_REGISTER";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -51,6 +58,11 @@ public class DriveActionReceiver extends BroadcastReceiver {
             DriveStore.classify(context, id, null);
             org.json.JSONObject drive = DriveStore.get(context, id);
             if (drive != null && !DrivePrefs.dailyReview(context)) DriveNotify.classify(context, drive);
+            else if (drive != null && DrivePrefs.rideshare(context)) {
+                // Back to the question it came from.
+                DriveNotify.cancel(context, DriveNotify.classifyId(id));
+                DriveNotify.driveFinal(context);
+            }
         } else if (DISCARD_RECORDING.equals(action)) {
             DriveRecorderService.discardCurrent(context);
         } else if (DISMISS_ASK.equals(action)) {
@@ -59,8 +71,21 @@ public class DriveActionReceiver extends BroadcastReceiver {
             DriveNotify.cancel(context, DriveNotify.ID_FUEL);
         } else if (SHIFT_START.equals(action)) {
             if (DrivePrefs.enabled(context)) DriveShift.start(context);
-        } else if (SHIFT_NOT_TODAY.equals(action)) {
-            DriveShift.muteToday(context);
+        } else if (DRIVE_WORK.equals(action)) {
+            if (DrivePrefs.enabled(context)) DriveShift.start(context);
+        } else if (DRIVE_PERSONAL.equals(action)) {
+            DriveShift.markPersonal(context);
+        } else if (FINAL_WORK.equals(action)) {
+            if (id != null) DriveStore.classify(context, id, "business");
+            DriveNotify.cancel(context, DriveNotify.ID_STOP_ASK);
+        } else if (FINAL_PERSONAL.equals(action)) {
+            DriveNotify.cancel(context, DriveNotify.ID_STOP_ASK);
+            if (id != null) {
+                DriveStore.classify(context, id, "personal");
+                DriveNotify.personalUndo(context, id);
+            }
+        } else if (RE_REGISTER.equals(action)) {
+            if (DrivePrefs.enabled(context)) DriveEvents.register(context);
         } else if (SHIFT_END.equals(action)) {
             DriveShift.end(context, false, false);
         } else if (SHIFT_AUTO_END.equals(action)) {

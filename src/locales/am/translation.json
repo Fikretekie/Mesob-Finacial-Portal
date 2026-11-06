@@ -1387,11 +1387,17 @@
       "shiftAutoBody": "ለ4 ሰዓት መንዳት ስላልነበረ ፈረቃዎ አብቅቷል። የተመዘገቡ ጉዞዎች፦ {count}፣ {miles} ማይል።",
       "shiftRule": "በሥራ ላይ",
       "dayReviewBodyRideshare": "{count} በመጠባበቅ ላይ፣ {miles} ማይል። ሥራና የግል ለመለየት ይንኩ።",
-      "shiftAskTitle": "ለሥራ እየነዱ ነው?",
-      "shiftAskBody": "ይህ ጉዞ እንደ ሥራ እንዲቆጠር ፈረቃዎን ይጀምሩ። ካቆሙ በኋላ መንካት ይችላሉ።",
-      "shiftNotToday": "ዛሬ አይደለም",
       "stopAskBodyShift": "ለ10 ደቂቃ ቆመዋል። ጨርሻለሁ ፈረቃዎንም ያበቃል።",
-      "stopAskReceipt": "ደረሰኝዎንም ይቃኙ።"
+      "stopAskReceipt": "ደረሰኝዎንም ይቃኙ።",
+      "driveAskTitle": "ማይሎችዎ እየተቀረጹ ነው",
+      "driveAskBody": "ይህ ጉዞ ለሥራ ነው ወይስ የግል?",
+      "work": "ሥራ",
+      "driveLoggedTitle": "ጉዞ ተመዝግቧል፦ {miles} ማይል",
+      "driveLoggedBody": "ጉዞዎን ጨርሰዋል?",
+      "driveLoggedBodyShift": "ጨርሰዋል? ጨርሻለሁ ፈረቃዎንም ያበቃል።",
+      "driveEndTitle": "{miles} ማይል ጉዞ",
+      "driveEndBody": "ይህ ጉዞ ለሥራ ነበር ወይስ የግል?",
+      "personalTitleRideshare": "የግል ጉዞ፣ አልተመዘገበም"
     },
     "settings": {
       "title": "ጉዞዎች እና ማሳሰቢያዎች",
@@ -1421,7 +1427,7 @@
       "stopFailed": "ፍለጋው አልተሳካም፣ ግንኙነትዎን ያረጋግጡ",
       "stopFound": "ቦታ ተገኝቷል",
       "shiftReminder": "የፈረቃ ማስታወሻ",
-      "shiftReminderHint": "መንዳት ሲጀምሩ ፈረቃዎን እንዲጀምሩ ጸጥ ያለ ማስታወሻ።"
+      "shiftReminderHint": "መንዳት ሲጀምሩ ሥራ ወይስ የግል ይጠይቃል።"
     },
     "disclosure": {
       "title": "የንግድ ማይሎችን በራስ-ሰር ይመዝግቡ",
@@ -1670,6 +1676,8 @@
     "doneBodyRideshare": "ጉዞዎች በራሳቸው ይቀረጻሉ። ሲሠሩ ፈረቃ ይጀምሩ፣ ወይም በቀኑ መጨረሻ ጉዞዎችዎን ይለዩ።",
     "blocked": "Android አልፈቀደም። በቅንብሮች ማብራት ወይም በኋላ መመለስ ይችላሉ።",
     "cardTitle": "የማይል ክትትል ሙሉ በሙሉ አልበራም",
-    "cardSub": "ማይሎችዎ ላይቀረጹ ይችላሉ። ማዋቀሩን ለመጨረስ ይንኩ።"
+    "cardSub": "ማይሎችዎ ላይቀረጹ ይችላሉ። ማዋቀሩን ለመጨረስ ይንኩ።",
+    "staleTitle": "ለአንድ ሳምንት ምንም ጉዞ አልታወቀም",
+    "staleSub": "ነድተው ከሆነ የስልክዎን ቅንብሮች ለመፈተሽ ይንኩ።"
   }
 }

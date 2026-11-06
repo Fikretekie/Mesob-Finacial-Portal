@@ -91,7 +91,7 @@ const NATIVE_STRING_KEYS = [
   "autoTitle", "autoBody", "ruleHours", "alreadyTitle", "alreadyBody",
   "weeklyTitle", "weeklyDeduction", "weeklyWaiting",
   "stopAskTitle", "stopAskBody", "stopAskBodyShift", "stopAskReceipt", "stopAskFinished", "stopAskKeep", "dayReviewTitle", "dayReviewBody",
-  "shiftAskTitle", "shiftAskBody", "shiftNotToday", "shiftOnTitle", "shiftOnBody", "shiftStart", "shiftEnd", "shiftEndedTitle", "shiftEndedBody", "shiftAutoBody", "shiftRule",
+  "driveAskTitle", "driveAskBody", "work", "driveLoggedTitle", "driveLoggedBody", "driveLoggedBodyShift", "driveEndTitle", "driveEndBody", "shiftOnTitle", "shiftOnBody", "shiftStart", "shiftEnd", "shiftEndedTitle", "shiftEndedBody", "shiftAutoBody", "shiftRule",
   "widgetToday", "widgetWeek", "widgetRecording",
 ];
 
@@ -123,7 +123,10 @@ export async function configureDriveMonitor(t, settings) {
     strings.personalBody = t("drives.native.personalBodyTrucking");
   }
   const rideshare = isRideshare();
-  if (rideshare) strings.dayReviewBody = t("drives.native.dayReviewBodyRideshare");
+  if (rideshare) {
+    strings.dayReviewBody = t("drives.native.dayReviewBodyRideshare");
+    strings.personalTitle = t("drives.native.personalTitleRideshare");
+  }
   try {
     return await DriveMonitor.configure({ ...settings, trucking, rideshare, ratePerMile: trucking ? 0 : currentRate(), strings });
   } catch (e) {
@@ -151,6 +154,7 @@ export const openDriveAppSettings = () => DriveMonitor.openAppSettings();
 export const requestBluetooth = () => DriveMonitor.requestBluetooth();
 export const setShift = (on) => DriveMonitor.setShift({ on });
 export const noteAppSeen = () => DriveMonitor.setLastSeen().catch(() => {});
+export const resetDetectionCheck = () => DriveMonitor.resetDetectionCheck();
 
 export async function getPairedDevices() {
   try {

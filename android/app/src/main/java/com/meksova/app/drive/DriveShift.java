@@ -16,9 +16,8 @@ final class DriveShift {
     /** No movement this long and a forgotten shift ends itself. */
     static final long AUTO_END_MS = 4 * 60 * 60 * 1000;
     private static final int ALARM_REQUEST = 4136;
-    /** The "Driving for work?" reminder: enough to catch a forgotten shift without nagging. */
-    private static final int REMINDERS_PER_DAY = 2;
-    private static final long REMINDER_GAP_MS = 3 * 60 * 60 * 1000;
+    /** After "Personal", stop asking about drives for this long. */
+    private static final long PERSONAL_QUIET_MS = 3 * 60 * 60 * 1000;
 
     private DriveShift() {}
 
@@ -35,8 +34,7 @@ final class DriveShift {
             .putFloat("shiftMiles", 0f)
             .apply();
         DriveNotify.cancel(c, DriveNotify.ID_SHIFT_ENDED);
-        DriveNotify.cancel(c, DriveNotify.ID_SHIFT_ASK);
-        stopAsking(c);
+        DriveNotify.cancel(c, DriveNotify.ID_DRIVE_ASK);
         DriveNotify.shiftOn(c);
         scheduleAutoEnd(c);
         DriveWidget.refresh(c);
@@ -55,45 +53,25 @@ final class DriveShift {
         DriveWidget.refresh(c);
     }
 
-    /** A drive just started with no shift on: maybe remind them, quietly. */
-    static void maybeRemind(Context c) {
+    /**
+     * A drive just started with no shift on: is it work or personal? It doesn't
+     * depend on recording having started, and only the day's first one makes a sound.
+     */
+    static void askAboutDrive(Context c) {
         SharedPreferences p = DrivePrefs.prefs(c);
         if (!DrivePrefs.rideshare(c) || on(c) || !p.getBoolean("shiftReminder", true)) return;
+        if (System.currentTimeMillis() < p.getLong("personalUntil", 0)) return;
         String today = MilesLog.key(System.currentTimeMillis());
-        if (today.equals(p.getString("shiftMutedDay", ""))) return;
-        boolean sameDay = today.equals(p.getString("shiftReminderDay", ""));
-        int shown = sameDay ? p.getInt("shiftReminderCount", 0) : 0;
-        if (shown >= REMINDERS_PER_DAY) return;
-        if (sameDay && System.currentTimeMillis() - p.getLong("shiftReminderAt", 0) < REMINDER_GAP_MS) return;
-        p.edit()
-            .putString("shiftReminderDay", today)
-            .putInt("shiftReminderCount", shown + 1)
-            .putLong("shiftReminderAt", System.currentTimeMillis())
-            .apply();
-        if (DrivePrefs.autoRecord(c) && DrivePrefs.hasBackgroundLocation(c)) {
-            // Android stacks an app's silent notifications and hides their buttons, so
-            // while recording the buttons go on that one notification instead of a second.
-            p.edit().putBoolean("shiftAskOnRecording", true).apply();
-            DriveRecorderService.refreshNotification(c);
-        } else {
-            DriveNotify.shiftAsk(c);
-        }
+        boolean firstToday = !today.equals(p.getString("driveAskSoundDay", ""));
+        p.edit().putString("driveAskSoundDay", today).apply();
+        DriveNotify.driveAsk(c, !firstToday);
     }
 
-    static boolean askingOnRecording(Context c) {
-        return DrivePrefs.rideshare(c) && !on(c) && DrivePrefs.prefs(c).getBoolean("shiftAskOnRecording", false);
-    }
-
-    private static void stopAsking(Context c) {
-        DrivePrefs.prefs(c).edit().remove("shiftAskOnRecording").apply();
-        DriveRecorderService.refreshNotification(c);
-    }
-
-    /** "Not today": no more reminders until tomorrow. */
-    static void muteToday(Context c) {
-        DrivePrefs.prefs(c).edit().putString("shiftMutedDay", MilesLog.key(System.currentTimeMillis())).apply();
-        DriveNotify.cancel(c, DriveNotify.ID_SHIFT_ASK);
-        stopAsking(c);
+    /** "Personal" as they drive: this drive won't count, and no more asking for a while. */
+    static void markPersonal(Context c) {
+        DrivePrefs.prefs(c).edit().putLong("personalUntil", System.currentTimeMillis() + PERSONAL_QUIET_MS).apply();
+        DriveNotify.cancel(c, DriveNotify.ID_DRIVE_ASK);
+        DriveRecorderService.markPersonal(c);
     }
 
     static void driveCounted(Context c, double miles) {
@@ -109,7 +87,7 @@ final class DriveShift {
     }
 
     static void driveEnded(Context c) {
-        DrivePrefs.prefs(c).edit().remove("shiftAskOnRecording").apply();
+        DriveNotify.cancel(c, DriveNotify.ID_DRIVE_ASK);
         if (on(c)) scheduleAutoEnd(c);
     }
 

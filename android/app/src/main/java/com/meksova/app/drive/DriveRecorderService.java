@@ -100,6 +100,20 @@ public class DriveRecorderService extends Service {
         }
     }
 
+    /** Rideshare chose Personal as they drove: keep the miles (for Undo), but they won't count. */
+    static void markPersonal(Context c) {
+        if (instance != null && instance.active != null) {
+            try {
+                instance.active.put("personal", true);
+            } catch (Exception ignored) {
+                // Then it just gets asked about when it ends.
+            }
+            instance.persist();
+        } else {
+            DrivePrefs.prefs(c).edit().putBoolean("nextDrivePersonal", true).apply();
+        }
+    }
+
     /** "Personal, don't log" or a hand-started trip took over. */
     static void discardCurrent(Context c) {
         if (instance != null) {
@@ -139,7 +153,8 @@ public class DriveRecorderService extends Service {
     private void begin() {
         finalizeStored(this, -1);
         boolean continues = DrivePrefs.prefs(this).getBoolean("keepRecording", false);
-        DrivePrefs.prefs(this).edit().remove("keepRecording").apply();
+        boolean personal = DrivePrefs.prefs(this).getBoolean("nextDrivePersonal", false);
+        DrivePrefs.prefs(this).edit().remove("keepRecording").remove("nextDrivePersonal").apply();
         active = new JSONObject();
         try {
             active.put("id", UUID.randomUUID().toString());
@@ -147,6 +162,7 @@ public class DriveRecorderService extends Service {
             active.put("miles", 0);
             active.put("points", new JSONArray());
             if (continues) active.put("continues", true);
+            if (personal) active.put("personal", true);
         } catch (Exception ignored) {
             // put() on fresh keys can't fail.
         }
@@ -290,12 +306,19 @@ public class DriveRecorderService extends Service {
                 return;
             }
             String rule = DriveShift.on(c) ? DrivePrefs.str(c, "shiftRule", "On shift") : DriveRules.match(c, drive);
-            if (DriveShift.on(c)) DriveShift.driveCounted(c, drive.optDouble("miles", 0));
+            if (DriveShift.on(c) && !drive.optBoolean("personal", false)) DriveShift.driveCounted(c, drive.optDouble("miles", 0));
             if (DrivePrefs.rideshare(c)) {
-                // Several drives an hour on a busy shift, so none of them get an alert.
-                if (rule != null) drive.put("ruleNote", rule);
+                // No alert per drive: several an hour on a busy shift. Answers come after a long stop.
+                boolean personal = drive.optBoolean("personal", false);
+                if (rule != null && !personal) drive.put("ruleNote", rule);
                 DriveStore.add(c, drive);
-                if (rule != null) DriveStore.classify(c, drive.getString("id"), "business");
+                String id = drive.getString("id");
+                if (personal) DriveStore.classify(c, id, "personal");
+                else if (rule != null) DriveStore.classify(c, id, "business");
+                DrivePrefs.prefs(c).edit()
+                    .putString("lastPieceId", id)
+                    .putFloat("lastPieceMiles", (float) drive.optDouble("miles", 0))
+                    .apply();
                 return;
             }
             if (rule != null) {

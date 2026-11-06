@@ -1387,11 +1387,17 @@
       "shiftAutoBody": "Sin conducir durante 4 horas, así que tu turno terminó. Viajes registrados: {count}, {miles} mi.",
       "shiftRule": "En turno",
       "dayReviewBodyRideshare": "{count} pendientes, {miles} mi. Toca para separar trabajo y personal.",
-      "shiftAskTitle": "¿Conduces por trabajo?",
-      "shiftAskBody": "Inicia tu turno para que este viaje cuente como trabajo. Puedes tocar esto después de estacionar.",
-      "shiftNotToday": "Hoy no",
       "stopAskBodyShift": "Llevas 10 minutos detenido. Terminado también finaliza tu turno.",
-      "stopAskReceipt": "Escanea también tu recibo."
+      "stopAskReceipt": "Escanea también tu recibo.",
+      "driveAskTitle": "Grabando tus millas",
+      "driveAskBody": "¿Este viaje es de trabajo o personal?",
+      "work": "Trabajo",
+      "driveLoggedTitle": "Viaje registrado: {miles} mi",
+      "driveLoggedBody": "¿Terminaste tu viaje?",
+      "driveLoggedBodyShift": "¿Terminaste? Terminado también finaliza tu turno.",
+      "driveEndTitle": "Viaje de {miles} mi",
+      "driveEndBody": "¿Este viaje fue de trabajo o personal?",
+      "personalTitleRideshare": "Viaje personal, no registrado"
     },
     "settings": {
       "title": "Viajes y recordatorios",
@@ -1421,7 +1427,7 @@
       "stopFailed": "la búsqueda falló, revisa tu conexión",
       "stopFound": "lugar encontrado",
       "shiftReminder": "Recordatorio de turno",
-      "shiftReminderHint": "Un recordatorio silencioso para iniciar tu turno cuando empiezas a conducir."
+      "shiftReminderHint": "Pregunta si es trabajo o personal al empezar a conducir."
     },
     "disclosure": {
       "title": "Registra millas de trabajo automáticamente",
@@ -1670,6 +1676,8 @@
     "doneBodyRideshare": "Los viajes se graban solos. Inicia un turno cuando trabajes o clasifica tus viajes al final del día.",
     "blocked": "Android no lo permitió. Puedes activarlo en ajustes o volver más tarde.",
     "cardTitle": "El seguimiento de millas no está completo",
-    "cardSub": "Es posible que tus millas no se graben. Toca para terminar."
+    "cardSub": "Es posible que tus millas no se graben. Toca para terminar.",
+    "staleTitle": "Ningún viaje detectado en una semana",
+    "staleSub": "Si has conducido, toca para revisar los ajustes del teléfono."
   }
 }

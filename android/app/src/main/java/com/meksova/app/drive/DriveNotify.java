@@ -5,6 +5,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -30,7 +31,7 @@ final class DriveNotify {
     static final int ID_DAY_REVIEW = 4125;
     static final int ID_SHIFT = 4132;
     static final int ID_SHIFT_ENDED = 4133;
-    static final int ID_SHIFT_ASK = 4137;
+    static final int ID_DRIVE_ASK = 4137;
 
     private static final int BRAND = 0xFF2563EB;
 
@@ -110,8 +111,6 @@ final class DriveNotify {
     static Notification recording(Context c, double milesSoFar) {
         String title = DrivePrefs.str(c, "recordingTitle", "Recording your drive");
         String body = DrivePrefs.str(c, "recordingBody", "{miles} mi so far").replace("{miles}", miles(milesSoFar));
-        boolean askShift = DriveShift.askingOnRecording(c);
-        if (askShift) body = body + " · " + DrivePrefs.str(c, "shiftAskTitle", "Driving for work?");
         NotificationCompat.Builder n = base(c, CH_RECORDING)
             .setContentTitle(title)
             .setContentText(body)
@@ -120,13 +119,11 @@ final class DriveNotify {
             .setOnlyAlertOnce(true)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setContentIntent(openApp(c, "drives", ID_RECORDING));
-        if (askShift) {
-            n.addAction(0, DrivePrefs.str(c, "shiftStart", "Start shift"), broadcast(c, DriveActionReceiver.SHIFT_START, null, ID_SHIFT_ASK + 1))
-                .addAction(0, DrivePrefs.str(c, "shiftNotToday", "Not today"), broadcast(c, DriveActionReceiver.SHIFT_NOT_TODAY, null, ID_SHIFT_ASK + 2));
+        // Rideshare answers this on its own Work / Personal notification, which keeps the miles for Undo.
+        if (!DrivePrefs.rideshare(c)) {
+            n.addAction(0, DrivePrefs.str(c, "recordingPersonal", "Personal, don't log"), broadcast(c, DriveActionReceiver.DISCARD_RECORDING, null, ID_RECORDING + 1));
         }
-        return n
-            .addAction(0, DrivePrefs.str(c, "recordingPersonal", "Personal, don't log"), broadcast(c, DriveActionReceiver.DISCARD_RECORDING, null, ID_RECORDING + 1))
-            .build();
+        return n.build();
     }
 
     /** "12.4 mi drive · Business or personal?" after an automatically recorded drive. */
@@ -153,19 +150,70 @@ final class DriveNotify {
         post(c, nid, n.build());
     }
 
-    /** Nothing's recording, so there's no notification to put the buttons on. Silent: they may be driving. */
-    static void shiftAsk(Context c) {
-        String body = DrivePrefs.str(c, "shiftAskBody", "Start your shift so this drive counts as work. You can tap this after you park.");
-        Notification n = base(c, CH_RECORDING)
-            .setContentTitle(DrivePrefs.str(c, "shiftAskTitle", "Driving for work?"))
+    /** Rideshare, as a drive starts. Answering is optional: the question comes back after they park. */
+    static void driveAsk(Context c, boolean silent) {
+        // Android stacks alerts and hides their buttons, so nothing else can stay up beside this:
+        // old news goes, and a receipt alert still showing is folded in.
+        cancel(c, ID_SHIFT_ENDED);
+        cancel(c, ID_DAY_REVIEW);
+        String stopAction = receiptAlertShowing(c) ? DrivePrefs.prefs(c).getString("lastStopAction", null) : null;
+        String body = DrivePrefs.str(c, "driveAskBody", "Is this drive for work or personal?");
+        if (stopAction != null) body = body + " " + DrivePrefs.str(c, "stopAskReceipt", "Scan your receipt too.");
+        NotificationCompat.Builder n = base(c, CH_DRIVES)
+            .setContentTitle(DrivePrefs.str(c, "driveAskTitle", "Recording your miles"))
             .setContentText(body)
             .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
-            .setContentIntent(openApp(c, "go/customer/dashboard", ID_SHIFT_ASK))
-            .addAction(0, DrivePrefs.str(c, "shiftStart", "Start shift"), broadcast(c, DriveActionReceiver.SHIFT_START, null, ID_SHIFT_ASK + 1))
-            .addAction(0, DrivePrefs.str(c, "shiftNotToday", "Not today"), broadcast(c, DriveActionReceiver.SHIFT_NOT_TODAY, null, ID_SHIFT_ASK + 2))
-            .setTimeoutAfter(2 * 60 * 60 * 1000)
-            .build();
-        post(c, ID_SHIFT_ASK, n);
+            .setSilent(silent)
+            .setContentIntent(openApp(c, stopAction != null ? stopAction : "go/customer/dashboard", ID_DRIVE_ASK))
+            .addAction(0, DrivePrefs.str(c, "work", "Work"), broadcast(c, DriveActionReceiver.DRIVE_WORK, null, ID_DRIVE_ASK + 1))
+            .addAction(0, DrivePrefs.str(c, "personal", "Personal"), broadcast(c, DriveActionReceiver.DRIVE_PERSONAL, null, ID_DRIVE_ASK + 2));
+        if (stopAction != null) {
+            n.addAction(0, DrivePrefs.str(c, "fuelScan", "Scan"), openApp(c, stopAction + "&mode=camera", ID_DRIVE_ASK + 3));
+            cancel(c, ID_FUEL);
+        }
+        post(c, ID_DRIVE_ASK, n.build());
+    }
+
+    /** Rideshare, once they've been stopped for 10 minutes: what happened to that drive. */
+    static void driveFinal(Context c) {
+        SharedPreferences p = DrivePrefs.prefs(c);
+        String id = p.getString("lastPieceId", null);
+        if (id == null) return;
+        JSONObject drive = DriveStore.get(c, id);
+        // No longer on the phone means the app already saved it to the mileage log.
+        String type = drive == null ? "business" : drive.isNull("type") ? null : drive.optString("type");
+        if ("personal".equals(type)) {
+            personalUndo(c, id);
+            return;
+        }
+        String milesText = miles(p.getFloat("lastPieceMiles", 0f));
+        // Android stacks alerts and hides their buttons, so a receipt alert still showing is folded in.
+        String stopAction = receiptAlertShowing(c) ? p.getString("lastStopAction", null) : null;
+        NotificationCompat.Builder n = base(c, CH_DRIVES).setStyle(null);
+        String body;
+        if ("business".equals(type)) {
+            body = DrivePrefs.str(c, DriveShift.on(c) ? "driveLoggedBodyShift" : "driveLoggedBody",
+                DriveShift.on(c) ? "Did you finish? Finished also ends your shift." : "Did you finish your trip?");
+            n.setContentTitle(DrivePrefs.str(c, "driveLoggedTitle", "Drive logged: {miles} mi").replace("{miles}", milesText))
+                .setSilent(true)
+                .addAction(0, DrivePrefs.str(c, "stopAskFinished", "Finished"), broadcast(c, DriveActionReceiver.TRIP_FINISHED, null, ID_STOP_ASK + 1))
+                .addAction(0, DrivePrefs.str(c, "stopAskKeep", "Keep recording"), broadcast(c, DriveActionReceiver.KEEP_RECORDING, null, ID_STOP_ASK + 2));
+        } else {
+            body = DrivePrefs.str(c, "driveEndBody", "Was this drive for work or personal?");
+            n.setContentTitle(DrivePrefs.str(c, "driveEndTitle", "{miles} mi drive").replace("{miles}", milesText))
+                .addAction(0, DrivePrefs.str(c, "work", "Work"), broadcast(c, DriveActionReceiver.FINAL_WORK, id, ID_STOP_ASK + 1))
+                .addAction(0, DrivePrefs.str(c, "personal", "Personal"), broadcast(c, DriveActionReceiver.FINAL_PERSONAL, id, ID_STOP_ASK + 2));
+        }
+        if (stopAction != null) {
+            body = body + " " + DrivePrefs.str(c, "stopAskReceipt", "Scan your receipt too.");
+            n.addAction(0, DrivePrefs.str(c, "fuelScan", "Scan"), openApp(c, stopAction + "&mode=camera", ID_STOP_ASK + 3));
+            cancel(c, ID_FUEL);
+        }
+        n.setContentText(body)
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
+            .setContentIntent(openApp(c, stopAction != null ? stopAction : "drives", ID_STOP_ASK));
+        cancel(c, ID_SHIFT_ENDED);
+        post(c, ID_STOP_ASK, n.build());
     }
 
     private static boolean receiptAlertShowing(Context c) {

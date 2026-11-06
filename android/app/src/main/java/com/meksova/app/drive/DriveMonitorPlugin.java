@@ -117,6 +117,7 @@ public class DriveMonitorPlugin extends Plugin {
         SharedPreferences p = DrivePrefs.prefs(c);
         r.put("lastDriveAt", p.getLong("lastEnterAt", 0));
         r.put("lastMovedAt", p.getLong("lastMovedAt", 0));
+        r.put("detectionSince", p.getLong("detectionSince", 0));
         r.put("lastSeenAt", p.getLong("lastSeenAt", 0));
         r.put("shiftOn", DriveShift.on(c));
         r.put("shiftAt", p.getLong("shiftAt", 0));
@@ -140,6 +141,14 @@ public class DriveMonitorPlugin extends Plugin {
         } else {
             DriveShift.end(getContext(), false, false);
         }
+        call.resolve(status());
+    }
+
+    /** "We haven't noticed a drive" was seen: register again and restart the count. */
+    @PluginMethod
+    public void resetDetectionCheck(PluginCall call) {
+        DrivePrefs.prefs(getContext()).edit().putLong("detectionSince", System.currentTimeMillis()).apply();
+        if (DrivePrefs.enabled(getContext())) DriveEvents.register(getContext());
         call.resolve(status());
     }
 
@@ -366,12 +375,12 @@ public class DriveMonitorPlugin extends Plugin {
                 call.reject(e.getMessage());
                 return;
             }
-        } else if ("shiftReminderAge".equals(event)) {
-            // As if the last reminder had been this many hours ago.
-            DrivePrefs.prefs(c).edit().putLong("shiftReminderAt", System.currentTimeMillis() - call.getDouble("hours", 4.0).longValue() * 3600000).apply();
-        } else if ("shiftReminderReset".equals(event)) {
-            DrivePrefs.prefs(c).edit().remove("shiftReminderDay").remove("shiftReminderCount").remove("shiftReminderAt").remove("shiftMutedDay").apply();
-            DriveNotify.cancel(c, DriveNotify.ID_SHIFT_ASK);
+        } else if ("driveAskReset".equals(event)) {
+            DrivePrefs.prefs(c).edit().remove("personalUntil").remove("driveAskSoundDay").remove("nextDrivePersonal").apply();
+            DriveNotify.cancel(c, DriveNotify.ID_DRIVE_ASK);
+        } else if ("ageDetection".equals(event)) {
+            long then = System.currentTimeMillis() - call.getDouble("days", 8.0).longValue() * 86400000;
+            DrivePrefs.prefs(c).edit().putLong("detectionSince", then).putLong("lastEnterAt", then).apply();
         } else if ("shiftAutoEnd".equals(event)) {
             DriveShift.end(c, true, false);
         } else if ("ageDrives".equals(event)) {

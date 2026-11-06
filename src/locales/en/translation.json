@@ -1381,11 +1381,17 @@
       "shiftAutoBody": "No driving for 4 hours, so your shift ended. Drives logged: {count}, {miles} mi.",
       "shiftRule": "On shift",
       "dayReviewBodyRideshare": "{count} waiting, {miles} mi. Tap to sort work and personal.",
-      "shiftAskTitle": "Driving for work?",
-      "shiftAskBody": "Start your shift so this drive counts as work. You can tap this after you park.",
-      "shiftNotToday": "Not today",
       "stopAskBodyShift": "You've been stopped for 10 minutes. Finished also ends your shift.",
-      "stopAskReceipt": "Scan your receipt too."
+      "stopAskReceipt": "Scan your receipt too.",
+      "driveAskTitle": "Recording your miles",
+      "driveAskBody": "Is this drive for work or personal?",
+      "work": "Work",
+      "driveLoggedTitle": "Drive logged: {miles} mi",
+      "driveLoggedBody": "Did you finish your trip?",
+      "driveLoggedBodyShift": "Did you finish? Finished also ends your shift.",
+      "driveEndTitle": "{miles} mi drive",
+      "driveEndBody": "Was this drive for work or personal?",
+      "personalTitleRideshare": "Personal drive, not logged"
     },
     "settings": {
       "title": "Drives & reminders",
@@ -1415,7 +1421,7 @@
       "stopFailed": "lookup failed, check your connection",
       "stopFound": "place found",
       "shiftReminder": "Shift reminder",
-      "shiftReminderHint": "A quiet reminder to start your shift when you start driving."
+      "shiftReminderHint": "Asks work or personal when you start driving."
     },
     "disclosure": {
       "title": "Log business miles automatically",
@@ -1664,6 +1670,8 @@
     "doneBodyRideshare": "Drives record by themselves. Start a shift when you work, or sort your drives at the end of the day.",
     "blocked": "Android didn't allow this. You can turn it on in settings, or come back to it later.",
     "cardTitle": "Mileage tracking isn't fully on",
-    "cardSub": "Your miles may not be recording. Tap to finish setup."
+    "cardSub": "Your miles may not be recording. Tap to finish setup.",
+    "staleTitle": "No drives noticed for a week",
+    "staleSub": "If you've been driving, tap to check your phone's settings."
   }
 }

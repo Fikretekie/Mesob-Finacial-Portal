@@ -1385,11 +1385,17 @@
       "shiftAutoBody": "4 saac baabuur lama wadin, sidaa darteed shiftigaagu wuu dhammaaday. Safarrada la diiwaangeliyay: {count}, {miles} mi.",
       "shiftRule": "Shaqo",
       "dayReviewBodyRideshare": "{count} sugaya, {miles} mi. Taabo si aad u kala saarto shaqo iyo gaar.",
-      "shiftAskTitle": "Ma shaqo u wadaa?",
-      "shiftAskBody": "Bilow shiftigaaga si safarkan loogu tiriyo shaqo. Waad taaban kartaa marka aad baakin gareyso ka dib.",
-      "shiftNotToday": "Maanta maya",
       "stopAskBodyShift": "10 daqiiqo ayaad joogsatay. Waan dhammeeyay waxay sidoo kale dhammaynaysaa shiftigaaga.",
-      "stopAskReceipt": "Sidoo kale iskaan garee rasiidkaaga."
+      "stopAskReceipt": "Sidoo kale iskaan garee rasiidkaaga.",
+      "driveAskTitle": "Mayladaada waa la duubayaa",
+      "driveAskBody": "Safarkani ma shaqo baa mise gaar?",
+      "work": "Shaqo",
+      "driveLoggedTitle": "Safar la diiwaangeliyay: {miles} mi",
+      "driveLoggedBody": "Ma dhammeysay safarkaagii?",
+      "driveLoggedBodyShift": "Ma dhammeysay? Waan dhammeeyay waxay sidoo kale dhammaynaysaa shiftigaaga.",
+      "driveEndTitle": "Safar {miles} mi",
+      "driveEndBody": "Safarkani ma shaqo buu ahaa mise gaar?",
+      "personalTitleRideshare": "Safar gaar ah, lama diiwaangelin"
     },
     "settings": {
       "title": "Socdaalada & xasuusinta",
@@ -1419,7 +1425,7 @@
       "stopFailed": "raadintu way fashilantay, hubi xiriirkaaga",
       "stopFound": "meel ayaa la helay",
       "shiftReminder": "Xusuusin shift",
-      "shiftReminderHint": "Xusuusin aamusan oo aad ku bilowdo shiftigaaga marka aad wadid."
+      "shiftReminderHint": "Wuxuu weydiiyaa shaqo ama gaar marka aad bilowdo wadista."
     },
     "disclosure": {
       "title": "Si toos ah u diiwaangeli mayllada ganacsiga",
@@ -1668,6 +1674,8 @@
     "doneBodyRideshare": "Safarrada iskood bay u duubmaan. Bilow shift marka aad shaqaynayso, ama kala saar safarradaada dhammaadka maalinta.",
     "blocked": "Android ma oggolaan. Waxaad ka shidi kartaa dejinta ama dib ugu soo noqon kartaa.",
     "cardTitle": "La socodka mayllada si buuxda uma shidna",
-    "cardSub": "Mayladaadu waxaa laga yaabaa inaan la duubin. Taabo si aad u dhammeyso."
+    "cardSub": "Mayladaadu waxaa laga yaabaa inaan la duubin. Taabo si aad u dhammeyso.",
+    "staleTitle": "Toddobaad safar lama ogaan",
+    "staleSub": "Haddii aad wadatay, taabo si aad u hubiso dejinta taleefanka."
   }
 }

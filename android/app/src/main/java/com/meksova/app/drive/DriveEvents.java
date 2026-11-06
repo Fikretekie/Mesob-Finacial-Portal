@@ -1,6 +1,7 @@
 package com.meksova.app.drive;
 
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -51,10 +52,27 @@ final class DriveEvents {
         } catch (SecurityException ignored) {
             // Permission revoked since the check.
         }
+        if (!DrivePrefs.prefs(c).contains("detectionSince")) {
+            DrivePrefs.prefs(c).edit().putLong("detectionSince", System.currentTimeMillis()).apply();
+        }
+        // Android can drop this registration, so keep asking. A force-stopped app
+        // gets neither this nor drive events until it's opened again.
+        ((AlarmManager) c.getSystemService(Context.ALARM_SERVICE)).setInexactRepeating(
+            AlarmManager.RTC_WAKEUP,
+            System.currentTimeMillis() + AlarmManager.INTERVAL_HOUR * 6,
+            AlarmManager.INTERVAL_HOUR * 6,
+            reRegisterIntent(c)
+        );
+    }
+
+    private static PendingIntent reRegisterIntent(Context c) {
+        Intent i = new Intent(c, DriveActionReceiver.class).setAction(DriveActionReceiver.RE_REGISTER);
+        return PendingIntent.getBroadcast(c, 4140, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     @SuppressLint("MissingPermission")
     static void unregister(Context c) {
+        ((AlarmManager) c.getSystemService(Context.ALARM_SERVICE)).cancel(reRegisterIntent(c));
         try {
             ActivityRecognition.getClient(c).removeActivityTransitionUpdates(transitionIntent(c));
         } catch (SecurityException ignored) {
@@ -76,9 +94,17 @@ final class DriveEvents {
         if (DrivePrefs.manualTrip(c)) return;
         // A shift means they're working, whatever the day.
         if (DrivePrefs.workdaysOnly(c) && DrivePrefs.isWeekend() && !DriveShift.on(c)) return;
-        DriveShift.maybeRemind(c);
         if (DrivePrefs.autoRecord(c) && DrivePrefs.hasBackgroundLocation(c)) {
-            if (!DriveRecorderService.isRunning()) DriveRecorderService.start(c);
+            DriveShift.askAboutDrive(c);
+            if (!DriveRecorderService.isRunning()) {
+                try {
+                    DriveRecorderService.start(c);
+                } catch (RuntimeException e) {
+                    // Android refused to start it from the background: say so instead of losing the drive silently.
+                    DriveNotify.cancel(c, DriveNotify.ID_DRIVE_ASK);
+                    DriveNotify.ask(c);
+                }
+            }
         } else {
             DriveNotify.ask(c);
         }
