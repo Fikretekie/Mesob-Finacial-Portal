@@ -193,7 +193,7 @@ const AppSetup = () => {
   };
 
   const COPY = {
-    intro: { title: t("drives.disclosure.title"), body: t("drives.disclosure.body") },
+    intro: { title: t("drives.disclosure.title"), body: t(isTrucking() ? "drives.disclosure.body" : "drives.disclosure.bodyOther") },
     motion: { title: t("setup.motionTitle"), body: t("setup.motionBody") },
     background: { title: t("setup.backgroundTitle"), body: t("setup.backgroundBody") },
     notifications: { title: t("setup.notificationsTitle"), body: t(driver ? "setup.notificationsBody" : "setup.notificationsBodyOther") },

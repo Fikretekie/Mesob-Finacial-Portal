@@ -1430,7 +1430,8 @@
       "point2": "Location is recorded only while you drive, and stays on your phone until you save the drive.",
       "point3": "You can turn this off any time in Account.",
       "continue": "Continue",
-      "notNow": "Not now"
+      "notNow": "Not now",
+      "bodyOther": "Meksova collects location data to detect your drives, record business miles and notice gas and repair stops, even when the app is closed or not in use."
     },
     "review": {
       "title": "Drives to review",

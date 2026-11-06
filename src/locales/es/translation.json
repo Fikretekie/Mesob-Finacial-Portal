@@ -1436,7 +1436,8 @@
       "point2": "La ubicación solo se registra mientras conduces y queda en tu teléfono hasta que guardas el viaje.",
       "point3": "Puedes desactivarlo en cualquier momento en Cuenta.",
       "continue": "Continuar",
-      "notNow": "Ahora no"
+      "notNow": "Ahora no",
+      "bodyOther": "Meksova recopila datos de ubicación para detectar tus viajes, registrar millas de negocio y notar paradas de gasolina y reparación, incluso cuando la app está cerrada o no se usa."
     },
     "review": {
       "title": "Viajes por revisar",

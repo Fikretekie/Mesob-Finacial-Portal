@@ -49,6 +49,8 @@ final class FuelStops {
     private static final int FUEL_RADIUS_M = 120;
     /** Store pins sit mid-building, so a normal parking spot is often 100-200 m away. */
     private static final int STORE_RADIUS_M = 250;
+    /** Rideshare: parked this close to food means a pickup or a meal, not a receipt to scan. */
+    private static final int FOOD_RADIUS_M = 60;
     private static final long REPEAT_WINDOW_MS = 60 * 60 * 1000;
     /** Google answered "nothing here" — don't second-guess it with the fallback. */
     private static final Stop NONE = new Stop("", "");
@@ -63,6 +65,10 @@ final class FuelStops {
         "furniture_store", "department_store", "warehouse_store", "wholesaler", "discount_store",
     };
     private static final String[] REPAIR_TYPES = { "car_repair", "car_wash" };
+    private static final List<String> FOOD_TYPES = Arrays.asList(
+        "restaurant", "fast_food_restaurant", "cafe", "coffee_shop", "bakery",
+        "meal_takeaway", "grocery_store", "supermarket", "sandwich_shop", "pizza_restaurant"
+    );
 
     /** What was found: a display name ("" when unnamed) and FUEL / STORE / REPAIR. */
     static final class Stop {
@@ -189,11 +195,13 @@ final class FuelStops {
             PlacesClient client = Places.createClient(app);
             // Gas stations first, on the tighter radius: the store next door
             // shouldn't win, and a store's lot shouldn't read as a fuel stop.
+            // Rideshare stops at food all day, and the wide store search would name whatever's next door.
+            boolean atFood = DrivePrefs.rideshare(c) && nearest(client, lat, lng, FOOD_RADIUS_M, FOOD_TYPES) != null;
             if (fuel) {
-                Place place = nearest(client, lat, lng, FUEL_RADIUS_M, Collections.singletonList("gas_station"));
+                Place place = nearest(client, lat, lng, atFood ? FOOD_RADIUS_M : FUEL_RADIUS_M, Collections.singletonList("gas_station"));
                 if (place != null) return new Stop(nameOf(place), FUEL);
             }
-            if (stores) {
+            if (stores && !atFood) {
                 List<String> types = new ArrayList<>();
                 Collections.addAll(types, STORE_TYPES);
                 Collections.addAll(types, REPAIR_TYPES);

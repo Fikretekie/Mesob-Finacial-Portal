@@ -235,7 +235,7 @@ const DriveSettings = () => {
       <Modal isOpen={disclosure} toggle={() => setDisclosure(false)} labelledBy="mksv-drive-disclosure-title" className="mksv-confirm-sheet">
         <div className="mksv-confirm">
           <h2 id="mksv-drive-disclosure-title" className="mksv-sheet__title">{t("drives.disclosure.title")}</h2>
-          <p className="mksv-confirm__body">{t("drives.disclosure.body")}</p>
+          <p className="mksv-confirm__body">{t(isTrucking() ? "drives.disclosure.body" : "drives.disclosure.bodyOther")}</p>
           <ul className="mksv-disclosure__list">
             <li>{t("drives.disclosure.point1")}</li>
             <li>{t("drives.disclosure.point2")}</li>

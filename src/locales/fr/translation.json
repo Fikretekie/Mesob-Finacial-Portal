@@ -1436,7 +1436,8 @@
       "point2": "La position n'est enregistrée que pendant la conduite et reste sur votre téléphone jusqu'à l'enregistrement du trajet.",
       "point3": "Vous pouvez désactiver cette option à tout moment dans Compte.",
       "continue": "Continuer",
-      "notNow": "Plus tard"
+      "notNow": "Plus tard",
+      "bodyOther": "Meksova collecte des données de localisation pour détecter vos trajets, enregistrer les miles professionnels et repérer les arrêts carburant et réparation, même lorsque l'appli est fermée ou inutilisée."
     },
     "review": {
       "title": "Trajets à classer",
